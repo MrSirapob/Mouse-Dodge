@@ -337,8 +337,8 @@ export class Game {
   }
 
   hitPlayer(player) {
-    if (player.devInvulnerable) return;
-    this.lifeSystem.hit(player);
+    if (player.devInvulnerable) return false;
+    return this.lifeSystem.hit(player);
   }
 
   gameOver() {
@@ -623,7 +623,17 @@ export class Game {
 
       for (const p of this.activePlayers()) {
         if (!p.isAlive() || !p.canBeHit()) continue;
-        if (circleHit(b, p)) { this.hitPlayer(p); break; }
+        if (circleHit(b, p)) {
+          // A bullet is consumed only when it actually deals damage.
+          // This prevents the same projectile from hitting again after
+          // the player's brief hit-invulnerability.
+          const damaged = this.hitPlayer(p);
+          if (damaged) {
+            this.bullets.remove(i);
+            this.particles.spawn(b.x, b.y, b.color, 8);
+            break;
+          }
+        }
         if (!b.grazedBy && circleNear(b, p, 16)) {
           b.grazedBy = p.id;
           p.grazeCount++;
