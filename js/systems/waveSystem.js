@@ -54,24 +54,24 @@ export class WaveSystem {
     this.p.aimed(0, Math.floor(10 * densityMult), 0.35 / densityMult, 2.1 * speedMult, colorA);
     this.p.aimed(dur * 0.4, Math.floor(8 * densityMult), 0.35 / densityMult, 2.1 * speedMult, colorB);
     this.p.aimed(dur * 0.75, Math.floor(8 * densityMult), 0.35 / densityMult, 2.3 * speedMult, colorA);
-    labels.push('ยิงเล็ง');
+    labels.push('กระสุนพิฆาตตามเงา');
 
     if (n >= 2) {
       this.p.ring(dur * 0.25, 640, 360, 14 + diff, 2.4 * speedMult, colorB);
       this.p.ring(dur * 0.65, 640, 360, 14 + diff, 2.4 * speedMult, colorA);
-      labels.push('ระเบิดวงแหวน');
+      labels.push('วงแหวนสะเทือนฟ้า');
     }
 
     if (n >= 3) {
       this.p.wall(dur * 0.35, 2.4 * speedMult, colorA, n % 2 === 0);
       this.p.wall(dur * 0.7, 2.5 * speedMult, colorB, n % 2 !== 0);
-      labels.push('กำแพงมีช่อง');
+      labels.push('กำแพงผนึกนรก');
     }
 
     if (n >= 4) {
       this.p.spiral(0, dur * 0.34, 2, 1.7 * speedMult, colorB);
       this.p.spiral(dur * 0.58, dur * 0.30, 2, 1.8 * speedMult, colorA);
-      labels.push('เกลียวหมุน');
+      labels.push('เกลียวคลั่งทลายสวรรค์');
     }
 
     if (n >= 6) {
@@ -79,7 +79,7 @@ export class WaveSystem {
       this.p.cross(dur * 0.65, 7 + diff, 2.6 * speedMult, colorB);
       this.p.laserBarrage(dur * 0.15, 2 + Math.floor(diff / 4), 1.1, '#ff5cc0');
       this.p.laserBarrage(dur * 0.6, 2 + Math.floor(diff / 4), 1.1, '#54a0ff');
-      labels.push('ยิงไขว้ + เลเซอร์');
+      labels.push('กางเขนฟ้าผ่า ลำแสงพิฆาต');
     }
 
     if (n >= 7) {
@@ -87,7 +87,7 @@ export class WaveSystem {
       this.p.wall(dur * 0.88, 2.8 * speedMult, colorA, n % 2 === 0);
       this.p.splitter(dur * 0.3, 4 + Math.floor(diff / 4), 0.9, 1.9 * speedMult, colorA);
       this.p.splitter(dur * 0.7, 4 + Math.floor(diff / 4), 0.9, 2 * speedMult, colorB);
-      labels.push('กำแพงซ้อน + แยกร่าง');
+      labels.push('กำแพงทมิฬ แยกร่างอสูร');
     }
 
     if (n >= 8) {
@@ -96,7 +96,7 @@ export class WaveSystem {
       const spot2X = 160 + Math.random() * 960, spot2Y = 100 + Math.random() * 520;
       this.p.ring(dur * 0.45, spot1X, spot1Y, 16 + diff, 2.5 * speedMult, colorA);
       this.p.ring(dur * 0.82, spot2X, spot2Y, 16 + diff, 2.6 * speedMult, colorB);
-      labels.push('ระเบิดสุ่มจุด');
+      labels.push('วงแหวนหายนะจากฟากฟ้า');
     }
 
     if (n >= 9) {
@@ -104,7 +104,7 @@ export class WaveSystem {
       this.p.homing(dur * 0.6, 4 + Math.floor(diff / 2), 0.4, 1.7 * speedMult, colorA);
       this.p.bouncer(dur * 0.25, 4 + Math.floor(diff / 4), 0.8, 2 * speedMult, colorB);
       this.p.bouncer(dur * 0.65, 4 + Math.floor(diff / 4), 0.8, 2.1 * speedMult, colorA);
-      labels.push('ไล่ตาม + กระเด้ง');
+      labels.push('เงามรณะ ไล่ล่าจนสิ้นทาง');
     }
 
     // Every 4th wave (after wave 1) adds a shrinking safe-zone hazard.
@@ -152,6 +152,6 @@ export class WaveSystem {
     this.p.bossSpiral(dur * 0.5, dur * 0.4, 4 + Math.floor(diff / 4), 2 * speedMult, colorB);
     this.p.bossSpiral(dur * 0.8, dur * 0.18, 5 + Math.floor(diff / 4), 2.2 * speedMult, colorA);
 
-    return 'BOSS: ยิงรอบทิศ + เกลียว + เล็งตรง — รอดให้ครบเวลา!';
+    return 'BOSS: อาณัติแห่งหายนะ — จงดิ้นรนต่อหน้าความสิ้นหวัง!';
   }
 }
