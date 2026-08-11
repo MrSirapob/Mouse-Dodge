@@ -24,22 +24,16 @@ export class DevMode {
 
       const key = e.key.toLowerCase();
       const actions = {
-        r: 'restart',   // Restart
-        c: 'clear',     // Clear bullets
-        g: 'god',       // God mode
-        e: 'ready',     // Skill ready
-        n: 'waveNext',  // Next wave
-        m: 'wavePrev',  // Previous wave
-        b: 'boss',      // Boss
-        l: 'life',      // + Life
-        k: 'kill',      // - Life
-        h: 'hitbox',    // Hitbox
-        j: 'graze'      // Graze debug
+        r: 'restart',
+        c: 'clear',
+        g: 'god',
+        e: 'ready',
+        n: 'waveNext',
+        b: 'boss'
       };
 
       if (actions[key]) {
         e.preventDefault();
-        if (e.repeat) return;
         this.action(actions[key]);
       }
     });
@@ -58,39 +52,39 @@ export class DevMode {
       <div class="dev-section">
         <div class="dev-section-label">PLAYER</div>
         <div class="dev-row">
-          <button data-dev="life">+ LIFE <kbd>L</kbd></button>
-          <button data-dev="kill">− LIFE <kbd>K</kbd></button>
-          <button data-dev="ready">SKILL READY <kbd>E</kbd></button>
+          <button data-dev="life">+ LIFE [L]</button>
+          <button data-dev="kill">− LIFE [K]</button>
+          <button data-dev="ready">SKILL READY [E]</button>
         </div>
       </div>
 
       <div class="dev-section">
         <div class="dev-section-label">WAVE</div>
         <div class="dev-wave-row">
-          <button data-dev="wavePrev" class="dev-wave-btn" title="M">◀ <kbd>M</kbd></button>
+          <button data-dev="wavePrev" class="dev-wave-btn">◀ [M]</button>
           <div class="dev-wave-current">
             <span>WAVE</span>
             <strong id="devCurrentWave">1</strong>
           </div>
-          <button data-dev="waveNext" class="dev-wave-btn" title="N">▶ <kbd>N</kbd></button>
+          <button data-dev="waveNext" class="dev-wave-btn">▶ [N]</button>
         </div>
       </div>
 
       <div class="dev-section">
         <div class="dev-section-label">GAME</div>
         <div class="dev-row">
-          <button data-dev="clear" class="dev-main-action">CLEAR BULLETS <kbd>C</kbd></button>
-          <button data-dev="boss">BOSS <kbd>B</kbd></button>
-          <button data-dev="restart" class="dev-danger">RESTART <kbd>R</kbd></button>
+          <button data-dev="clear" class="dev-main-action">CLEAR BULLETS [C]</button>
+          <button data-dev="boss">BOSS [B]</button>
+          <button data-dev="restart" class="dev-danger">RESTART [R]</button>
         </div>
       </div>
 
       <div class="dev-section">
         <div class="dev-section-label">DEBUG</div>
         <div class="dev-row">
-          <button data-dev="god" id="devGod">GOD: OFF <kbd>G</kbd></button>
-          <button data-dev="hitbox" id="devHitbox">HITBOX: OFF <kbd>H</kbd></button>
-          <button data-dev="graze" id="devGraze">GRAZE: OFF <kbd>J</kbd></button>
+          <button data-dev="god" id="devGod">GOD: OFF [G]</button>
+          <button data-dev="hitbox" id="devHitbox">HITBOX: OFF [H]</button>
+          <button data-dev="graze" id="devGraze">GRAZE: OFF [J]</button>
         </div>
       </div>
 
