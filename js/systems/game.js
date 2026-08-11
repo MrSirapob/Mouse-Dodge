@@ -505,7 +505,8 @@ export class Game {
     if (this.state.mode === GAME_MODES.COOP && this.players[1].isAlive()) {
       this.players[1].updateKeyboard(this.input.p2Direction(), dt);
     }
-    for (const p of this.activePlayers()) p.clamp(CONFIG.world);
+    const visibleBounds = this.renderer.visibleWorldBounds();
+    for (const p of this.activePlayers()) p.clamp(CONFIG.world, visibleBounds);
   }
 
   updateBoss(dt) {

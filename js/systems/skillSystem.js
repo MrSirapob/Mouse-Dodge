@@ -19,8 +19,9 @@ export class SkillSystem {
   dash(player) {
     const target = player.id === 1 ? this.game.renderer.worldPoint(this.game.input.p1.x, this.game.input.p1.y) : this.game.p2Target();
     const dx = target.x - player.x, dy = target.y - player.y, d = Math.hypot(dx, dy) || 1;
-    player.x = Math.max(player.r, Math.min(CONFIG.world.width - player.r, player.x + dx / d * CONFIG.dash.distance));
-    player.y = Math.max(player.r, Math.min(CONFIG.world.height - player.r, player.y + dy / d * CONFIG.dash.distance));
+    const bounds = this.game.renderer.visibleWorldBounds();
+    player.x = Math.max(bounds.left + player.r, Math.min(bounds.right - player.r, player.x + dx / d * CONFIG.dash.distance));
+    player.y = Math.max(bounds.top + player.r, Math.min(bounds.bottom - player.r, player.y + dy / d * CONFIG.dash.distance));
     player.invulnerable = CONFIG.dash.invulnerability;
     this.game.particles.spawn(player.x, player.y, player.color, 16);
     this.game.state.shakeMag = 4;

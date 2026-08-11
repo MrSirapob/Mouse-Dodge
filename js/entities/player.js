@@ -38,9 +38,14 @@ export class Player {
     this.trail.push({ x: this.x, y: this.y });
     if (this.trail.length > 14) this.trail.shift();
   }
-  clamp(world) {
-    this.x = Math.max(this.r, Math.min(world.width - this.r, this.x));
-    this.y = Math.max(this.r, Math.min(world.height - this.r, this.y));
+  clamp(world, bounds = null) {
+    const left = bounds ? Math.max(0, bounds.left) : 0;
+    const right = bounds ? Math.min(world.width, bounds.right) : world.width;
+    const top = bounds ? Math.max(0, bounds.top) : 0;
+    const bottom = bounds ? Math.min(world.height, bounds.bottom) : world.height;
+
+    this.x = Math.max(left + this.r, Math.min(right - this.r, this.x));
+    this.y = Math.max(top + this.r, Math.min(bottom - this.r, this.y));
   }
   tick(rawDt) {
     this.invulnerable = Math.max(0, this.invulnerable - rawDt);

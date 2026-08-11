@@ -198,21 +198,58 @@ export class Renderer {
     this.canvas.height = Math.max(1, Math.round(h));
 
     const scale = Math.max(w / WORLD.width, h / WORLD.height);
+    const offsetX = (w - WORLD.width * scale) / 2;
+    const offsetY = (h - WORLD.height * scale) / 2;
+
     this.viewport = {
       width: w,
       height: h,
       scale,
-      offsetX: (w - WORLD.width * scale) / 2,
-      offsetY: (h - WORLD.height * scale) / 2
+      offsetX,
+      offsetY
     };
+
+    // With cover-scaling, portrait phones show only a slice of the 1280px
+    // world horizontally. Keep gameplay boundaries aligned with what the
+    // player can actually see instead of allowing the player to run into
+    // the cropped-off part of the world.
+    const left = Math.max(0, -offsetX / scale);
+    const right = Math.min(WORLD.width, (w - offsetX) / scale);
+    const top = Math.max(0, -offsetY / scale);
+    const bottom = Math.min(WORLD.height, (h - offsetY) / scale);
+
+    this.viewport.visibleWorld = {
+      left,
+      right,
+      top,
+      bottom
+    };
+
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }
+
+  /** Returns the world-space rectangle currently visible on screen. */
+  visibleWorldBounds() {
+    return this.viewport.visibleWorld || {
+      left: 0,
+      right: WORLD.width,
+      top: 0,
+      bottom: WORLD.height
+    };
   }
 
   /** Converts a screen-space point (e.g. mouse/touch position) into world-space coordinates. */
   worldPoint(screenX, screenY) {
+    const v = this.viewport;
+    const p = {
+      x: (screenX - v.offsetX) / v.scale,
+      y: (screenY - v.offsetY) / v.scale
+    };
+    const b = this.visibleWorldBounds();
+
     return {
-      x: (screenX - this.viewport.offsetX) / this.viewport.scale,
-      y: (screenY - this.viewport.offsetY) / this.viewport.scale
+      x: Math.max(b.left, Math.min(b.right, p.x)),
+      y: Math.max(b.top, Math.min(b.bottom, p.y))
     };
   }
 
