@@ -16,18 +16,6 @@ export class SkillSystem {
     player.skillCooldown = cooldown;
     return true;
   }
-  dash(player) {
-    const target = player.id === 1 ? this.game.renderer.worldPoint(this.game.input.p1.x, this.game.input.p1.y) : this.game.p2Target();
-    const dx = target.x - player.x, dy = target.y - player.y, d = Math.hypot(dx, dy) || 1;
-    const bounds = this.game.renderer.visibleWorldBounds();
-    player.x = Math.max(bounds.left + player.r, Math.min(bounds.right - player.r, player.x + dx / d * CONFIG.dash.distance));
-    player.y = Math.max(bounds.top + player.r, Math.min(bounds.bottom - player.r, player.y + dy / d * CONFIG.dash.distance));
-    player.invulnerable = CONFIG.dash.invulnerability;
-    this.game.particles.spawn(player.x, player.y, player.color, 16);
-    this.game.state.shakeMag = 4;
-    this.game.addSkillEffect('dash', player, 0.45);
-    return this.finish(player, CONFIG.dash.cooldown);
-  }
   pulse(player) {
     const radius = CONFIG.skills.pulse.radius;
     this.game.removeBulletsInRadius(player.x, player.y, radius);
