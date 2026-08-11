@@ -2,7 +2,30 @@
 
 Refactored Wave Survival prototype based on the supplied reference game.
 
-## Maintainability pass (this update)
+## Project hygiene pass (this update)
+This pass didn't touch gameplay code — it cleaned up things that make the
+project harder to pick back up as it grows:
+
+- **Removed `js/systems/autoPlayer.js` (dead code).** It was never imported
+  by `game.js`, `main.js`, or `ui.js`, and `devMode.js` never calls it despite
+  the file checking `game.devMode.enabled`. It looks like a half-wired
+  "AI plays for you" dev tool that got left behind. If you want that feature,
+  it's easy to rebuild properly wired into `DevMode` — the old file is still
+  in git history if you want the logic back.
+- **Normalized line endings to LF everywhere.** `renderer.js`, `devMode.js`,
+  `player.js`, `input.js`, and `main.css` were CRLF while every other file
+  was LF — that mix causes noisy diffs and can quietly reintroduce merge
+  conflicts. Added `.editorconfig` and `.gitattributes` (`eol=lf`) so this
+  can't silently come back on a Windows checkout.
+- **Added `package.json` + `npm run dev`.** There was no standard way to
+  serve the project locally (it's plain ES modules — `file://` won't work
+  because of CORS on module imports). `npm install && npm run dev` now
+  starts a static server on `:8080`. No bundler/build step was introduced;
+  the game still ships as plain ES modules.
+- **Added `.gitignore`** for editor/OS/`node_modules` cruft now that
+  `npm install` is part of the workflow.
+
+## Maintainability pass (earlier update)
 The previous version was already split into files, but several of them
 (`waveSystem.js`, `game.js`'s `update()`, `patterns.js`, `renderer.js`) had
 their logic packed into dense, single-line, semicolon-chained code with
