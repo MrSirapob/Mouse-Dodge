@@ -149,6 +149,7 @@ export class UI {
     document
       .getElementById("howToPlayBtn")
       ?.addEventListener("click", () => this.showHowToPlayScreen());
+
     document
       .getElementById("backHowToPlayBtn")
       ?.addEventListener("click", () => this.showModeScreen());
@@ -156,9 +157,7 @@ export class UI {
     document.querySelectorAll(".howto-platform").forEach((button) => {
       button.addEventListener("click", () => {
         const platform = button.dataset.platform;
-        document.querySelectorAll(".howto-platform").forEach((b) =>
-          b.classList.toggle("active", b === button)
-        );
+        document.querySelectorAll(".howto-platform").forEach((b) => b.classList.toggle("active", b === button));
         document.querySelectorAll("[data-platform-panel]").forEach((panel) =>
           panel.classList.toggle("active", panel.dataset.platformPanel === platform)
         );
@@ -170,9 +169,7 @@ export class UI {
         const mode = button.dataset.howtoMode;
         const panel = button.closest("[data-platform-panel]");
         if (!panel) return;
-        panel.querySelectorAll("[data-howto-mode]").forEach((b) =>
-          b.classList.toggle("active", b === button)
-        );
+        panel.querySelectorAll("[data-howto-mode]").forEach((b) => b.classList.toggle("active", b === button));
         panel.querySelectorAll("[data-howto-content]").forEach((content) =>
           content.classList.toggle("active", content.dataset.howtoContent === `pc-${mode}`)
         );
@@ -250,6 +247,7 @@ export class UI {
   showSkillScreen() {
     this.modeScreen?.classList.add("hidden");
     this.howToPlayScreen?.classList.add("hidden");
+    this.modeScreen?.classList.add("hidden");
     this.skillScreen?.classList.remove("hidden");
     this.resultScreen?.classList.add("hidden");
 
