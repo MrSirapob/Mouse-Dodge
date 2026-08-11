@@ -99,6 +99,7 @@ export class UI {
       time: document.getElementById("time"),
       graze: document.getElementById("graze"),
       score: document.getElementById("score"),
+      scoreLabel: document.getElementById("scoreLabel"),
       p1Score: document.getElementById("p1Score"),
       p2Score: document.getElementById("p2Score"),
       lives: document.getElementById("lives"),
@@ -361,8 +362,10 @@ export class UI {
   // --- Per-frame HUD update -------------------------------------------------
 
   update(s, players, mode) {
+    this.el.hud?.classList.toggle("solo-mode", mode === "solo");
+    this.el.hud?.classList.toggle("coop-mode", mode === "coop");
     this.updateTimer(s.elapsed);
-    this.updateScores(s, players);
+    this.updateScores(s, players, mode);
     this.updateSkillChips(s, players);
     this.updateLivesAndDownState(players, mode);
     this.updateCombo(s);
@@ -376,8 +379,10 @@ export class UI {
     this.el.time.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${tenths}`;
   }
 
-  updateScores(s, players) {
+  updateScores(s, players, mode) {
     if (this.el.graze) this.el.graze.textContent = s.grazeCount;
+    if (this.el.scoreLabel)
+      this.el.scoreLabel.textContent = mode === "coop" ? "TEAM SCORE" : "SCORE";
     if (this.el.score)
       this.el.score.textContent = Math.round(s.teamScore || 0).toLocaleString();
     if (this.el.p1Score)
@@ -461,9 +466,15 @@ export class UI {
   }
 
   updateCombo(s) {
+    // Combo HUD is optional; keep the game loop safe if the element is not
+    // present in a mode/layout variant.
+    if (!this.el.comboChip) return;
+
     if (s.combo >= 2) {
       this.el.comboChip.classList.remove("hidden");
-      this.el.comboVal.textContent = `x${(1 + Math.min(s.combo, 10) * 0.12).toFixed(1)}`;
+      if (this.el.comboVal) {
+        this.el.comboVal.textContent = `x${(1 + Math.min(s.combo, 10) * 0.12).toFixed(1)}`;
+      }
     } else {
       this.el.comboChip.classList.add("hidden");
     }

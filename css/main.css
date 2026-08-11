@@ -2246,3 +2246,397 @@
   #hud .hud-center .time-card{height:40px !important;min-width:68px !important}
   #hud .hud-center .time-card #time{font-size:10px !important}
 }
+
+
+/* CURRENT SCORE HUD FIX */
+#hud .hud-center .hud-center-row:not(.secondary){
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:3px !important;
+}
+#hud .hud-center .team-score-card{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+#hud .hud-center .team-score-card #score{
+  color:var(--gold);
+  font-variant-numeric:tabular-nums;
+}
+@media(max-width:700px){
+  #hud .hud-center .hud-center-row:not(.secondary){gap:2px !important}
+  #hud .hud-center .time-card,
+  #hud .hud-center .team-score-card{min-width:54px !important}
+  #hud .hud-center .time-card #time,
+  #hud .hud-center .team-score-card #score{font-size:7px !important}
+}
+@media(max-width:430px){
+  #hud .hud-center .time-card,
+  #hud .hud-center .team-score-card{min-width:48px !important}
+  #hud .hud-center .time-card #time,
+  #hud .hud-center .team-score-card #score{font-size:6px !important}
+}
+
+
+/* HUD score sizing: keep Solo SCORE and Co-op TEAM SCORE consistent with the other HUD stats. */
+#score, #team-score, .score, .team-score,
+#score-display, #team-score-display,
+.score-display, .team-score-display {
+    font-size: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+}
+
+/* SCORE HUD — unified center panel */
+#hud .hud-center{
+  height:40px; min-width:330px; padding:0 8px; gap:0;
+  border:1px solid rgba(255,255,255,.13); border-radius:9px;
+  background:rgba(10,12,20,.88); box-shadow:0 3px 12px rgba(0,0,0,.45);
+  backdrop-filter:blur(6px);
+}
+#hud .hud-center .wave-core,
+#hud .hud-center .time-card,
+#hud .hud-center .team-score-card{
+  height:28px; min-width:0; padding:2px 16px; border:0; border-radius:0;
+  background:transparent; box-shadow:none; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:1px;
+}
+#hud .hud-center .wave-core{width:72px}
+#hud .hud-center .time-card{width:118px}
+#hud .hud-center .team-score-card{width:118px}
+#hud .hud-center .wave-core + .time-card,
+#hud .hud-center .time-card + .team-score-card{border-left:1px solid rgba(255,255,255,.16)}
+#hud .hud-center .wave-core span,
+#hud .hud-center .hud-label{
+  display:block; margin:0; color:#858ba0; font-size:7px; line-height:1;
+  font-weight:800; letter-spacing:1.4px;
+}
+#hud .hud-center .wave-core b{color:var(--gold);font-size:13px;line-height:1;margin:0}
+#hud .hud-center .time-card #time,
+#hud .hud-center .team-score-card #score{
+  font-size:12px; line-height:1; letter-spacing:.4px;
+  font-variant-numeric:tabular-nums; font-weight:800;
+}
+#hud .hud-center .time-card #time{color:var(--accent)}
+#hud .hud-center .team-score-card #score{color:var(--gold)}
+@media(max-width:700px){
+  #hud .hud-center{height:32px;min-width:225px;padding:0 3px;border-radius:7px}
+  #hud .hud-center .wave-core,#hud .hud-center .time-card,#hud .hud-center .team-score-card{height:24px;padding:2px 7px}
+  #hud .hud-center .wave-core{width:48px}
+  #hud .hud-center .time-card,#hud .hud-center .team-score-card{width:84px}
+  #hud .hud-center .wave-core span,#hud .hud-center .hud-label{font-size:5px;letter-spacing:1px}
+  #hud .hud-center .wave-core b{font-size:10px}
+  #hud .hud-center .time-card #time,#hud .hud-center .team-score-card #score{font-size:9px}
+}
+@media(max-width:430px){
+  #hud .hud-center{min-width:185px;height:29px}
+  #hud .hud-center .wave-core,#hud .hud-center .time-card,#hud .hud-center .team-score-card{height:22px;padding:2px 4px}
+  #hud .hud-center .wave-core{width:40px}
+  #hud .hud-center .time-card,#hud .hud-center .team-score-card{width:70px}
+  #hud .hud-center .wave-core span,#hud .hud-center .hud-label{font-size:4px}
+  #hud .hud-center .wave-core b{font-size:9px}
+  #hud .hud-center .time-card #time,#hud .hud-center .team-score-card #score{font-size:8px}
+}
+
+/* FINAL SCORE HUD FIX — unified WAVE / TIME / SCORE panel */
+.hud-center{
+  position:relative;
+  display:grid !important;
+  grid-template-columns:1fr 1fr 1fr !important;
+  align-items:stretch;
+  gap:0 !important;
+  width:100%;
+  min-width:300px;
+  height:48px !important;
+  padding:0 !important;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;
+  background:rgba(10,12,19,.94);
+  box-shadow:0 4px 18px rgba(0,0,0,.38);
+  overflow:hidden;
+}
+.hud-center .wave-core{
+  width:auto;
+  min-width:0 !important;
+  height:100% !important;
+  padding:5px 8px !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+}
+.hud-center .wave-core span,
+.hud-center .compact-card .hud-label{
+  font-size:8px;
+  line-height:1;
+  letter-spacing:1.5px;
+  margin:0;
+}
+.hud-center .wave-core b{font-size:17px;line-height:1;color:var(--gold);margin:0}
+.hud-center-row,
+.hud-center-row.secondary{display:contents !important}
+.hud-center .compact-card{
+  position:relative;
+  width:auto;
+  min-width:0;
+  height:100% !important;
+  padding:5px 10px !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+}
+.hud-center .compact-card + .compact-card{border-left:1px solid rgba(255,255,255,.12) !important}
+.hud-center .compact-card #time,
+.hud-center .compact-card #score{font-size:15px;line-height:1;font-weight:800;letter-spacing:.5px}
+.hud-center .compact-card #time{color:var(--accent)}
+.hud-center .compact-card #score{color:var(--gold)}
+
+@media(max-width:700px){
+  .hud-center{min-width:235px;height:42px !important;border-radius:8px}
+  .hud-center .wave-core span,
+  .hud-center .compact-card .hud-label{font-size:6px;letter-spacing:1px}
+  .hud-center .wave-core b{font-size:14px}
+  .hud-center .compact-card #time,
+  .hud-center .compact-card #score{font-size:12px}
+}
+@media(max-width:430px){
+  .hud-center{min-width:210px;height:38px !important}
+  .hud-center .wave-core b{font-size:13px}
+  .hud-center .compact-card #time,
+  .hud-center .compact-card #score{font-size:11px}
+}
+
+
+/* SOLO HUD: floating WAVE | TIME | SCORE */
+#hud.solo-mode .hud-center{
+  min-width:0!important;
+  height:30px!important;
+  gap:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  white-space:nowrap!important;
+}
+#hud.solo-mode .wave-core,
+#hud.solo-mode .compact-card{
+  min-width:0!important;
+  width:auto!important;
+  height:30px!important;
+  padding:0!important;
+  margin:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+#hud.solo-mode .wave-core span,
+#hud.solo-mode .compact-card .hud-label{
+  display:inline!important;
+  margin:0 5px 0 0!important;
+  color:#858ba0!important;
+  font-size:8px!important;
+  font-weight:800!important;
+  letter-spacing:1.4px!important;
+  line-height:1!important;
+}
+#hud.solo-mode .wave-core b,
+#hud.solo-mode .compact-card b{
+  display:inline!important;
+  margin:0!important;
+  font-size:12px!important;
+  line-height:1!important;
+  font-weight:800!important;
+  font-variant-numeric:tabular-nums!important;
+}
+#hud.solo-mode .wave-core b{color:var(--gold)!important}
+#hud.solo-mode .time-card #time{color:var(--accent)!important}
+#hud.solo-mode .team-score-card #score{color:#fff!important}
+#hud.solo-mode .hud-center-row{
+  display:contents!important;
+  width:auto!important;
+}
+#hud.solo-mode .wave-core::after,
+#hud.solo-mode .time-card::after{
+  content:"|";
+  display:inline-block;
+  margin:0 10px;
+  color:#5f6472;
+  font-size:11px;
+  font-weight:600;
+}
+#hud.solo-mode .hud-center-row.secondary{display:none!important}
+
+@media(max-width:620px){
+  #hud.solo-mode .hud-center{height:29px!important}
+  #hud.solo-mode .wave-core,
+  #hud.solo-mode .compact-card{height:29px!important}
+  #hud.solo-mode .wave-core span,
+  #hud.solo-mode .compact-card .hud-label{font-size:7px!important;letter-spacing:1.1px!important}
+  #hud.solo-mode .wave-core b,
+  #hud.solo-mode .compact-card b{font-size:10px!important}
+  #hud.solo-mode .wave-core::after,
+  #hud.solo-mode .time-card::after{margin:0 6px;font-size:10px}
+}
+@media(max-width:430px){
+  #hud.solo-mode .wave-core span,
+  #hud.solo-mode .compact-card .hud-label{font-size:6px!important;letter-spacing:.9px!important}
+  #hud.solo-mode .wave-core b,
+  #hud.solo-mode .compact-card b{font-size:9px!important}
+  #hud.solo-mode .wave-core::after,
+  #hud.solo-mode .time-card::after{margin:0 4px}
+}
+
+
+/* SOLO CENTER HUD — balanced floating WAVE | TIME | SCORE */
+#hud.solo-mode .hud-center{
+  display:grid !important;
+  grid-template-columns:repeat(3, minmax(72px, 1fr)) !important;
+  width:clamp(216px, 24vw, 270px) !important;
+  min-width:216px !important;
+  height:auto !important;
+  gap:0 !important;
+  align-items:center !important;
+  justify-items:stretch !important;
+  padding:0 !important;
+  background:none !important;
+  border:0 !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+}
+#hud.solo-mode .hud-center .hud-stat{
+  position:relative;
+  width:100%;
+  min-width:0;
+  min-height:38px;
+  padding:2px 10px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  background:transparent !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+}
+#hud.solo-mode .hud-center .hud-stat + .hud-stat::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:7px;
+  bottom:7px;
+  width:1px;
+  background:rgba(255,255,255,.12);
+}
+#hud.solo-mode .hud-center .hud-label{
+  display:block !important;
+  margin:0 !important;
+  color:#858ba0;
+  font-size:7px;
+  font-weight:800;
+  line-height:1;
+  letter-spacing:1.5px;
+}
+#hud.solo-mode .hud-center .hud-stat > b{
+  display:block;
+  margin:0;
+  font-size:14px;
+  line-height:1;
+  font-weight:800;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+#hud.solo-mode .wave-stat > b{color:var(--gold)}
+#hud.solo-mode .time-stat > b{color:var(--accent)}
+#hud.solo-mode .score-stat > b{color:var(--gold)}
+#hud.solo-mode .hud-center-row.secondary{display:none !important}
+
+@media(max-width:700px){
+  #hud.solo-mode .hud-center{
+    width:210px !important;
+    min-width:210px !important;
+    grid-template-columns:repeat(3, 1fr) !important;
+  }
+  #hud.solo-mode .hud-center .hud-stat{
+    min-height:32px;
+    padding:2px 5px;
+  }
+  #hud.solo-mode .hud-center .hud-label{font-size:6px}
+  #hud.solo-mode .hud-center .hud-stat > b{font-size:11px}
+}
+
+@media(max-width:430px){
+  #hud.solo-mode .hud-center{
+    width:186px !important;
+    min-width:186px !important;
+  }
+  #hud.solo-mode .hud-center .hud-label{font-size:5px;letter-spacing:1px}
+  #hud.solo-mode .hud-center .hud-stat > b{font-size:10px}
+}
+
+
+/* SOLO HUD: only hud-zone, one horizontal row */
+.hud-zone[aria-label="Game status"] {
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content:center;
+  gap:0;
+  width:max-content;
+  min-width:0;
+  margin:0 auto;
+}
+.hud-zone[aria-label="Game status"] .hud-stat {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-width:86px;
+  height:36px;
+  padding:0 12px;
+  text-align:center;
+  box-sizing:border-box;
+}
+.hud-zone[aria-label="Game status"] .hud-stat + .hud-stat {
+  border-left:1px solid rgba(255,255,255,.12);
+}
+.hud-zone[aria-label="Game status"] .hud-label,
+.hud-zone[aria-label="Game status"] .hud-stat > span {
+  margin:0;
+  line-height:1;
+}
+.hud-zone[aria-label="Game status"] .hud-stat > b {
+  margin-top:3px;
+  line-height:1;
+  font-size:15px;
+  font-variant-numeric:tabular-nums;
+}
+.hud-zone[aria-label="Game status"] .hud-stat:nth-child(1) b { color:var(--gold); }
+.hud-zone[aria-label="Game status"] .hud-stat:nth-child(2) b { color:var(--accent); }
+.hud-zone[aria-label="Game status"] .hud-stat:nth-child(3) b { color:var(--gold); }
+.hud-zone[aria-label="Game status"] .hud-extra { display:none; }
+
+@media(max-width:620px){
+  .hud-zone[aria-label="Game status"] .hud-stat { min-width:72px; height:32px; padding:0 7px; }
+  .hud-zone[aria-label="Game status"] .hud-stat > b { font-size:12px; }
+}
+@media(max-width:430px){
+  .hud-zone[aria-label="Game status"] .hud-stat { min-width:62px; padding:0 5px; }
+  .hud-zone[aria-label="Game status"] .hud-stat > b { font-size:11px; }
+}

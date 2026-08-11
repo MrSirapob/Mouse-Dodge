@@ -25,19 +25,14 @@
       </div>
     </div>
 
-    <div class="hud-zone hud-center" aria-label="Game status">
-      <div class="wave-core"><span>WAVE</span><b id="wave">1</b></div>
-      <div class="hud-center-row">
-        <div class="hud-card compact-card time-card"><span class="hud-label">TIME</span><b id="time">00:00.0</b></div>
-        <div class="hud-card compact-card team-score-card"><span class="hud-label">TEAM SCORE</span><b id="score">0</b></div>
-      </div>
-      <div class="hud-center-row secondary">
-        <div class="chip best"><span>BEST</span>s · W<b id="bestWave">0</b></div>
-        <div class="chip graze"><span>GRAZE</span><b id="graze">0</b></div>
-        <div class="chip combo hidden" id="comboChip"><span>COMBO</span><b id="comboVal">x1.0</b></div>
-      </div>
+    <div class="hud-zone" aria-label="Game status">
+      <div class="hud-stat"><span class="hud-label">WAVE</span><b id="wave">1</b></div>
+      <div class="hud-stat"><span class="hud-label">TIME</span><b id="time">00:00.0</b></div>
+      <div class="hud-stat"><span class="hud-label" id="scoreLabel">SCORE</span><b id="score">0</b></div>
+      <div class="hud-stat hud-extra" aria-hidden="true"><span>BEST</span><b id="bestWave">0</b></div>
+      <div class="hud-stat hud-extra" aria-hidden="true"><span>GRAZE</span><b id="graze">0</b></div>
+      <div class="hud-stat hud-extra hidden" id="comboChip" aria-hidden="true"><span>COMBO</span><b id="comboVal">x1.0</b></div>
     </div>
-
     <div class="hud-zone hud-p2 hidden" id="p2Hud" aria-label="Player 2">
       <div class="hud-player-title p2-title"><span class="player-dot"></span>PLAYER 2</div>
       <div class="hud-row">
