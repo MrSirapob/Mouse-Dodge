@@ -25,15 +25,15 @@ const SKILL_DESCRIPTIONS = {
 };
 
 const SKILL_ICONS = {
-  pulse: "💥",
-  dash: "⚡",
-  shield: "🛡",
-  slow: "⏱",
-  nova: "✦",
-  timestop: "⏸",
-  heal: "♥",
-  repulse: "◉",
-  phase: "◇",
+  pulse: "assets/skills/pulse.svg",
+  dash: "assets/skills/dash.svg",
+  shield: "assets/skills/shield.svg",
+  slow: "assets/skills/slow.svg",
+  nova: "assets/skills/nova.svg",
+  timestop: "assets/skills/timestop.png",
+  heal: "assets/skills/heal.png",
+  repulse: "assets/skills/repulse.png",
+  phase: "assets/skills/phase.png",
 };
 
 const SKILL_ORDER = [
@@ -118,7 +118,7 @@ export class UI {
       grid.innerHTML = SKILL_ORDER.map(
         (skill) => `
         <button type="button" class="skill-card-option${(player === "1" ? skill === this.currentSkill : skill === this.currentSkillP2) ? " selected" : ""}" data-skill="${skill}" data-player="${player}">
-          <span class="skill-card-icon">${SKILL_ICONS[skill]}</span>
+          <span class="skill-card-icon"><img src="${SKILL_ICONS[skill]}" alt="" aria-hidden="true" loading="lazy"></span>
           <span class="skill-card-name">${SKILL_NAMES[skill]}</span>
           <span class="skill-card-desc">${SKILL_DESCRIPTIONS[skill]}</span>
         </button>
