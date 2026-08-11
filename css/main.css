@@ -2653,32 +2653,101 @@
   .hud-zone[aria-label="Game status"] .hud-stat > b { font-size:11px; }
 }
 
-.reset-best-btn{
-  display:block;
-  width:100%;
-  margin-top:8px;
-  padding:8px 12px;
-  border:1px solid rgba(255,255,255,.10);
-  border-radius:9px;
-  background:rgba(255,255,255,.025);
-  color:#8e95a8;
-  font-size:10px;
-  font-weight:800;
-  letter-spacing:1px;
+
+/* How To Play */
+.howto-btn{
+  margin:14px auto 0;
+  min-width:150px;
+  padding:9px 18px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:8px;
+  background:rgba(255,255,255,.045);
+  color:#d8dbe5;
   cursor:pointer;
-  transition:background .15s ease,color .15s ease,border-color .15s ease;
+  font-size:13px;
+  font-weight:600;
 }
-.reset-best-btn:hover{
-  background:rgba(255,92,92,.08);
-  border-color:rgba(255,92,92,.28);
-  color:#ff8b8b;
+.howto-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25)}
+.howto-head{text-align:center;margin:0 auto 16px;max-width:620px}
+.howto-head h2{margin:4px 0 5px;font-size:28px;color:#fff}
+.howto-head p{margin:0;color:#9da3b2;font-size:13px}
+.howto-platforms,.howto-mode-tabs{
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  margin:0 auto 12px;
 }
-.reset-best-btn:disabled{
-  cursor:default;
-  color:var(--accent);
-  border-color:rgba(78,205,196,.20);
-  background:rgba(78,205,196,.05);
+.howto-platform,.howto-mode{
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.035);
+  color:#9da3b2;
+  border-radius:8px;
+  padding:9px 22px;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:700;
 }
-@media(max-width:700px){
-  .reset-best-btn{font-size:9px;padding:7px 10px}
+.howto-platform.active,.howto-mode.active{
+  color:#fff;
+  border-color:var(--accent);
+  background:rgba(78,205,196,.09);
+}
+.howto-panel{display:none;max-width:680px;margin:0 auto}
+.howto-panel.active{display:block}
+.howto-content{display:none}
+.howto-content.active{display:block}
+.howto-mode-tabs.single .howto-mode{cursor:default}
+.howto-section{
+  margin:10px 0;
+  padding:14px 16px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;
+  background:rgba(14,16,26,.72);
+}
+.howto-section h3{margin:0 0 11px;font-size:14px;color:#fff}
+.howto-section p{margin:0;color:#b5bac7;font-size:13px;line-height:1.65}
+.control-list{display:grid;gap:7px}
+.control-list>div{
+  display:grid;
+  grid-template-columns:minmax(105px,150px) 1fr;
+  align-items:center;
+  gap:10px;
+  color:#b5bac7;
+  font-size:13px;
+}
+.control-list kbd{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:28px;
+  padding:4px 8px;
+  border:1px solid rgba(255,255,255,.14);
+  border-bottom-color:rgba(255,255,255,.24);
+  border-radius:6px;
+  background:rgba(255,255,255,.055);
+  color:#fff;
+  font-family:inherit;
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.howto-tip{
+  margin:12px 0 0;
+  padding:10px 13px;
+  border-left:2px solid var(--accent);
+  color:#9da3b2;
+  background:rgba(78,205,196,.045);
+  border-radius:0 7px 7px 0;
+  font-size:12px;
+  line-height:1.55;
+}
+.howto-tip strong{color:#fff}
+
+@media (max-width:700px){
+  .howto-head h2{font-size:24px}
+  .howto-head p{font-size:12px}
+  .howto-platform,.howto-mode{padding:8px 18px}
+  .howto-section{padding:12px 13px}
+  .control-list>div{grid-template-columns:105px 1fr;font-size:12px}
+  .howto-panel{max-height:58vh;overflow:auto;padding:0 2px 4px}
 }

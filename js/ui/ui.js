@@ -2,6 +2,7 @@ import { CONFIG } from "../core/config.js";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
+  dash: "DASH",
   shield: "SHIELD",
   slow: "SLOW",
   nova: "NOVA",
@@ -13,6 +14,7 @@ const SKILL_NAMES = {
 
 const SKILL_DESCRIPTIONS = {
   pulse: "ล้างกระสุนรอบตัว",
+  dash: "พุ่งไปยังเป้าหมายพร้อมอมตะสั้น ๆ",
   shield: "สร้างโล่ป้องกันดาเมจชั่วคราว",
   slow: "ทำให้กระสุนทั้งหมดช้าลง",
   nova: "ระเบิดพลังรอบตัว ทำลายกระสุนในวงกว้าง",
@@ -24,6 +26,7 @@ const SKILL_DESCRIPTIONS = {
 
 const SKILL_ICONS = {
   pulse: "assets/skills/pulse.svg",
+  dash: "assets/skills/dash.svg",
   shield: "assets/skills/shield.svg",
   slow: "assets/skills/slow.svg",
   nova: "assets/skills/nova.svg",
@@ -35,6 +38,7 @@ const SKILL_ICONS = {
 
 const SKILL_ORDER = [
   "pulse",
+  "dash",
   "shield",
   "slow",
   "nova",
@@ -59,10 +63,9 @@ export class UI {
 
     this.onStart = null;
     this.onMenu = null;
-    this.onResetBest = null;
     this.currentMode = "solo";
     this.currentSkill = "pulse";
-    this.currentSkillP2 = "pulse";
+    this.currentSkillP2 = "dash";
 
     this.buildSkillCards();
     this.bindMenu();
@@ -77,6 +80,7 @@ export class UI {
     this.pause = document.getElementById("pauseOverlay");
     this.bannerEl = document.getElementById("waveBanner");
     this.modeScreen = document.getElementById("modeScreen");
+    this.howToPlayScreen = document.getElementById("howToPlayScreen");
     this.skillScreen = document.getElementById("skillScreen");
     this.p2SkillPicker = document.getElementById("p2SkillPicker");
     this.selectedLoadout = document.getElementById("selectedLoadout");
@@ -143,6 +147,39 @@ export class UI {
       });
     });
     document
+      .getElementById("howToPlayBtn")
+      ?.addEventListener("click", () => this.showHowToPlayScreen());
+    document
+      .getElementById("backHowToPlayBtn")
+      ?.addEventListener("click", () => this.showModeScreen());
+
+    document.querySelectorAll(".howto-platform").forEach((button) => {
+      button.addEventListener("click", () => {
+        const platform = button.dataset.platform;
+        document.querySelectorAll(".howto-platform").forEach((b) =>
+          b.classList.toggle("active", b === button)
+        );
+        document.querySelectorAll("[data-platform-panel]").forEach((panel) =>
+          panel.classList.toggle("active", panel.dataset.platformPanel === platform)
+        );
+      });
+    });
+
+    document.querySelectorAll("[data-howto-mode]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const mode = button.dataset.howtoMode;
+        const panel = button.closest("[data-platform-panel]");
+        if (!panel) return;
+        panel.querySelectorAll("[data-howto-mode]").forEach((b) =>
+          b.classList.toggle("active", b === button)
+        );
+        panel.querySelectorAll("[data-howto-content]").forEach((content) =>
+          content.classList.toggle("active", content.dataset.howtoContent === `pc-${mode}`)
+        );
+      });
+    });
+
+    document
       .getElementById("backModeBtn")
       ?.addEventListener("click", () => this.showModeScreen());
     document
@@ -198,12 +235,21 @@ export class UI {
 
   showModeScreen() {
     this.modeScreen?.classList.remove("hidden");
+    this.howToPlayScreen?.classList.add("hidden");
+    this.skillScreen?.classList.add("hidden");
+    this.resultScreen?.classList.add("hidden");
+  }
+
+  showHowToPlayScreen() {
+    this.modeScreen?.classList.add("hidden");
+    this.howToPlayScreen?.classList.remove("hidden");
     this.skillScreen?.classList.add("hidden");
     this.resultScreen?.classList.add("hidden");
   }
 
   showSkillScreen() {
     this.modeScreen?.classList.add("hidden");
+    this.howToPlayScreen?.classList.add("hidden");
     this.skillScreen?.classList.remove("hidden");
     this.resultScreen?.classList.add("hidden");
 
@@ -237,10 +283,6 @@ export class UI {
   /** Called when the player asks to leave a match and return to the menu (from Pause or the results screen). */
   setMenuHandler(fn) {
     this.onMenu = fn;
-  }
-
-  setResetBestHandler(fn) {
-    this.onResetBest = fn;
   }
 
   // --- Overlays -------------------------------------------------
@@ -349,13 +391,8 @@ export class UI {
           <button id="startBtn" class="start restart-btn" type="button"><span>↻</span> เล่นอีกครั้ง</button>
           <button id="menuBtn" class="menu-btn" type="button">กลับเมนู</button>
         </div>
-        <button id="resetBestBtn" class="reset-best-btn" type="button">Reset รอบที่ดีที่สุด</button>
       </div>
     `);
-
-    this.resultScreen
-      ?.querySelector("#resetBestBtn")
-      ?.addEventListener("click", () => this.onResetBest?.());
   }
 
   showPause(v) {
@@ -517,6 +554,7 @@ export class UI {
   }
 
   cooldownFor(skill) {
+    if (skill === "dash") return CONFIG.dash.cooldown;
     return CONFIG.skills[skill]?.cooldown ?? 5;
   }
 
