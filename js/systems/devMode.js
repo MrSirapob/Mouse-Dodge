@@ -23,19 +23,9 @@ export class DevMode {
       if (e.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
 
       const key = e.key.toLowerCase();
-      const actions = {
-        r: 'restart',
-        c: 'clear',
-        g: 'god',
-        e: 'ready',
-        n: 'waveNext',
-        b: 'boss'
-      };
+      // Dev Mode actions are button-only.
+      // F2 remains the only Dev Mode keyboard shortcut.
 
-      if (actions[key]) {
-        e.preventDefault();
-        this.action(actions[key]);
-      }
     });
   }
 
@@ -52,39 +42,39 @@ export class DevMode {
       <div class="dev-section">
         <div class="dev-section-label">PLAYER</div>
         <div class="dev-row">
-          <button data-dev="life">+ LIFE [L]</button>
-          <button data-dev="kill">− LIFE [K]</button>
-          <button data-dev="ready">SKILL READY [E]</button>
+          <button data-dev="life">+ LIFE</button>
+          <button data-dev="kill">− LIFE</button>
+          <button data-dev="ready">SKILL READY</button>
         </div>
       </div>
 
       <div class="dev-section">
         <div class="dev-section-label">WAVE</div>
         <div class="dev-wave-row">
-          <button data-dev="wavePrev" class="dev-wave-btn">◀ [M]</button>
+          <button data-dev="wavePrev" class="dev-wave-btn">◀</button>
           <div class="dev-wave-current">
             <span>WAVE</span>
             <strong id="devCurrentWave">1</strong>
           </div>
-          <button data-dev="waveNext" class="dev-wave-btn">▶ [N]</button>
+          <button data-dev="waveNext" class="dev-wave-btn">▶</button>
         </div>
       </div>
 
       <div class="dev-section">
         <div class="dev-section-label">GAME</div>
         <div class="dev-row">
-          <button data-dev="clear" class="dev-main-action">CLEAR BULLETS [C]</button>
-          <button data-dev="boss">BOSS [B]</button>
-          <button data-dev="restart" class="dev-danger">RESTART [R]</button>
+          <button data-dev="clear" class="dev-main-action">CLEAR BULLETS</button>
+          <button data-dev="boss">BOSS</button>
+          <button data-dev="restart" class="dev-danger">RESTART</button>
         </div>
       </div>
 
       <div class="dev-section">
         <div class="dev-section-label">DEBUG</div>
         <div class="dev-row">
-          <button data-dev="god" id="devGod">GOD: OFF [G]</button>
-          <button data-dev="hitbox" id="devHitbox">HITBOX: OFF [H]</button>
-          <button data-dev="graze" id="devGraze">GRAZE: OFF [J]</button>
+          <button data-dev="god" id="devGod">GOD: OFF</button>
+          <button data-dev="hitbox" id="devHitbox">HITBOX: OFF</button>
+          <button data-dev="graze" id="devGraze">GRAZE: OFF</button>
         </div>
       </div>
 
