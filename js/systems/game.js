@@ -46,6 +46,12 @@ export class Game {
     this.lasers = [];        // active laser hazards (telegraph -> fire -> gone)
     this.zone = null;        // shrinking safe-zone hazard, or null if not active this wave
     this.skillEffects = [];  // transient visual effects spawned by SkillSystem
+
+    // Bullet-density cleanup state. The cleanup system is deliberately small:
+    // it only activates near the cap and removes low-risk bullets.
+    this.bulletCleanupCooldown = 0;
+    this.bulletCleanupUsedThisFrame = 0;
+
     this.lastTime = performance.now();
 
     this.bestTime = Number(localStorage.getItem(CONFIG.storage.bestTime) || 0);
@@ -82,11 +88,145 @@ export class Game {
     return cap;
   }
 
-  /** Spawns a bullet unless the arena is already at its bullet cap. Returns false if skipped. */
+  /**
+   * Spawns a bullet while keeping the arena dense but playable.
+   *
+   * The old behavior simply stopped spawning at the hard cap. That meant
+   * long-lived bullets could accumulate until the arena became permanently
+   * saturated. Near the cap we now retire a very small number of low-risk
+   * bullets first, while preserving bullets that are young, close to a player,
+   * or on an obvious collision trajectory.
+   */
   spawnBullet(...args) {
-    if (this.bullets.items.length >= this.bulletCap()) return false;
+    const cap = this.bulletCap();
+    const count = this.bullets.items.length;
+    const density = count / Math.max(1, cap);
+
+    if (density >= CONFIG.bullets.cleanupStart) {
+      const force = count >= cap;
+      const canCleanup = force || this.bulletCleanupCooldown <= 0;
+
+      if (canCleanup && this.bulletCleanupUsedThisFrame < CONFIG.bullets.cleanupPerFrame) {
+        const removed = this.cleanupBulletsForCapacity(force ? 2 : 1);
+        if (removed > 0) {
+          this.bulletCleanupCooldown = CONFIG.bullets.cleanupCooldown;
+        }
+      }
+    }
+
+    if (this.bullets.items.length >= cap) return false;
     this.bullets.spawn(...args);
     return true;
+  }
+
+  /**
+   * Removes only bullets that are relatively safe to retire. The score favors
+   * old/far/edge-bound bullets and heavily penalizes bullets that are young,
+   * special, close to a player, or moving toward a player.
+   */
+  cleanupBulletsForCapacity(maxRemove = 1) {
+    if (!this.bullets.items.length || maxRemove <= 0) return 0;
+
+    const players = this.activePlayers().filter(p => p.isAlive());
+    if (!players.length) return 0;
+
+    const candidates = [];
+
+    for (let i = 0; i < this.bullets.items.length; i++) {
+      const b = this.bullets.items[i];
+      let nearest = Infinity;
+      let danger = 0;
+
+      for (const p of players) {
+        const dx = p.x - b.x;
+        const dy = p.y - b.y;
+        const dist = Math.hypot(dx, dy);
+        nearest = Math.min(nearest, dist);
+
+        // Predict the closest approach during the next ~1.2 seconds.
+        const speedSq = b.vx * b.vx + b.vy * b.vy;
+        if (speedSq > 0.12) {
+          const t = Math.max(0, Math.min(1.2, (dx * b.vx + dy * b.vy) / speedSq));
+          const cx = b.x + b.vx * t * 60;
+          const cy = b.y + b.vy * t * 60;
+          const miss = Math.hypot(p.x - cx, p.y - cy);
+          const hitRadius = p.r + b.r;
+          if (miss < hitRadius + 28) {
+            danger += Math.max(0, 70 - miss * 1.8);
+          }
+        }
+      }
+
+      // Never clean a bullet sitting directly on top of a player.
+      if (nearest < 80) continue;
+
+      const edgeDistance = Math.min(
+        b.x,
+        CONFIG.world.width - b.x,
+        b.y,
+        CONFIG.world.height - b.y
+      );
+      const edgeScore = Math.max(0, 1 - Math.max(0, edgeDistance) / 220) * 28;
+      const ageScore = Math.min(b.age / 8, 1) * 34;
+      const distanceScore = Math.min(nearest / 700, 1) * 30;
+      const movingAwayScore = this.bulletMovingAwayScore(b, players);
+
+      let score = ageScore + distanceScore + edgeScore + movingAwayScore - danger;
+
+      // Special bullets can create important patterns, so keep them longer.
+      if (b.splitter && !b.split) score -= 28;
+      if (b.bounce && b.bounces < b.maxBounces) score -= 18;
+      if (b.repulseT > 0) score -= 20;
+      if (b.age < 0.45) score -= 36;
+
+      candidates.push({ index: i, score });
+    }
+
+    candidates.sort((a, b) => b.score - a.score);
+
+    // Pick the best candidates first, then remove by descending array index so
+    // deleting one bullet cannot shift the index of another selected bullet.
+    const selected = candidates.slice(0, Math.min(maxRemove, CONFIG.bullets.cleanupPerFrame));
+    selected.sort((a, b) => b.index - a.index);
+
+    let removed = 0;
+    for (const candidate of selected) {
+      if (this.bulletCleanupUsedThisFrame >= CONFIG.bullets.cleanupPerFrame) break;
+
+      const bullet = this.bullets.items[candidate.index];
+      if (!bullet) continue;
+
+      this.particles.spawn(bullet.x, bullet.y, bullet.color, 2);
+      this.bullets.remove(candidate.index);
+      this.bulletCleanupUsedThisFrame++;
+      removed++;
+    }
+
+    return removed;
+  }
+
+  /** Estimates whether a bullet is moving away from the nearest active player. */
+  bulletMovingAwayScore(b, players) {
+    let best = -Infinity;
+
+    for (const p of players) {
+      const dx = p.x - b.x;
+      const dy = p.y - b.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist < 1) continue;
+
+      const speed = Math.hypot(b.vx, b.vy);
+      if (speed < 0.01) {
+        best = Math.max(best, 0);
+        continue;
+      }
+
+      const toward = (b.vx * dx + b.vy * dy) / (speed * dist);
+      // toward = +1 means heading toward the player, -1 means away.
+      best = Math.max(best, -toward * 18);
+    }
+
+    return best === -Infinity ? 0 : best;
   }
 
   /** Destroys all bullets within `radius` of (x, y), spawning small destruction particles. */
@@ -131,6 +271,8 @@ export class Game {
     this.particles.clear();
     this.actionQueue = [];
     this.skillEffects = [];
+    this.bulletCleanupCooldown = 0;
+    this.bulletCleanupUsedThisFrame = 0;
 
     this.players[0].reset(420, 360);
     this.players[1].reset(860, 360);
@@ -295,6 +437,9 @@ export class Game {
 
   update(rawDt) {
     const s = this.state;
+
+    this.bulletCleanupCooldown = Math.max(0, this.bulletCleanupCooldown - rawDt);
+    this.bulletCleanupUsedThisFrame = 0;
 
     const dt = this.updateTimers(rawDt);
     this.updateScore(dt);

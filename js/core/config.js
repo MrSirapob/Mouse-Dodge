@@ -36,7 +36,14 @@ export const CONFIG = {
     capHigh: 340,
     capLate: 420,
     capEndless: 500,
-    capBossBonus: 60
+    capBossBonus: 60,
+
+    // Keep the arena dense, but prevent it from slowly becoming unwinnable.
+    // Cleanup starts only when the arena is nearly full and removes a few
+    // low-risk old bullets instead of randomly deleting threats.
+    cleanupStart: 0.95,
+    cleanupPerFrame: 4,
+    cleanupCooldown: 0.12
   },
   combo: { window: 1.1 },
   storage: { bestTime: 'waveDodgeBestTime', bestWave: 'waveDodgeBestWave', bestScore: 'waveDodgeBestScore' }
