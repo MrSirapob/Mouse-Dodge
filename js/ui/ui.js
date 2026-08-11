@@ -417,18 +417,18 @@ export class UI {
   }
 
   updateLivesAndDownState(players, mode) {
-    this.el.lives.textContent = players[0].down
-      ? "DOWN"
-      : "❤️".repeat(players[0].lives);
+    this.renderLives(this.el.lives, players[0]);
 
     this.el.p2Hud.classList.toggle("hidden", mode !== "coop");
     this.el.p2ScoreChip?.classList.toggle("hidden", mode !== "coop");
     this.el.p2SkillChip.classList.toggle("hidden", mode !== "coop");
-    this.el.p2Lives.textContent = players[1].down
-      ? players[1].reviveProgress > 0
+    if (players[1].down) {
+      this.el.p2Lives.textContent = players[1].reviveProgress > 0
         ? `REVIVE ${Math.round((players[1].reviveProgress / 2) * 100)}%`
-        : "DOWN"
-      : "❤️".repeat(players[1].lives);
+        : "DOWN";
+    } else {
+      this.renderLives(this.el.p2Lives, players[1]);
+    }
 
     if (!this.el.downBanner) return;
     const downPlayers =
@@ -447,6 +447,17 @@ export class UI {
     this.el.downBanner.innerHTML = both
       ? "<b>ทั้งสองคน DOWN</b><small>ช่วยกันกลับเข้าสู่เกม</small>"
       : `<b>PLAYER ${downPlayers[0].id} DOWN</b><small>${mode === "coop" ? "เข้าไปใกล้เพื่อช่วยชุบ" : "รอเริ่มรอบใหม่"}</small>`;
+  }
+
+  renderLives(el, player) {
+    if (!el || !player) return;
+    const max = Math.max(1, CONFIG.lives.max);
+    const lives = Math.max(0, Math.min(max, Number(player.lives) || 0));
+    // Fixed slots prevent the mobile HUD from clipping/reflowing emoji hearts.
+    el.innerHTML = Array.from({ length: max }, (_, i) =>
+      `<span class="life-heart" aria-hidden="true">${i < lives ? "❤️" : "♡"}</span>`,
+    ).join("");
+    el.setAttribute("aria-label", `${lives} / ${max} lives`);
   }
 
   updateCombo(s) {
