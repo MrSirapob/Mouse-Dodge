@@ -190,7 +190,6 @@ export class AutoPlayer {
     else if(skill==="pulse"||skill==="nova")use=emergency||near>=5;
     else if(skill==="repulse")use=emergency||near>=4;
     else if(skill==="slow"||skill==="timestop")use=emergency||near>=7;
-    else if(skill==="dash")use=emergency;
     else if(skill==="heal")use=p.lives<3&&!emergency&&near<3;
     if(use)this.game.skillSystem.use(p);
   }
