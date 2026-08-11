@@ -1,7 +1,7 @@
 export class InputManager {
   constructor(canvas) {
     this.canvas = canvas;
-    this.p1 = { x: 640, y: 360, actionPressed: false };
+    this.p1 = { x: 640, y: 360, actionPressed: false, isTouch: false };
     this.p2 = { x: 360, y: 360, up: false, down: false, left: false, right: false, actionPressed: false, lastDir: { x: 1, y: 0 } };
     this.onPause = null;
     this.onP1Action = null;
@@ -10,7 +10,7 @@ export class InputManager {
     // Mobile controls:
     // - Keep the player slightly above the finger so the finger does not cover it.
     // - A double tap activates P1's skill; a single tap only moves the player.
-    this.touchTargetOffset = 78;
+    this.touchTargetOffset = 120;
     this.doubleTapWindow = 320;
     this.doubleTapDistance = 44;
     this.lastTouchTap = null;
@@ -28,6 +28,9 @@ export class InputManager {
       // Lift the touch target above the finger. Mouse control remains 1:1.
       if (pointerType === 'touch') {
         sy -= this.touchTargetOffset;
+        this.p1.isTouch = true;
+      } else {
+        this.p1.isTouch = false;
       }
 
       this.p1.x = Math.max(0, Math.min(this.canvas.clientWidth, sx));

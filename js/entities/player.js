@@ -23,10 +23,17 @@ export class Player {
     this.comboTimer = 0;
     this.trail = [];
   }
-  updateMouse(targetX, targetY, dt) {
-    const k = 1 - Math.pow(1 - CONFIG.player.followLerp, dt * 60);
-    this.x += (targetX - this.x) * k;
-    this.y += (targetY - this.y) * k;
+  updateMouse(targetX, targetY, dt, direct = false) {
+    // Touch input is positioned above the finger, so do not add mouse-style
+    // follow lag that would let the finger catch up and cover the player.
+    if (direct) {
+      this.x = targetX;
+      this.y = targetY;
+    } else {
+      const k = 1 - Math.pow(1 - CONFIG.player.followLerp, dt * 60);
+      this.x += (targetX - this.x) * k;
+      this.y += (targetY - this.y) * k;
+    }
     this.trail.push({ x: this.x, y: this.y });
     if (this.trail.length > 14) this.trail.shift();
   }
