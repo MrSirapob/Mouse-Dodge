@@ -1,0 +1,538 @@
+import { CONFIG, GRAZE_REWARD } from '../core/config.js';
+import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js';
+import { circleHit, circleNear } from '../core/collision.js';
+import { Player } from '../entities/player.js';
+import { BulletManager } from '../entities/bullet.js';
+import { Boss } from '../entities/boss.js';
+import { ParticleSystem } from '../rendering/particles.js';
+import { PatternLibrary } from '../patterns/patterns.js';
+import { WaveSystem } from './waveSystem.js';
+import { SkillSystem } from './skillSystem.js';
+import { LifeSystem } from './lifeSystem.js';
+import { DevMode } from './devMode.js';
+
+/**
+ * Game is the top-level orchestrator: it owns all entities/systems and runs
+ * the per-frame update loop. Gameplay rules that don't have an obvious home
+ * elsewhere (bullet movement/collision, lasers, the shrinking zone hazard,
+ * scoring) live directly on this class.
+ *
+ * Frame flow: main.js calls `start()` once, which kicks off `loop()`, which
+ * calls `update(dt)` then `draw()` every animation frame. `update()` is
+ * split into small `updateX()` steps below, run in order — read them
+ * top-to-bottom to follow one frame's worth of work.
+ */
+export class Game {
+  constructor({ renderer, input, ui }) {
+    this.renderer = renderer;
+    this.input = input;
+    this.ui = ui;
+
+    this.state = new GameState();
+    this.players = [new Player(1, CONFIG.player.color), new Player(2, CONFIG.player.p2Color)];
+    this.player = this.players[0];
+
+    this.bullets = new BulletManager();
+    this.boss = new Boss();
+    this.particles = new ParticleSystem();
+    this.patterns = new PatternLibrary(this);
+    this.waveSystem = new WaveSystem(this, this.patterns);
+    this.skillSystem = new SkillSystem(this);
+    this.lifeSystem = new LifeSystem(this);
+    this.devMode = new DevMode(this);
+
+    this.actionQueue = [];   // scheduled { time, fn } spawn callbacks, run when state.waveTime reaches `time`
+    this.ringWarnings = [];  // telegraph rings shown before a `ring`/`bossRing` pattern fires
+    this.lasers = [];        // active laser hazards (telegraph -> fire -> gone)
+    this.zone = null;        // shrinking safe-zone hazard, or null if not active this wave
+    this.skillEffects = [];  // transient visual effects spawned by SkillSystem
+    this.lastTime = performance.now();
+
+    this.bestTime = Number(localStorage.getItem(CONFIG.storage.bestTime) || 0);
+    this.bestWave = Number(localStorage.getItem(CONFIG.storage.bestWave) || 0);
+    this.bestScore = Number(localStorage.getItem(CONFIG.storage.bestScore) || 0);
+    this.ui.setBest(this.bestTime, this.bestWave, this.bestScore);
+
+    input.onP1Action = () => this.skillSystem.use(this.players[0]);
+    input.onP2Action = () => this.skillSystem.use(this.players[1]);
+    input.onPause = () => this.togglePause();
+    this.ui.setMenuHandler(() => this.backToMenu());
+  }
+
+  // --- Wave / bullet-cap helpers -------------------------------------------------
+
+  isBossWave(n) {
+    return n % 5 === 0;
+  }
+
+  queue(time, fn) {
+    this.actionQueue.push({ time, fn });
+  }
+
+  /** Maximum simultaneous bullets allowed, based on wave number (see CONFIG.bullets). */
+  bulletCap() {
+    const n = this.state.wave;
+    let cap;
+    if (n <= 5) cap = CONFIG.bullets.capEarly;
+    else if (n <= 10) cap = CONFIG.bullets.capMid;
+    else if (n <= 15) cap = CONFIG.bullets.capHigh;
+    else if (n <= 20) cap = CONFIG.bullets.capLate;
+    else cap = CONFIG.bullets.capEndless;
+    if (this.isBossWave(n)) cap += CONFIG.bullets.capBossBonus;
+    return cap;
+  }
+
+  /** Spawns a bullet unless the arena is already at its bullet cap. Returns false if skipped. */
+  spawnBullet(...args) {
+    if (this.bullets.items.length >= this.bulletCap()) return false;
+    this.bullets.spawn(...args);
+    return true;
+  }
+
+  /** Destroys all bullets within `radius` of (x, y), spawning small destruction particles. */
+  removeBulletsInRadius(x, y, radius) {
+    for (let i = this.bullets.items.length - 1; i >= 0; i--) {
+      const b = this.bullets.items[i];
+      if (Math.hypot(b.x - x, b.y - y) <= radius + b.r) {
+        this.particles.spawn(b.x, b.y, b.color, 4);
+        this.bullets.remove(i);
+      }
+    }
+  }
+
+  // --- Player / mode helpers -------------------------------------------------
+
+  /** Where player 2 is trying to move toward this frame (used by the dash skill). */
+  p2Target() {
+    const d = this.input.p2Direction();
+    const dir = (d.x || d.y) ? d : this.input.p2.lastDir;
+    return { x: this.players[1].x + dir.x * 130, y: this.players[1].y + dir.y * 130 };
+  }
+
+  allPlayersDown() {
+    return this.state.mode === GAME_MODES.SOLO ? this.players[0].down : this.players.every(p => p.down);
+  }
+
+  /** Players participating in the current mode who are still standing. */
+  activePlayers() {
+    return (this.state.mode === GAME_MODES.SOLO ? [this.players[0]] : this.players).filter(p => p.isAlive());
+  }
+
+  addSkillEffect(type, player, duration = 0.7, data = {}) {
+    this.skillEffects.push({ type, x: player.x, y: player.y, color: player.color, t: 0, duration, ...data });
+  }
+
+  // --- Lifecycle -------------------------------------------------
+
+  reset(mode = GAME_MODES.SOLO, skill = 'pulse', skillP2 = 'dash') {
+    this.bullets.clear();
+    this.ringWarnings = [];
+    this.lasers = [];
+    this.particles.clear();
+    this.actionQueue = [];
+    this.skillEffects = [];
+
+    this.players[0].reset(420, 360);
+    this.players[1].reset(860, 360);
+    this.players[1].down = mode === GAME_MODES.SOLO;
+
+    this.boss.reset();
+    this.zone = null;
+    this.state.reset();
+    this.state.state = GAME_STATES.PLAYING;
+    this.state.mode = mode;
+    this.state.skill = skill;
+    this.state.skillP2 = skillP2;
+
+    this.startWave(1);
+  }
+
+  start(mode, skill, skillP2) {
+    this.ui.hideOverlay();
+    this.reset(mode, skill, skillP2);
+    this.lastTime = performance.now();
+    this.ensureLoop();
+  }
+
+  ensureLoop() {
+    if (!this.loopRunning) {
+      this.loopRunning = true;
+      requestAnimationFrame(this.loop.bind(this));
+    }
+  }
+
+  togglePause() {
+    if (this.state.state === GAME_STATES.PLAYING) {
+      this.state.state = GAME_STATES.PAUSED;
+      this.ui.showPause(true);
+    } else if (this.state.state === GAME_STATES.PAUSED) {
+      this.state.state = GAME_STATES.PLAYING;
+      this.ui.showPause(false);
+      this.lastTime = performance.now();
+    }
+  }
+
+  /** Leaves the current run (from Pause or the game-over screen) and returns to the mode/skill menu. */
+  backToMenu() {
+    clearTimeout(this.state.gameOverTimer);
+    this.state.state = GAME_STATES.MENU; // stops the render loop after this frame (see loop())
+    this.ui.returnToMenu();
+  }
+
+  startWave(n) {
+    this.state.wave = n;
+    this.state.waveTime = 0;
+    this.lasers = [];
+    this.boss.active = false;
+    this.ui.setBossVisible(false);
+
+    this.state.waveDuration = this.waveSystem.duration(n);
+    const subtitle = this.isBossWave(n) ? this.waveSystem.buildBoss(n) : this.waveSystem.build(n);
+
+    this.ui.setWave(n);
+    this.ui.banner(n, subtitle, this.isBossWave(n));
+    if (this.isBossWave(n)) this.ui.setBossVisible(true);
+  }
+
+  hitPlayer(player) {
+    if (player.devInvulnerable) return;
+    this.lifeSystem.hit(player);
+  }
+
+  gameOver() {
+    if (this.state.state === GAME_STATES.GAME_OVER) return;
+    this.state.state = GAME_STATES.GAME_OVER;
+    this.state.shakeMag = 20;
+
+    const s = this.state;
+    const finalScore = Math.round(this.teamScore());
+    if (s.elapsed > this.bestTime) { this.bestTime = s.elapsed; localStorage.setItem(CONFIG.storage.bestTime, String(s.elapsed)); }
+    if (s.wave > this.bestWave) { this.bestWave = s.wave; localStorage.setItem(CONFIG.storage.bestWave, String(s.wave)); }
+    if (finalScore > this.bestScore) { this.bestScore = finalScore; localStorage.setItem(CONFIG.storage.bestScore, String(finalScore)); }
+    this.ui.setBest(this.bestTime, this.bestWave, this.bestScore);
+
+    clearTimeout(this.state.gameOverTimer);
+    this.state.gameOverTimer = setTimeout(
+      () => this.ui.showGameOver(s.elapsed, s.wave, s.grazeCount, this.state.mode, this.players, finalScore, this.bestScore),
+      350
+    );
+  }
+
+  teamScore() {
+    return this.state.mode === GAME_MODES.SOLO ? this.players[0].score : this.players[0].score + this.players[1].score;
+  }
+
+  // --- Danger-assist (invisible "near miss" fairness helper) -------------------------------------------------
+
+  /** True if spawning should briefly pause because a player is in a dense bullet cluster (wave 4+). */
+  dangerAssistDelay() {
+    const n = this.state.wave;
+    if (n < 4) return false;
+
+    const players = this.activePlayers();
+    if (!players.length) return false;
+
+    const cap = this.bulletCap();
+    const crowded = this.bullets.items.length >= cap * 0.78;
+    if (!crowded) return false;
+
+    // Only pause spawns when a player actually has a dense local danger field.
+    return players.some(p => {
+      let near = 0;
+      for (const b of this.bullets.items) {
+        if (Math.hypot(b.x - p.x, b.y - p.y) < 190) near++;
+      }
+      return near >= 8;
+    });
+  }
+
+  /**
+   * Gentle, invisible assistance: only activates from Wave 4 onward, or when
+   * the arena is very crowded. It only touches bullets on a near-collision
+   * trajectory, nudging them just enough to turn a hit into a near miss.
+   */
+  assistBullets(dt) {
+    const n = this.state.wave;
+    const cap = this.bulletCap();
+    const crowded = this.bullets.items.length >= cap * 0.82;
+    if (n < 4 && !crowded) return;
+
+    const density = Math.min(1, this.bullets.items.length / Math.max(1, cap));
+    const assistChance = Math.min(0.48, 0.12 + Math.max(0, n - 3) * 0.010 + Math.max(0, density - 0.75) * 0.55);
+
+    for (const b of this.bullets.items) {
+      if (b.assistCooldown > 0) { b.assistCooldown -= dt; continue; }
+      if (b.assistUsed) continue;
+      if (Math.random() > assistChance) continue;
+
+      const speed = Math.hypot(b.vx, b.vy);
+      if (speed < 0.35) continue;
+
+      let best = null;
+      for (const p of this.activePlayers()) {
+        if (!p.isAlive() || !p.canBeHit()) continue;
+        const px = p.x - b.x, py = p.y - b.y;
+        const along = (px * b.vx + py * b.vy) / (speed * speed);
+        if (along <= 0 || along > 0.9) continue;
+        const tx = b.x + b.vx * along, ty = b.y + b.vy * along;
+        const miss = Math.hypot(p.x - tx, p.y - ty);
+        if (miss <= p.r + b.r + 9 && (!best || miss < best.miss)) best = { p, miss };
+      }
+      if (!best) continue;
+
+      // Rotate only a little, so it looks like the player barely grazed it.
+      const sign = Math.random() < 0.5 ? -1 : 1;
+      const angle = Math.atan2(b.vy, b.vx) + sign * (0.10 + Math.random() * 0.08);
+      const speed2 = speed * (0.94 + Math.random() * 0.04);
+      b.vx = Math.cos(angle) * speed2;
+      b.vy = Math.sin(angle) * speed2;
+      b.assistUsed = true;
+      b.assistCooldown = 0.8;
+    }
+  }
+
+  // --- Per-frame update, split into ordered sub-steps -------------------------------------------------
+
+  update(rawDt) {
+    const s = this.state;
+
+    const dt = this.updateTimers(rawDt);
+    this.updateScore(dt);
+    this.updatePlayers(dt, rawDt);
+    this.updateBoss(dt);
+    this.runScheduledActions();
+    this.updateRingWarnings(dt);
+    this.updateZoneHazard(dt);
+    this.updateLasers(dt);
+
+    if (s.waveTime >= s.waveDuration) {
+      this.startWave(s.wave + 1);
+      return;
+    }
+
+    if (s.timeStopRemaining <= 0) {
+      this.assistBullets(dt);
+      this.updateBullets(dt);
+    }
+
+    this.updateSkillEffects(rawDt);
+    this.lifeSystem.updateRevive(dt);
+    this.particles.update(rawDt);
+    this.devMode.update();
+    this.ui.update(s, this.players, this.state.mode);
+  }
+
+  /** Advances time-based state (slow-mo/time-stop timers, elapsed/wave clocks, camera shake) and returns the scaled dt to use for gameplay. */
+  updateTimers(rawDt) {
+    const s = this.state;
+    if (s.slowMoRemaining > 0) s.slowMoRemaining -= rawDt;
+    if (s.timeStopRemaining > 0) s.timeStopRemaining -= rawDt;
+
+    const scale = s.slowMoRemaining > 0 ? s.slowScale : 1;
+    const dt = rawDt * scale;
+
+    s.elapsed += dt;
+    s.waveTime += dt;
+    s.shakeMag = Math.max(0, s.shakeMag * Math.exp(-dt * 24));
+    s.damageShake = Math.max(0, s.damageShake - rawDt);
+    return dt;
+  }
+
+  updateScore(dt) {
+    for (const p of this.activePlayers()) {
+      p.score += 100 * dt;
+      if (p.comboTimer > 0) {
+        p.comboTimer -= dt;
+        if (p.comboTimer <= 0) { p.comboTimer = 0; p.combo = 0; }
+      }
+    }
+    this.state.teamScore = this.teamScore();
+    this.state.score = this.state.teamScore;
+    this.state.grazeCount = this.players.reduce((sum, p) => sum + p.grazeCount, 0);
+    this.state.combo = Math.max(this.players[0].combo, this.players[1].combo);
+  }
+
+  updatePlayers(dt, rawDt) {
+    for (const p of this.players) p.tick(rawDt);
+
+    const target = this.renderer.worldPoint(this.input.p1.x, this.input.p1.y);
+    if (this.players[0].isAlive()) this.players[0].updateMouse(target.x, target.y, dt);
+    if (this.state.mode === GAME_MODES.COOP && this.players[1].isAlive()) {
+      this.players[1].updateKeyboard(this.input.p2Direction(), dt);
+    }
+    for (const p of this.activePlayers()) p.clamp(CONFIG.world);
+  }
+
+  updateBoss(dt) {
+    if (!this.boss.active) return;
+    const s = this.state;
+    this.boss.y += (CONFIG.world.height * 0.22 - this.boss.y) * 0.03;
+    this.boss.x = CONFIG.world.width / 2 + Math.sin(s.waveTime * 0.6) * CONFIG.world.width * 0.22;
+    this.boss.hue += dt * 60;
+    this.ui.setBossProgress(Math.max(0, 1 - s.waveTime / s.waveDuration) * 100);
+  }
+
+  /** Runs any queued pattern-spawn callbacks whose scheduled time has arrived. */
+  runScheduledActions() {
+    const waveTime = this.state.waveTime;
+    for (let i = this.actionQueue.length - 1; i >= 0; i--) {
+      if (this.actionQueue[i].time <= waveTime) {
+        this.actionQueue[i].fn();
+        this.actionQueue.splice(i, 1);
+      }
+    }
+  }
+
+  updateRingWarnings(dt) {
+    for (let i = this.ringWarnings.length - 1; i >= 0; i--) {
+      const w = this.ringWarnings[i];
+      if (w.trackBoss) { w.x = this.boss.x; w.y = this.boss.y; }
+      w.t += dt;
+      if (w.t >= w.duration) this.ringWarnings.splice(i, 1);
+    }
+  }
+
+  /** Shrinking safe-zone hazard: damages any player caught outside the shrinking circle (after a grace period). */
+  updateZoneHazard(dt) {
+    if (!this.zone) return;
+    const z = this.zone;
+    z.t += dt;
+    const t = Math.min(z.t / z.duration, 1);
+    z.curR = z.startR + (z.minR - z.startR) * t;
+
+    for (const p of this.activePlayers()) {
+      if (p.isAlive() && z.t > z.grace && Math.hypot(p.x - z.cx, p.y - z.cy) > z.curR) {
+        this.hitPlayer(p);
+      }
+    }
+  }
+
+  updateLasers(dt) {
+    for (let i = this.lasers.length - 1; i >= 0; i--) {
+      const L = this.lasers[i];
+      L.t += dt;
+      if (L.state === 'telegraph' && L.t >= L.telegraphDur) { L.state = 'fire'; L.t = 0; }
+
+      if (L.state === 'fire') {
+        for (const p of this.activePlayers()) {
+          if (!p.canBeHit()) continue;
+          const hit = L.orientation === 'h'
+            ? Math.abs(p.y - L.pos) < L.thickness / 2 + p.r
+            : Math.abs(p.x - L.pos) < L.thickness / 2 + p.r;
+          if (hit) this.hitPlayer(p);
+        }
+        if (L.t >= L.fireDur) this.lasers.splice(i, 1);
+      }
+    }
+  }
+
+  /** Moves every bullet, handles wall-bouncing, splitter bullets, off-screen cleanup, and player collision/graze. */
+  updateBullets(dt) {
+    const s = this.state;
+    for (let i = this.bullets.items.length - 1; i >= 0; i--) {
+      const b = this.bullets.items[i];
+      b.age += dt;
+
+      // Short continuation of the Repulse impulse so bullets visibly travel
+      // away from the player for a few frames instead of instantly resuming
+      // their old trajectory.
+      if (b.repulseT > 0) {
+        b.repulseT = Math.max(0, b.repulseT - dt);
+        if (b.repulseStrength > 0) {
+          const speed = Math.hypot(b.vx, b.vy) || 1;
+          const nx = b.vx / speed;
+          const ny = b.vy / speed;
+          b.vx += nx * b.repulseStrength * dt * 60;
+          b.vy += ny * b.repulseStrength * dt * 60;
+        }
+      }
+
+      b.x += b.vx * dt * 60;
+      b.y += b.vy * dt * 60;
+
+      if (b.bounce && b.bounces < b.maxBounces) {
+        if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx); b.bounces++; }
+        else if (b.x > CONFIG.world.width - b.r) { b.x = CONFIG.world.width - b.r; b.vx = -Math.abs(b.vx); b.bounces++; }
+        if (b.y < b.r) { b.y = b.r; b.vy = Math.abs(b.vy); b.bounces++; }
+        else if (b.y > CONFIG.world.height - b.r) { b.y = CONFIG.world.height - b.r; b.vy = -Math.abs(b.vy); b.bounces++; }
+      }
+
+      if (b.splitter && !b.split && b.age >= 0.9) {
+        b.split = true;
+        const base = Math.atan2(b.vy, b.vx);
+        const speed = Math.hypot(b.vx, b.vy) * 0.9;
+        for (let k = 0; k < 6; k++) {
+          const angle = base + (Math.PI * 2 * k) / 6;
+          this.spawnBullet(b.x, b.y, Math.cos(angle) * speed, Math.sin(angle) * speed, 4, b.color);
+        }
+        this.particles.spawn(b.x, b.y, b.color, 10);
+        this.bullets.remove(i);
+        continue;
+      }
+
+      if (b.x < -80 || b.x > CONFIG.world.width + 80 || b.y < -80 || b.y > CONFIG.world.height + 80) {
+        this.bullets.remove(i);
+        continue;
+      }
+
+      for (const p of this.activePlayers()) {
+        if (!p.isAlive() || !p.canBeHit()) continue;
+        if (circleHit(b, p)) { this.hitPlayer(p); break; }
+        if (!b.grazedBy && circleNear(b, p, 16)) {
+          b.grazedBy = p.id;
+          p.grazeCount++;
+          p.combo++;
+          p.comboTimer = GRAZE_REWARD.comboWindow;
+
+          // Grazing is now an active resource:
+          // the better the player maintains a close-call chain,
+          // the faster the current skill comes back.
+          const recovery =
+            p.combo >= 20 ? GRAZE_REWARD.combo20 :
+            p.combo >= 10 ? GRAZE_REWARD.combo10 :
+            p.combo >= 5 ? GRAZE_REWARD.combo5 :
+            GRAZE_REWARD.base;
+
+          if (p.skillCooldown > 0) {
+            // Graze can ONLY subtract time from the current cooldown.
+            // It can never increase or reset the cooldown.
+            p.skillCooldown = Math.max(0, p.skillCooldown - recovery);
+          }
+
+          const mult = 1 + Math.min(p.combo, 10) * 0.12;
+          p.score += 50 * mult;
+          s.grazeCount++;
+          s.shakeMag = 3;
+          this.particles.spawn(b.x, b.y, '#7bed9f', 6);
+        }
+      }
+    }
+  }
+
+  updateSkillEffects(rawDt) {
+    for (let i = this.skillEffects.length - 1; i >= 0; i--) {
+      this.skillEffects[i].t += rawDt;
+      if (this.skillEffects[i].t >= this.skillEffects[i].duration) this.skillEffects.splice(i, 1);
+    }
+  }
+
+  // --- Render loop -------------------------------------------------
+
+  draw() {
+    const damageKick = this.state.damageShake > 0 ? 10 * (this.state.damageShake / 0.22) : 0;
+    this.renderer.begin(Math.max(this.state.shakeMag, damageKick));
+    this.renderer.drawWorld(this);
+    this.renderer.end();
+    this.renderer.flash(this.state.flashAlpha);
+    this.state.flashAlpha *= 0.9;
+  }
+
+  loop(now) {
+    const raw = Math.min((now - this.lastTime) / 1000, 0.05);
+    this.lastTime = now;
+    if (this.state.state === GAME_STATES.PLAYING) this.update(raw);
+    this.draw();
+    if (this.state.state !== GAME_STATES.MENU) requestAnimationFrame(this.loop.bind(this));
+    else this.loopRunning = false;
+  }
+}

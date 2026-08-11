@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <title>Wave Dodge — Survival</title>
+  <link rel="stylesheet" href="./css/main.css">
+</head>
+<body>
+<main id="gameRoot">
+  <canvas id="game" aria-label="เกมหลบกระสุน"></canvas>
+  <section id="hud" class="hidden" aria-live="polite">
+    <div class="hud-zone hud-p1" aria-label="Player 1">
+      <div class="hud-player-title p1-title"><span class="player-dot"></span>PLAYER 1</div>
+      <div class="hud-row">
+        <div class="hud-card lives-card p1-lives"><span class="hud-label">LIVES</span><b id="lives">❤️❤️❤️</b></div>
+        <div class="hud-card player-score p1-score"><span class="hud-label">SCORE</span><b id="p1Score">0</b></div>
+      </div>
+      <div class="hud-card skill-card" id="skillChip">
+        <div class="skill-head"><span class="hud-label">SKILL</span><b id="skillName">PULSE</b></div>
+        <div class="skill-status"><span id="skillStatus">READY</span><span id="skillVal">READY</span></div>
+        <div class="skill-bar"><i id="skillBarFill"></i></div>
+      </div>
+    </div>
+
+    <div class="hud-zone hud-center" aria-label="Game status">
+      <div class="wave-core"><span>WAVE</span><b id="wave">1</b></div>
+      <div class="hud-center-row">
+        <div class="hud-card compact-card time-card"><span class="hud-label">TIME</span><b id="time">00:00.0</b></div>
+        <div class="hud-card compact-card team-score-card"><span class="hud-label">TEAM SCORE</span><b id="score">0</b></div>
+      </div>
+      <div class="hud-center-row secondary">
+        <div class="chip best"><span>BEST</span>s · W<b id="bestWave">0</b></div>
+        <div class="chip graze"><span>GRAZE</span><b id="graze">0</b></div>
+        <div class="chip combo hidden" id="comboChip"><span>COMBO</span><b id="comboVal">x1.0</b></div>
+      </div>
+    </div>
+
+    <div class="hud-zone hud-p2 hidden" id="p2Hud" aria-label="Player 2">
+      <div class="hud-player-title p2-title"><span class="player-dot"></span>PLAYER 2</div>
+      <div class="hud-row">
+        <div class="hud-card player-score p2-score"><span class="hud-label">SCORE</span><b id="p2Score">0</b></div>
+        <div class="hud-card lives-card p2-lives"><span class="hud-label">LIVES</span><b id="p2Lives">❤️❤️❤️</b></div>
+      </div>
+      <div class="hud-card skill-card p2-skill" id="p2SkillChip">
+        <div class="skill-head"><span class="hud-label">SKILL</span><b id="p2SkillName">DASH</b></div>
+        <div class="skill-status"><span id="p2SkillStatus">READY</span><span id="p2SkillVal">READY</span></div>
+        <div class="skill-bar"><i id="p2SkillBarFill"></i></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="bossWrap" class="hidden"><div id="bossLabel">⚠ BOSS INCOMING</div><div id="bossBar"><div id="bossBarFill"></div></div></section>
+  <section id="waveBanner"><div id="waveTitle"></div><div id="waveSubtitle"></div></section>
+  <section id="downBanner" class="hidden" aria-live="assertive"></section>
+
+  <section id="overlay">
+    <div class="menu-screen" id="modeScreen">
+      <div class="hero-title-wrap">
+        <div class="hero-kicker">SURVIVAL GAME</div>
+        <h1>WAVE DODGE</h1>
+        <div class="hero-line"></div>
+        <p>หลบกระสุนให้นานที่สุด และทำสถิติของคุณ</p>
+      </div>
+      <div class="screen-label">เลือกโหมดการเล่น</div>
+      <div class="mode-menu">
+        <button class="mode-choice" data-mode="solo" type="button">
+          <span class="mode-number">01</span><span><strong>เล่นคนเดียว</strong><small>SOLO</small></span><span class="mode-arrow">›</span>
+        </button>
+        <button class="mode-choice" data-mode="coop" type="button">
+          <span class="mode-number">02</span><span><strong>เล่น 2 คน</strong><small>CO-OP</small></span><span class="mode-arrow">›</span>
+        </button>
+      </div>
+      <div class="menu-hint">เลือกโหมดเพื่อไปตั้งค่าสกิล</div>
+    </div>
+
+    <div class="menu-screen hidden" id="skillScreen">
+      <button class="back-btn" id="backModeBtn" type="button">‹ กลับ</button>
+      <div class="skill-screen-head">
+        <div class="hero-kicker">LOADOUT</div>
+        <h2>เลือกสกิล</h2>
+        <p id="skillScreenSub">เลือกสกิลที่ต้องการก่อนเริ่มเกม</p>
+      </div>
+
+      <div class="skill-player-block" id="p1SkillPicker">
+        <div class="skill-player-head"><strong>PLAYER 1</strong><span>เมาส์ใช้สกิล</span></div>
+        <div class="skill-card-grid" data-skill-player="1"></div>
+      </div>
+
+      <div class="skill-player-block hidden" id="p2SkillPicker">
+        <div class="skill-player-head"><strong>PLAYER 2</strong><span>กด / ใช้สกิล</span></div>
+        <div class="skill-card-grid" data-skill-player="2"></div>
+      </div>
+
+      <div class="selected-loadout" id="selectedLoadout"></div>
+      <button id="startBtn" class="start" type="button">เริ่มเล่น</button>
+      <div class="menu-hint" id="controlHint">P1: เมาส์ · Space: หยุดเกม</div>
+    </div>
+
+    <div class="menu-screen hidden" id="resultScreen"></div>
+  </section>
+
+  <section id="devPanel" class="hidden" aria-label="Developer Mode">
+    <div class="dev-title">
+      <div><span class="dev-dot"></span><b>DEV MODE</b><span id="devBulletCount">BULLETS 0/0</span></div>
+      <button class="dev-collapse" id="devCollapse" type="button" aria-label="ย่อ Dev Mode">−</button>
+    </div>
+    <div class="dev-body">
+      <div class="dev-group">
+        <span class="dev-group-label">PLAYER</span>
+        <div class="dev-row">
+          <button data-dev="life" title="เพิ่มหัวใจให้ผู้เล่น">+ LIFE</button>
+          <button data-dev="kill" title="ลดหัวใจผู้เล่น">− LIFE</button>
+          <button data-dev="ready" title="รีเซ็ต Cooldown สกิล">SKILL READY</button>
+        </div>
+      </div>
+      <div class="dev-group">
+        <span class="dev-group-label">GAME</span>
+        <div class="dev-row">
+          <button data-dev="wave" title="ข้ามไป Wave ถัดไป">NEXT WAVE</button>
+          <button data-dev="clear" title="ล้างกระสุนทั้งหมด">CLEAR</button>
+          <button data-dev="boss" title="เรียก Boss Wave">BOSS</button>
+        </div>
+      </div>
+      <div class="dev-group">
+        <span class="dev-group-label">CONTROL</span>
+        <div class="dev-row">
+          <button data-dev="god" title="เปิด/ปิดอมตะ">GOD: OFF</button>
+          <button data-dev="pause" title="หยุดหรือเล่นเกมต่อ">PAUSE</button>
+          <button data-dev="restart" class="dev-danger" title="เริ่มเกมใหม่">RESTART</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section id="pauseOverlay" class="hidden">
+    <div class="big">⏸ หยุดชั่วคราว</div>
+    <div class="small">กด SPACE เพื่อเล่นต่อ</div>
+    <div class="pause-actions">
+      <button id="pauseRestartBtn" class="start restart-btn" type="button"><span>↻</span> เล่นใหม่</button>
+      <button id="pauseMenuBtn" class="menu-btn" type="button">กลับเมนู</button>
+    </div>
+  </section>
+</main>
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>
