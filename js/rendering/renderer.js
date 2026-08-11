@@ -438,6 +438,7 @@ export class Renderer {
     }
 
     for (const fx of game.skillEffects) this.drawSkillEffect(fx);
+    for (const sp of game.scorePopups) this.drawScorePopup(sp);
   }
 
   drawZone(z) {
@@ -687,6 +688,31 @@ export class Renderer {
     c.globalCompositeOperation = 'lighter';
     c.translate(fx.x, fx.y);
     draw(c, fx, p, ease, fade);
+    c.restore();
+  }
+
+  /** Draws a floating "+N" graze-score callout: rises, grows in slightly, then fades. */
+  drawScorePopup(p) {
+    const c = this.ctx;
+    const life = Math.max(0, Math.min(1, p.life));
+    const rise = (1 - life) * 38;
+    const popIn = Math.min(1, (1 - life) * 6);
+    const scale = 0.7 + popIn * 0.4;
+
+    c.save();
+    c.globalAlpha = Math.min(1, life * 1.4);
+    c.translate(p.x, p.y - rise);
+    c.scale(scale, scale);
+    c.font = '900 16px system-ui';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.lineWidth = 3;
+    c.strokeStyle = 'rgba(0,0,0,.55)';
+    c.strokeText(p.text, 0, 0);
+    c.shadowColor = p.color;
+    c.shadowBlur = 10;
+    c.fillStyle = p.color;
+    c.fillText(p.text, 0, 0);
     c.restore();
   }
 

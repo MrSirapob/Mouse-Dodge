@@ -46,6 +46,7 @@ export class Game {
     this.lasers = [];        // active laser hazards (telegraph -> fire -> gone)
     this.zone = null;        // shrinking safe-zone hazard, or null if not active this wave
     this.skillEffects = [];  // transient visual effects spawned by SkillSystem
+    this.scorePopups = [];   // floating "+N" text spawned on graze (see spawnScorePopup)
 
     // Bullet-density cleanup state. The cleanup system is deliberately small:
     // it only activates near the cap and removes low-risk bullets.
@@ -262,6 +263,29 @@ export class Game {
     this.skillEffects.push({ type, x: player.x, y: player.y, color: player.color, t: 0, duration, ...data });
   }
 
+  /** Spawns a floating "+N" text at (x, y) — used to call out graze score gains. */
+  spawnScorePopup(x, y, amount, color = '#7bed9f') {
+    this.scorePopups.push({
+      x,
+      y,
+      text: `+${Math.round(amount)}`,
+      color,
+      age: 0,
+      duration: 0.85,
+      life: 1,
+    });
+  }
+
+  /** Ages out floating score popups, moving them upward and fading them (real time, unaffected by slow-mo/time-stop). */
+  updateScorePopups(rawDt) {
+    for (let i = this.scorePopups.length - 1; i >= 0; i--) {
+      const p = this.scorePopups[i];
+      p.age += rawDt;
+      p.life = 1 - p.age / p.duration;
+      if (p.life <= 0) this.scorePopups.splice(i, 1);
+    }
+  }
+
   // --- Lifecycle -------------------------------------------------
 
   reset(mode = GAME_MODES.SOLO, skill = 'pulse', skillP2 = 'dash') {
@@ -269,6 +293,7 @@ export class Game {
     this.ringWarnings = [];
     this.lasers = [];
     this.particles.clear();
+    this.scorePopups.length = 0;
     this.actionQueue = [];
     this.skillEffects = [];
     this.bulletCleanupCooldown = 0;
@@ -463,6 +488,7 @@ export class Game {
     this.updateSkillEffects(rawDt);
     this.lifeSystem.updateRevive(dt);
     this.particles.update(rawDt);
+    this.updateScorePopups(rawDt);
     this.devMode.update();
     this.ui.update(s, this.players, this.state.mode);
   }
@@ -656,10 +682,12 @@ export class Game {
           }
 
           const mult = 1 + Math.min(p.combo, 10) * 0.12;
-          p.score += 50 * mult;
+          const gained = 50 * mult;
+          p.score += gained;
           s.grazeCount++;
           s.shakeMag = 3;
           this.particles.spawn(b.x, b.y, '#7bed9f', 6);
+          this.spawnScorePopup(b.x, b.y - p.r - 10, gained);
         }
       }
     }
