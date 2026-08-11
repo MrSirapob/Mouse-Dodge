@@ -2697,3 +2697,23 @@
 .control-list kbd{display:inline-flex;align-items:center;justify-content:center;min-height:28px;padding:4px 8px;border:1px solid rgba(255,255,255,.14);border-radius:6px;background:rgba(255,255,255,.055);color:#fff;font-family:inherit;font-size:11px;font-weight:700;white-space:nowrap}
 .howto-tip{margin:12px 0 0;padding:10px 13px;border-left:2px solid var(--accent);color:#9da3b2;background:rgba(78,205,196,.045);border-radius:0 7px 7px 0;font-size:12px;line-height:1.55}.howto-tip strong{color:#fff}
 @media(max-width:700px){.howto-head h2{font-size:24px}.howto-platform,.howto-mode{padding:8px 18px}.howto-section{padding:12px 13px}.control-list>div{grid-template-columns:105px 1fr;font-size:12px}.howto-panel{max-height:58vh;overflow:auto;padding:0 2px 4px}}
+
+/* WAVE ANNOUNCEMENT — keep the play area clear */
+#waveBanner{
+  top:auto !important;
+  bottom:12% !important;
+  left:50% !important;
+  transform:translateX(-50%) scale(.8) !important;
+  z-index:15 !important;
+}
+#waveBanner.wave-show{
+  transform:translateX(-50%) scale(1) !important;
+}
+@media (max-width:700px){
+  #waveBanner{
+    bottom:18% !important;
+    width:min(92vw,620px);
+  }
+  #waveTitle{font-size:clamp(28px,8vw,42px)}
+  #waveSubtitle{font-size:12px;margin-top:5px}
+}
