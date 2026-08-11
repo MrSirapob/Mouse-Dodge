@@ -91,25 +91,153 @@ const SKILL_EFFECT_DRAWERS = {
     }
   },
   timestop(c, fx, p, ease, fade) {
-    const r = 30 + fx.maxRadius * ease;
-    c.globalAlpha = 0.25 * fade;
+    // Mystical time-stop magic circle: layered rings, rotating segments,
+    // radial glyphs and a bright core. The design is original, but aims for
+    // the dramatic sorcerer-style magic-circle feeling.
+    const r = 28 + fx.maxRadius * ease;
+    const spin = fx.t * 0.9;
+    const pulse = 1 + Math.sin(fx.t * 10) * 0.025;
+    const outer = r * pulse;
+
+    c.save();
+    c.lineCap = 'round';
+    c.lineJoin = 'round';
+
+    // Soft magical aura.
+    const glow = c.createRadialGradient(0, 0, 0, 0, 0, outer);
+    glow.addColorStop(0, 'rgba(255,255,255,0.34)');
+    glow.addColorStop(0.28, 'rgba(198,108,240,0.18)');
+    glow.addColorStop(0.72, 'rgba(111,76,255,0.08)');
+    glow.addColorStop(1, 'rgba(111,76,255,0)');
+    c.globalAlpha = fade;
+    c.fillStyle = glow;
     c.beginPath();
-    c.arc(0, 0, r, 0, Math.PI * 2);
-    c.fillStyle = '#c56cf0';
+    c.arc(0, 0, outer, 0, Math.PI * 2);
     c.fill();
-    c.globalAlpha = 0.8 * fade;
-    c.beginPath();
-    c.arc(0, 0, r, 0, Math.PI * 2);
-    c.strokeStyle = '#c56cf0';
-    c.lineWidth = 3;
-    c.stroke();
-    for (let i = 0; i < 8; i++) {
-      const a = (i * Math.PI) / 4 + fx.t * 0.8;
+
+    // Main concentric rings.
+    const rings = [0.38, 0.56, 0.72, 0.9, 1];
+    rings.forEach((ratio, index) => {
       c.beginPath();
-      c.moveTo(Math.cos(a) * r * 0.72, Math.sin(a) * r * 0.72);
-      c.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+      c.arc(0, 0, outer * ratio, 0, Math.PI * 2);
+      c.globalAlpha = fade * (index === rings.length - 1 ? 0.95 : 0.58);
+      c.strokeStyle = index % 2 ? '#b98cff' : '#e5c7ff';
+      c.lineWidth = index === rings.length - 1 ? 2.5 : 1.4;
+      c.shadowColor = '#9b6cff';
+      c.shadowBlur = index === rings.length - 1 ? 16 : 8;
+      c.stroke();
+    });
+
+    // Rotating segmented outer ring.
+    c.save();
+    c.rotate(spin);
+    c.globalAlpha = fade * 0.9;
+    c.strokeStyle = '#d8b4ff';
+    c.shadowColor = '#9b6cff';
+    c.shadowBlur = 14;
+    for (let i = 0; i < 24; i++) {
+      const a0 = (i * Math.PI * 2) / 24 + 0.035;
+      const a1 = a0 + Math.PI / 30;
+      c.beginPath();
+      c.arc(0, 0, outer * 0.96, a0, a1);
+      c.lineWidth = i % 3 === 0 ? 3 : 1.2;
       c.stroke();
     }
+    c.restore();
+
+    // Radial glyph spokes / runic geometry.
+    c.save();
+    c.rotate(-spin * 0.65);
+    const glyphCount = 12;
+    for (let i = 0; i < glyphCount; i++) {
+      const a = (i * Math.PI * 2) / glyphCount;
+      const inner = outer * 0.58;
+      const mid = outer * 0.69;
+      const tip = outer * 0.84;
+      const side = 0.045;
+      const cx = Math.cos(a) * mid;
+      const cy = Math.sin(a) * mid;
+
+      c.globalAlpha = fade * 0.82;
+      c.strokeStyle = '#f0dcff';
+      c.lineWidth = 1.5;
+      c.shadowColor = '#b26cff';
+      c.shadowBlur = 9;
+
+      // Diamond / eye-shaped glyph.
+      c.beginPath();
+      c.moveTo(Math.cos(a) * inner, Math.sin(a) * inner);
+      c.lineTo(Math.cos(a + side) * mid, Math.sin(a + side) * mid);
+      c.lineTo(Math.cos(a) * tip, Math.sin(a) * tip);
+      c.lineTo(Math.cos(a - side) * mid, Math.sin(a - side) * mid);
+      c.closePath();
+      c.stroke();
+
+      // Small rune marks between the diamonds.
+      c.beginPath();
+      c.moveTo(cx - Math.sin(a) * 7, cy + Math.cos(a) * 7);
+      c.lineTo(cx + Math.sin(a) * 7, cy - Math.cos(a) * 7);
+      c.stroke();
+    }
+    c.restore();
+
+    // Four cardinal markers make the circle read clearly at a glance.
+    c.globalAlpha = fade * 0.95;
+    c.strokeStyle = '#ffffff';
+    c.shadowColor = '#c38aff';
+    c.shadowBlur = 18;
+    c.lineWidth = 2;
+    for (let i = 0; i < 4; i++) {
+      const a = i * Math.PI / 2 + Math.PI / 4;
+      const x1 = Math.cos(a) * outer * 0.72;
+      const y1 = Math.sin(a) * outer * 0.72;
+      const x2 = Math.cos(a) * outer * 0.86;
+      const y2 = Math.sin(a) * outer * 0.86;
+      c.beginPath();
+      c.moveTo(x1, y1);
+      c.lineTo(x2, y2);
+      c.stroke();
+    }
+
+    // Central time sigil.
+    const coreR = outer * 0.25;
+    c.globalAlpha = fade * 0.28;
+    c.fillStyle = '#c56cf0';
+    c.beginPath();
+    c.arc(0, 0, coreR, 0, Math.PI * 2);
+    c.fill();
+
+    c.globalAlpha = fade * 0.95;
+    c.strokeStyle = '#ffffff';
+    c.lineWidth = 2;
+    c.shadowColor = '#c56cf0';
+    c.shadowBlur = 22;
+    c.beginPath();
+    c.arc(0, 0, coreR, 0, Math.PI * 2);
+    c.stroke();
+
+    // Clock-like inner marks reinforce the time-stop theme.
+    for (let i = 0; i < 8; i++) {
+      const a = i * Math.PI / 4 + spin;
+      c.beginPath();
+      c.moveTo(Math.cos(a) * coreR * 0.55, Math.sin(a) * coreR * 0.55);
+      c.lineTo(Math.cos(a) * coreR * 0.82, Math.sin(a) * coreR * 0.82);
+      c.stroke();
+    }
+
+    // Bright center flash during activation.
+    const flash = Math.max(0, 1 - p * 5);
+    if (flash > 0) {
+      c.globalAlpha = flash * 0.85;
+      c.fillStyle = '#ffffff';
+      c.shadowColor = '#d7a8ff';
+      c.shadowBlur = 28;
+      c.beginPath();
+      c.arc(0, 0, 5 + flash * 10, 0, Math.PI * 2);
+      c.fill();
+    }
+
+    c.restore();
   },
   heal(c, fx, p, ease, fade) {
     c.globalAlpha = fade;
