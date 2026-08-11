@@ -77,6 +77,7 @@ export class UI {
     this.pause = document.getElementById("pauseOverlay");
     this.bannerEl = document.getElementById("waveBanner");
     this.modeScreen = document.getElementById("modeScreen");
+    this.howToPlayScreen = document.getElementById("howToPlayScreen");
     this.skillScreen = document.getElementById("skillScreen");
     this.p2SkillPicker = document.getElementById("p2SkillPicker");
     this.selectedLoadout = document.getElementById("selectedLoadout");
@@ -142,6 +143,27 @@ export class UI {
         this.showSkillScreen();
       });
     });
+    document.getElementById("howToPlayBtn")?.addEventListener("click", () => this.showHowToPlayScreen());
+    document.getElementById("backHowToPlayBtn")?.addEventListener("click", () => this.showModeScreen());
+
+    document.querySelectorAll(".howto-platform").forEach((button) => {
+      button.addEventListener("click", () => {
+        const platform = button.dataset.platform;
+        document.querySelectorAll(".howto-platform").forEach((b) => b.classList.toggle("active", b === button));
+        document.querySelectorAll("[data-platform-panel]").forEach((p) => p.classList.toggle("active", p.dataset.platformPanel === platform));
+      });
+    });
+
+    document.querySelectorAll("[data-howto-mode]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const mode = button.dataset.howtoMode;
+        const panel = button.closest("[data-platform-panel]");
+        if (!panel) return;
+        panel.querySelectorAll("[data-howto-mode]").forEach((b) => b.classList.toggle("active", b === button));
+        panel.querySelectorAll("[data-howto-content]").forEach((c) => c.classList.toggle("active", c.dataset.howtoContent === `pc-${mode}`));
+      });
+    });
+
     document
       .getElementById("backModeBtn")
       ?.addEventListener("click", () => this.showModeScreen());
@@ -198,6 +220,14 @@ export class UI {
 
   showModeScreen() {
     this.modeScreen?.classList.remove("hidden");
+    this.howToPlayScreen?.classList.add("hidden");
+    this.skillScreen?.classList.add("hidden");
+    this.resultScreen?.classList.add("hidden");
+  }
+
+  showHowToPlayScreen() {
+    this.modeScreen?.classList.add("hidden");
+    this.howToPlayScreen?.classList.remove("hidden");
     this.skillScreen?.classList.add("hidden");
     this.resultScreen?.classList.add("hidden");
   }
