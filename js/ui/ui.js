@@ -379,9 +379,6 @@ export class UI {
           <button id="startBtn" class="start restart-btn" type="button"><span>↻</span> เล่นอีกครั้ง</button>
           <button id="menuBtn" class="menu-btn" type="button">กลับเมนู</button>
         </div>
-        <div class="result-reset-area">
-          <button id="resetBestBtn" class="reset-best-btn" type="button">Reset Best</button>
-        </div>
       </div>
     `);
 
