@@ -294,6 +294,9 @@ export class UI {
     players = [],
     finalScore = 0,
     bestScore = 0,
+    bestTime = 0,
+    bestWave = 0,
+    bestGraze = 0,
   ) {
     this.currentMode = mode;
     const p1 = Math.round(players[0]?.score || 0);
@@ -302,18 +305,45 @@ export class UI {
     const scoreRows =
       mode === "coop"
         ? `<div class="score-results"><div><span>P1</span><b>${p1.toLocaleString()}</b></div><div><span>P2</span><b>${p2.toLocaleString()}</b></div></div>
-         <div class="team-result"><span>TEAM SCORE</span><b>${Math.round(finalScore).toLocaleString()}</b></div>
-         <div class="winner-line">${p1 === p2 ? "เสมอกัน" : p1 > p2 ? "P1 ทำคะแนนสูงสุด" : "P2 ทำคะแนนสูงสุด"}</div>`
-        : `<div class="team-result"><span>SCORE</span><b>${Math.round(finalScore).toLocaleString()}</b></div>`;
+           <div class="team-result"><span>TEAM SCORE</span><b>${Math.round(finalScore).toLocaleString()}</b></div>
+           <div class="winner-line">${p1 === p2 ? "เสมอกัน" : p1 > p2 ? "P1 ทำคะแนนสูงสุด" : "P2 ทำคะแนนสูงสุด"}</div>`
+        : "";
 
     this.showResultScreen(`
       <div class="panel">
         <div class="logo">RUN COMPLETE</div>
         <h1>จบเกม!</h1>
         <p class="tagline">${mode === "coop" ? "Co-op · แข่งคะแนนกันในทีมเดียว" : "Solo Run"}</p>
-        <p class="result-line">รอดได้ <b>${time.toFixed(1)}</b> วินาที — ถึง <b>Wave ${wave}</b></p>
+
+        <div class="run-comparison">
+          <div class="run-comparison-header">
+            <div></div>
+            <div class="run-latest">รอบล่าสุด</div>
+            <div class="run-best">รอบที่ดีที่สุด</div>
+          </div>
+          <div class="run-comparison-row">
+            <div class="run-label">เวลา :</div>
+            <div class="run-value run-latest">${time.toFixed(1)}s</div>
+            <div class="run-value run-best">${Number(bestTime).toFixed(1)}s</div>
+          </div>
+          <div class="run-comparison-row">
+            <div class="run-label">Wave :</div>
+            <div class="run-value run-latest">${wave}</div>
+            <div class="run-value run-best">${Number(bestWave)}</div>
+          </div>
+          <div class="run-comparison-row">
+            <div class="run-label">Score :</div>
+            <div class="run-value run-latest">${Math.round(finalScore).toLocaleString()}</div>
+            <div class="run-value run-best">${Number(bestScore).toLocaleString()}</div>
+          </div>
+          <div class="run-comparison-row">
+            <div class="run-label">Graze :</div>
+            <div class="run-value run-latest">${graze}</div>
+            <div class="run-value run-best">${Number(bestGraze)}</div>
+          </div>
+        </div>
+
         ${scoreRows}
-        <p class="result-line">Graze รวม: <b>${graze}</b> · Best Score: <b>${Number(bestScore).toLocaleString()}</b></p>
         <div class="result-actions">
           <button id="startBtn" class="start restart-btn" type="button"><span>↻</span> เล่นอีกครั้ง</button>
           <button id="menuBtn" class="menu-btn" type="button">กลับเมนู</button>

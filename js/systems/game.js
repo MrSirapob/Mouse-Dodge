@@ -58,6 +58,7 @@ export class Game {
     this.bestTime = Number(localStorage.getItem(CONFIG.storage.bestTime) || 0);
     this.bestWave = Number(localStorage.getItem(CONFIG.storage.bestWave) || 0);
     this.bestScore = Number(localStorage.getItem(CONFIG.storage.bestScore) || 0);
+    this.bestGraze = Number(localStorage.getItem(CONFIG.storage.bestGraze) || 0);
     this.ui.setBest(this.bestTime, this.bestWave, this.bestScore);
 
     input.onP1Action = () => this.skillSystem.use(this.players[0]);
@@ -376,11 +377,12 @@ export class Game {
     if (s.elapsed > this.bestTime) { this.bestTime = s.elapsed; localStorage.setItem(CONFIG.storage.bestTime, String(s.elapsed)); }
     if (s.wave > this.bestWave) { this.bestWave = s.wave; localStorage.setItem(CONFIG.storage.bestWave, String(s.wave)); }
     if (finalScore > this.bestScore) { this.bestScore = finalScore; localStorage.setItem(CONFIG.storage.bestScore, String(finalScore)); }
+    if (s.grazeCount > this.bestGraze) { this.bestGraze = s.grazeCount; localStorage.setItem(CONFIG.storage.bestGraze, String(s.grazeCount)); }
     this.ui.setBest(this.bestTime, this.bestWave, this.bestScore);
 
     clearTimeout(this.state.gameOverTimer);
     this.state.gameOverTimer = setTimeout(
-      () => this.ui.showGameOver(s.elapsed, s.wave, s.grazeCount, this.state.mode, this.players, finalScore, this.bestScore),
+      () => this.ui.showGameOver(s.elapsed, s.wave, s.grazeCount, this.state.mode, this.players, finalScore, this.bestScore, this.bestTime, this.bestWave, this.bestGraze),
       350
     );
   }

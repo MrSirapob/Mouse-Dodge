@@ -46,5 +46,5 @@ export const CONFIG = {
     cleanupCooldown: 0.12
   },
   combo: { window: 1.1 },
-  storage: { bestTime: 'waveDodgeBestTime', bestWave: 'waveDodgeBestWave', bestScore: 'waveDodgeBestScore' }
+  storage: { bestTime: 'waveDodgeBestTime', bestWave: 'waveDodgeBestWave', bestScore: 'waveDodgeBestScore', bestGraze: 'waveDodgeBestGraze' }
 };
