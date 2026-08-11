@@ -69,7 +69,6 @@ between old and new files).
 - Skill selection via dropdown
 - 9 selectable skills:
   - Pulse
-  - Dash
   - Shield
   - Slow
   - Teleport
@@ -158,14 +157,12 @@ between old and new files).
 
 ## V16 classic damage feedback
 - Restored the original short damage shake (`shakeMag = 12`) when hit.
-- Kept the player at the collision position; no spawn repositioning and no dash behavior are restored.
 - Removed the newer fixed hit ring so the shake + particles communicate damage like the original.
 
 
 ## V17 damage effect
 - Restored a clear damage visual on the player: brief red flash, white impact ring, red radial hit marks, and red glow.
 - Damage shake remains (`shakeMag = 12`).
-- No dash/reposition behavior is used.
 
 
 ## V18 subtle damage feedback

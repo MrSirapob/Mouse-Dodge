@@ -2,7 +2,6 @@ import { CONFIG } from "../core/config.js";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
-  dash: "DASH",
   shield: "SHIELD",
   slow: "SLOW",
   nova: "NOVA",
@@ -14,7 +13,6 @@ const SKILL_NAMES = {
 
 const SKILL_DESCRIPTIONS = {
   pulse: "ล้างกระสุนรอบตัว",
-  dash: "พุ่งไปยังเป้าหมายพร้อมอมตะสั้น ๆ",
   shield: "สร้างโล่ป้องกันดาเมจชั่วคราว",
   slow: "ทำให้กระสุนทั้งหมดช้าลง",
   nova: "ระเบิดพลังรอบตัว ทำลายกระสุนในวงกว้าง",
@@ -26,7 +24,6 @@ const SKILL_DESCRIPTIONS = {
 
 const SKILL_ICONS = {
   pulse: "assets/skills/pulse.svg",
-  dash: "assets/skills/dash.svg",
   shield: "assets/skills/shield.svg",
   slow: "assets/skills/slow.svg",
   nova: "assets/skills/nova.svg",
@@ -38,7 +35,6 @@ const SKILL_ICONS = {
 
 const SKILL_ORDER = [
   "pulse",
-  "dash",
   "shield",
   "slow",
   "nova",
@@ -63,9 +59,10 @@ export class UI {
 
     this.onStart = null;
     this.onMenu = null;
+    this.onResetBest = null;
     this.currentMode = "solo";
     this.currentSkill = "pulse";
-    this.currentSkillP2 = "dash";
+    this.currentSkillP2 = "pulse";
 
     this.buildSkillCards();
     this.bindMenu();
@@ -242,6 +239,10 @@ export class UI {
     this.onMenu = fn;
   }
 
+  setResetBestHandler(fn) {
+    this.onResetBest = fn;
+  }
+
   // --- Overlays -------------------------------------------------
 
   hideOverlay() {
@@ -348,8 +349,13 @@ export class UI {
           <button id="startBtn" class="start restart-btn" type="button"><span>↻</span> เล่นอีกครั้ง</button>
           <button id="menuBtn" class="menu-btn" type="button">กลับเมนู</button>
         </div>
+        <button id="resetBestBtn" class="reset-best-btn" type="button">Reset Best</button>
       </div>
     `);
+
+    this.resultScreen
+      ?.querySelector("#resetBestBtn")
+      ?.addEventListener("click", () => this.onResetBest?.());
   }
 
   showPause(v) {
@@ -511,7 +517,6 @@ export class UI {
   }
 
   cooldownFor(skill) {
-    if (skill === "dash") return CONFIG.dash.cooldown;
     return CONFIG.skills[skill]?.cooldown ?? 5;
   }
 

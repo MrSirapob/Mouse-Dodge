@@ -14,16 +14,6 @@ const WORLD = { width: 1280, height: 720 };
  * entry here and make sure SkillSystem calls `addSkillEffect('type', ...)`.
  */
 const SKILL_EFFECT_DRAWERS = {
-  dash(c, fx, p, ease, fade) {
-    for (let i = 0; i < 5; i++) {
-      c.beginPath();
-      c.arc(-i * 7, 0, 8 + i * 2, 0, Math.PI * 2);
-      c.strokeStyle = fx.color;
-      c.lineWidth = 3;
-      c.globalAlpha = fade * (1 - i * 0.15);
-      c.stroke();
-    }
-  },
   pulse(c, fx, p, ease, fade) {
     const r = fx.maxRadius * ease;
     c.globalAlpha = fade;

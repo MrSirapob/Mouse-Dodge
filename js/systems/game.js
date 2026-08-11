@@ -65,6 +65,7 @@ export class Game {
     input.onP2Action = () => this.skillSystem.use(this.players[1]);
     input.onPause = () => this.togglePause();
     this.ui.setMenuHandler(() => this.backToMenu());
+    this.ui.setResetBestHandler?.(() => this.resetBestStats());
   }
 
   // --- Wave / bullet-cap helpers -------------------------------------------------
@@ -244,12 +245,6 @@ export class Game {
 
   // --- Player / mode helpers -------------------------------------------------
 
-  /** Where player 2 is trying to move toward this frame (used by the dash skill). */
-  p2Target() {
-    const d = this.input.p2Direction();
-    const dir = (d.x || d.y) ? d : this.input.p2.lastDir;
-    return { x: this.players[1].x + dir.x * 130, y: this.players[1].y + dir.y * 130 };
-  }
 
   allPlayersDown() {
     return this.state.mode === GAME_MODES.SOLO ? this.players[0].down : this.players.every(p => p.down);
@@ -289,7 +284,7 @@ export class Game {
 
   // --- Lifecycle -------------------------------------------------
 
-  reset(mode = GAME_MODES.SOLO, skill = 'pulse', skillP2 = 'dash') {
+  reset(mode = GAME_MODES.SOLO, skill = 'pulse', skillP2 = 'pulse') {
     this.bullets.clear();
     this.ringWarnings = [];
     this.lasers = [];
@@ -365,6 +360,35 @@ export class Game {
   hitPlayer(player) {
     if (player.devInvulnerable) return false;
     return this.lifeSystem.hit(player);
+  }
+
+  resetBestStats() {
+    this.bestTime = 0;
+    this.bestWave = 0;
+    this.bestScore = 0;
+    this.bestGraze = 0;
+
+    Object.values(CONFIG.storage).forEach((key) => localStorage.removeItem(key));
+    this.ui.setBest(0, 0, 0);
+
+    // Refresh the currently visible Game Over comparison immediately.
+    const resetBtn = this.ui.resultScreen?.querySelector("#resetBestBtn");
+    this.ui.resultScreen?.querySelectorAll(".run-value.run-best").forEach((el) => {
+      if (el.previousElementSibling) {
+        // Values are arranged in four rows; the reset below handles all of them.
+      }
+    });
+    const bestValues = this.ui.resultScreen?.querySelectorAll(".run-value.run-best");
+    if (bestValues?.length === 4) {
+      bestValues[0].textContent = "0.0s";
+      bestValues[1].textContent = "0";
+      bestValues[2].textContent = "0";
+      bestValues[3].textContent = "0";
+    }
+    if (resetBtn) {
+      resetBtn.textContent = "Best ถูกรีเซ็ตแล้ว";
+      resetBtn.disabled = true;
+    }
   }
 
   gameOver() {

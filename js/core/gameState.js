@@ -10,7 +10,7 @@ export class GameState {
     this.state = GAME_STATES.MENU;
     this.mode = GAME_MODES.SOLO;
     this.skill = 'pulse';
-    this.skillP2 = 'dash';
+    this.skillP2 = 'pulse';
     this.wave = 1;
     this.waveTime = 0;
     this.elapsed = 0;
