@@ -17,7 +17,6 @@ export const CONFIG = {
   world: { width: 1280, height: 720 },
   player: { radius: 10, followLerp: 0.28, color: '#4ecdc4', p2Color: '#ffd166' },
   lives: { max: 3, hitInvulnerability: 1.0, respawnInvulnerability: 1.0 },
-  dash: { cooldown: 2.2, invulnerability: 0.18, distance: 130 },
   skills: {
     pulse: { cooldown: 5, radius: 115 },
     shield: { cooldown: 7, duration: 2.2 },
