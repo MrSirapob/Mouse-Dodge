@@ -69,6 +69,8 @@ export class UI {
 
     this.buildSkillCards();
     this.bindMenu();
+    this.applyMobileModeLock();
+    window.addEventListener("resize", () => this.applyMobileModeLock(), { passive: true });
     this.showModeScreen();
   }
 
@@ -137,6 +139,7 @@ export class UI {
   bindMenu() {
     document.querySelectorAll("[data-mode]").forEach((button) => {
       button.addEventListener("click", () => {
+        if (button.disabled) return;
         this.currentMode = button.dataset.mode;
         this.showSkillScreen();
       });
@@ -167,6 +170,21 @@ export class UI {
     document
       .getElementById("pauseMenuBtn")
       ?.addEventListener("click", () => this.onMenu?.());
+  }
+
+  applyMobileModeLock() {
+    const mobile =
+      window.matchMedia("(max-width: 700px)").matches ||
+      window.matchMedia("(pointer: coarse)").matches;
+
+    const coopButton = document.querySelector('[data-mode="coop"]');
+    if (!coopButton) return;
+
+    coopButton.disabled = mobile;
+    coopButton.classList.toggle("mobile-disabled", mobile);
+
+    const small = coopButton.querySelector("small");
+    if (small) small.textContent = mobile ? "มือถือไม่รองรับ" : "CO-OP";
   }
 
   chooseSkill(player, skill) {

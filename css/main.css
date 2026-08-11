@@ -1894,3 +1894,203 @@
   .skill-card-icon{width:48px;height:48px}
   .skill-card-icon img{width:46px;height:46px}
 }
+
+
+/* MOBILE PASS
+   Keep the top HUD balanced on narrow screens.
+   Mobile: P1 | WAVE/TIME | P2, with compact hearts + skill blocks.
+*/
+.mode-choice.mobile-disabled{
+  opacity:.42;
+  cursor:not-allowed;
+  filter:grayscale(.45);
+}
+.mode-choice.mobile-disabled:hover{
+  background:transparent;
+  transform:none;
+}
+.mode-choice.mobile-disabled .mode-arrow{
+  opacity:.35;
+}
+.mode-choice.mobile-disabled small{
+  color:#8b8fa3;
+}
+
+@media (max-width:700px){
+  #hud{
+    top:max(7px,env(safe-area-inset-top)) !important;
+    left:4px !important;
+    right:4px !important;
+    width:auto !important;
+    padding:0 !important;
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) 92px minmax(0,1fr) !important;
+    grid-template-areas:"p1 center p2" !important;
+    gap:5px !important;
+    align-items:start !important;
+  }
+
+  #hud .hud-p1,
+  #hud .hud-p2{
+    width:100% !important;
+    max-width:112px !important;
+    min-width:0 !important;
+    display:flex !important;
+    align-items:center !important;
+    gap:4px !important;
+    overflow:hidden !important;
+  }
+
+  #hud .hud-p1{justify-self:start !important}
+  #hud .hud-p2{justify-self:end !important}
+
+  #hud .hud-player-title{
+    display:none !important;
+  }
+
+  #hud .hud-p1 .hud-row,
+  #hud .hud-p2 .hud-row{
+    display:flex !important;
+    flex:0 0 auto !important;
+    align-items:center !important;
+    gap:4px !important;
+    width:auto !important;
+  }
+
+  #hud .lives-card{
+    flex:0 0 auto !important;
+    width:50px !important;
+    min-width:50px !important;
+    height:30px !important;
+    padding:4px 5px !important;
+    border-radius:7px !important;
+  }
+
+  #hud .lives-card b{
+    font-size:9px !important;
+    letter-spacing:.5px !important;
+  }
+
+  #hud .skill-card{
+    flex:0 0 auto !important;
+    width:58px !important;
+    min-width:58px !important;
+    height:30px !important;
+    min-height:30px !important;
+    padding:4px 5px !important;
+    border-radius:7px !important;
+  }
+
+  #hud .skill-head{
+    gap:3px !important;
+  }
+
+  #hud .skill-head .hud-label{
+    font-size:5px !important;
+  }
+
+  #hud .skill-head>b{
+    font-size:6px !important;
+    max-width:34px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  #hud .skill-status{
+    display:none !important;
+  }
+
+  #hud .skill-bar{
+    height:2px !important;
+    margin-top:2px !important;
+  }
+
+  #hud .hud-center{
+    grid-area:center !important;
+    justify-self:center !important;
+    width:92px !important;
+    min-width:92px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    gap:2px !important;
+  }
+
+  #hud .hud-center .wave-core{
+    width:92px !important;
+    min-width:92px !important;
+    height:20px !important;
+    padding:2px 5px !important;
+    border-radius:6px !important;
+  }
+
+  #hud .hud-center .wave-core span{
+    font-size:5px !important;
+    letter-spacing:.8px !important;
+  }
+
+  #hud .hud-center .wave-core b{
+    font-size:10px !important;
+  }
+
+  #hud .hud-center .hud-center-row{
+    width:92px !important;
+    display:block !important;
+  }
+
+  #hud .hud-center .time-card{
+    width:92px !important;
+    min-width:92px !important;
+    height:17px !important;
+    padding:2px 4px !important;
+    border-radius:5px !important;
+  }
+
+  #hud .hud-center .time-card .hud-label{
+    display:inline !important;
+    font-size:4px !important;
+    margin:0 !important;
+  }
+
+  #hud .hud-center .time-card #time{
+    font-size:7px !important;
+  }
+
+  #hud .hud-center .team-score-card,
+  #hud .hud-center .hud-center-row.secondary{
+    display:none !important;
+  }
+}
+
+@media (max-width:360px){
+  #hud{
+    grid-template-columns:minmax(0,1fr) 78px minmax(0,1fr) !important;
+    gap:3px !important;
+  }
+
+  #hud .hud-p1,
+  #hud .hud-p2{
+    max-width:98px !important;
+    gap:3px !important;
+  }
+
+  #hud .lives-card{
+    width:45px !important;
+    min-width:45px !important;
+  }
+
+  #hud .skill-card{
+    width:50px !important;
+    min-width:50px !important;
+    padding-left:4px !important;
+    padding-right:4px !important;
+  }
+
+  #hud .hud-center,
+  #hud .hud-center .wave-core,
+  #hud .hud-center .hud-center-row,
+  #hud .hud-center .time-card{
+    width:78px !important;
+    min-width:78px !important;
+  }
+}
