@@ -428,7 +428,7 @@ export class Renderer {
     }
 
     for (const fx of game.skillEffects) this.drawSkillEffect(fx);
-    for (const sp of game.scorePopups) this.drawScorePopup(sp);
+    // Graze score popups are displayed beside the HUD SCORE value.
   }
 
   drawZone(z) {
