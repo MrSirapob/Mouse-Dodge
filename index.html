@@ -28,7 +28,10 @@
     <div class="hud-zone" aria-label="Game status">
       <div class="hud-stat"><span class="hud-label">WAVE</span><b id="wave">1</b></div>
       <div class="hud-stat"><span class="hud-label">TIME</span><b id="time">00:00.0</b></div>
-      <div class="hud-stat"><span class="hud-label" id="scoreLabel">SCORE</span><b id="score">0</b></div>
+      <div class="hud-stat score-hud-stat">
+  <span class="hud-label" id="scoreLabel">SCORE</span>
+  <span class="score-line"><b id="score">0</b><span id="scorePopupLayer" class="score-popup-layer" aria-hidden="true"></span></span>
+</div>
       <div class="hud-stat hud-extra" aria-hidden="true"><span>BEST</span><b id="bestWave">0</b></div>
       <div class="hud-stat hud-extra" aria-hidden="true"><span>GRAZE</span><b id="graze">0</b></div>
       <div class="hud-stat hud-extra hidden" id="comboChip" aria-hidden="true"><span>COMBO</span><b id="comboVal">x1.0</b></div>
