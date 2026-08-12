@@ -1,5 +1,14 @@
 # Changelog
 
+## Slow bugfix
+
+- **Fixed: Slow was slowing the player, not just bullets.** `updatePlayers()`
+was passing the slow-mo-scaled `dt` into `player.updateMouse()` /
+`updateKeyboard()`, so activating Slow also cut the player's own
+mouse-follow speed and P2's keyboard speed to ~28%, working against the
+point of a "bullet time" skill. Player movement now always uses `rawDt`;
+only bullets/score/boss still use the scaled `dt`.
+
 ## Project hygiene pass
 This pass didn't touch gameplay code — it cleaned up things that make the
 project harder to pick back up as it grows:

@@ -553,10 +553,15 @@ export class Game {
   updatePlayers(dt, rawDt) {
     for (const p of this.players) p.tick(rawDt);
 
+    // Player movement intentionally uses rawDt (not the slow-mo/time-stop
+    // scaled `dt`). Previously this used `dt`, which meant activating the
+    // Slow skill also crippled the player's own mouse/keyboard responsiveness
+    // by the same factor as the bullets — largely canceling out the point of
+    // a "bullet time" skill. Bullets/score/boss still use the scaled `dt`.
     const target = this.renderer.worldPoint(this.input.p1.x, this.input.p1.y);
-    if (this.players[0].isAlive()) this.players[0].updateMouse(target.x, target.y, dt, this.input.p1.isTouch, this.input.mouseSensitivity);
+    if (this.players[0].isAlive()) this.players[0].updateMouse(target.x, target.y, rawDt, this.input.p1.isTouch, this.input.mouseSensitivity);
     if (this.state.mode === GAME_MODES.COOP && this.players[1].isAlive()) {
-      this.players[1].updateKeyboard(this.input.p2Direction(), dt);
+      this.players[1].updateKeyboard(this.input.p2Direction(), rawDt);
     }
     const visibleBounds = this.renderer.visibleWorldBounds();
     for (const p of this.activePlayers()) p.clamp(CONFIG.world, visibleBounds);
