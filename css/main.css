@@ -2795,28 +2795,21 @@
   #waveSubtitle{font-size:11px !important}
 }
 
-/* Keep Reset Best safely separated from the main result actions. */
-.result-reset-area{
-  display:flex;
-  justify-content:center;
-  margin-top:18px;
-  padding-top:12px;
-  border-top:1px solid rgba(255,255,255,.06);
-}
-.reset-best-btn{
-  min-width:110px;
-  padding:6px 12px;
-  border:1px solid rgba(255,255,255,.10);
-  border-radius:7px;
-  background:rgba(255,255,255,.025);
-  color:rgba(180,185,198,.58);
-  font-size:10px;
-  font-weight:600;
-  letter-spacing:.2px;
-  opacity:.72;
-}
-.reset-best-btn:hover{
-  opacity:1;
-  color:rgba(210,214,225,.85);
-  background:rgba(255,255,255,.05);
+
+/* Mouse sensitivity settings */
+.menu-actions{display:flex;justify-content:center;gap:8px;margin-top:14px}
+.menu-actions .howto-btn{margin:0;min-width:150px}
+.settings-panel{max-width:560px;margin:12px auto 0;padding:18px 18px 15px;border:1px solid rgba(255,255,255,.10);border-radius:10px;background:rgba(14,16,26,.72)}
+.settings-row{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.settings-copy{display:flex;flex-direction:column;gap:5px;text-align:left}
+.settings-copy strong{font-size:14px;color:#fff}
+.settings-copy span{font-size:11px;line-height:1.5;color:#858ba0}
+.settings-value{min-width:58px;text-align:right;color:var(--accent);font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+.settings-range{display:block;width:100%;margin:20px 0 7px;accent-color:var(--accent);cursor:pointer}
+.settings-scale{display:flex;justify-content:space-between;color:#626b7e;font-size:9px;font-weight:800;letter-spacing:.6px}
+@media(max-width:700px){
+  .menu-actions{gap:7px}
+  .menu-actions .howto-btn{min-width:0;flex:1;padding:8px 10px}
+  .settings-panel{padding:15px 13px}
+  .settings-copy span{font-size:10px}
 }

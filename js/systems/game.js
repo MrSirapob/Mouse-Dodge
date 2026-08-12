@@ -66,6 +66,7 @@ export class Game {
     input.onPause = () => this.togglePause();
     this.ui.setMenuHandler(() => this.backToMenu());
     this.ui.setResetBestHandler?.(() => this.resetBestStats());
+    this.ui.setMouseSensitivityHandler?.((value) => this.input.setMouseSensitivity(value));
   }
 
   // --- Wave / bullet-cap helpers -------------------------------------------------
@@ -553,7 +554,7 @@ export class Game {
     for (const p of this.players) p.tick(rawDt);
 
     const target = this.renderer.worldPoint(this.input.p1.x, this.input.p1.y);
-    if (this.players[0].isAlive()) this.players[0].updateMouse(target.x, target.y, dt, this.input.p1.isTouch);
+    if (this.players[0].isAlive()) this.players[0].updateMouse(target.x, target.y, dt, this.input.p1.isTouch, this.input.mouseSensitivity);
     if (this.state.mode === GAME_MODES.COOP && this.players[1].isAlive()) {
       this.players[1].updateKeyboard(this.input.p2Direction(), dt);
     }

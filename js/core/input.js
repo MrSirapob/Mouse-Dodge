@@ -6,6 +6,7 @@ export class InputManager {
     this.onPause = null;
     this.onP1Action = null;
     this.onP2Action = null;
+    this.mouseSensitivity = 1;
 
     // Mobile controls:
     // - Keep the player slightly above the finger so the finger does not cover it.
@@ -17,6 +18,10 @@ export class InputManager {
     this.touchGesture = null;
 
     this.bind();
+  }
+
+  setMouseSensitivity(percent) {
+    this.mouseSensitivity = Math.max(0.25, Math.min(3, Number(percent) / 100 || 1));
   }
 
   bind() {

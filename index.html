@@ -68,8 +68,33 @@
           <span class="mode-number">02</span><span><strong>เล่น 2 คน</strong><small>CO-OP</small></span><span class="mode-arrow">›</span>
         </button>
       </div>
-      <button id="howToPlayBtn" class="howto-btn" type="button">วิธีการเล่น</button>
+      <div class="menu-actions">
+        <button id="howToPlayBtn" class="howto-btn" type="button">วิธีการเล่น</button>
+        <button id="settingsBtn" class="howto-btn settings-btn" type="button">ตั้งค่า</button>
+      </div>
       <div class="menu-hint">เลือกโหมดเพื่อเริ่มการต่อสู้</div>
+    </div>
+
+    <div class="menu-screen hidden" id="settingsScreen">
+      <button class="back-btn" id="backSettingsBtn" type="button">‹ กลับ</button>
+
+      <div class="howto-head">
+        <div class="hero-kicker">SETTINGS</div>
+        <h2>ตั้งค่า</h2>
+        <p>ปรับการควบคุมให้เหมาะกับการเล่นของคุณ</p>
+      </div>
+
+      <div class="settings-panel">
+        <div class="settings-row">
+          <div class="settings-copy">
+            <strong>ความไวเมาส์</strong>
+            <span>ปรับความเร็วในการตอบสนองของตัวละครตามเมาส์</span>
+          </div>
+          <output id="mouseSensitivityValue" class="settings-value" for="mouseSensitivity">100%</output>
+        </div>
+        <input id="mouseSensitivity" class="settings-range" type="range" min="25" max="300" step="5" value="100" aria-label="ความไวเมาส์">
+        <div class="settings-scale"><span>ช้ามาก</span><span>ปกติ</span><span>เร็วมาก</span></div>
+      </div>
     </div>
 
     <div class="menu-screen hidden" id="howToPlayScreen">

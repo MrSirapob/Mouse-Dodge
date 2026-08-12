@@ -63,6 +63,8 @@ export class UI {
     this.currentMode = "solo";
     this.currentSkill = "pulse";
     this.currentSkillP2 = "pulse";
+    this.mouseSensitivity = Number(localStorage.getItem("waveDodgeMouseSensitivity") || 100);
+    this.mouseSensitivity = Math.max(25, Math.min(300, this.mouseSensitivity));
 
     this.buildSkillCards();
     this.bindMenu();
@@ -78,6 +80,9 @@ export class UI {
     this.bannerEl = document.getElementById("waveBanner");
     this.modeScreen = document.getElementById("modeScreen");
     this.howToPlayScreen = document.getElementById("howToPlayScreen");
+    this.settingsScreen = document.getElementById("settingsScreen");
+    this.mouseSensitivityInput = document.getElementById("mouseSensitivity");
+    this.mouseSensitivityValueEl = document.getElementById("mouseSensitivityValue");
     this.skillScreen = document.getElementById("skillScreen");
     this.p2SkillPicker = document.getElementById("p2SkillPicker");
     this.selectedLoadout = document.getElementById("selectedLoadout");
@@ -144,6 +149,16 @@ export class UI {
       });
     });
     document.getElementById("howToPlayBtn")?.addEventListener("click", () => this.showHowToPlayScreen());
+    document.getElementById("settingsBtn")?.addEventListener("click", () => this.showSettingsScreen());
+    document.getElementById("backSettingsBtn")?.addEventListener("click", () => this.showModeScreen());
+    this.mouseSensitivityInput?.addEventListener("input", () => {
+      this.mouseSensitivity = Number(this.mouseSensitivityInput.value);
+      localStorage.setItem("waveDodgeMouseSensitivity", String(this.mouseSensitivity));
+      this.updateMouseSensitivityDisplay();
+      this.onMouseSensitivityChange?.(this.mouseSensitivity);
+    });
+    if (this.mouseSensitivityInput) this.mouseSensitivityInput.value = String(this.mouseSensitivity);
+    this.updateMouseSensitivityDisplay();
     document.getElementById("backHowToPlayBtn")?.addEventListener("click", () => this.showModeScreen());
 
     document.querySelectorAll(".howto-platform").forEach((button) => {
@@ -207,6 +222,25 @@ export class UI {
     if (small) small.textContent = mobile ? "มือถือไม่รองรับ" : "CO-OP";
   }
 
+  showSettingsScreen() {
+    this.modeScreen?.classList.add("hidden");
+    this.howToPlayScreen?.classList.add("hidden");
+    this.settingsScreen?.classList.remove("hidden");
+    this.skillScreen?.classList.add("hidden");
+    this.resultScreen?.classList.add("hidden");
+    this.updateMouseSensitivityDisplay();
+  }
+
+  updateMouseSensitivityDisplay() {
+    if (!this.mouseSensitivityValueEl) return;
+    this.mouseSensitivityValueEl.textContent = `${this.mouseSensitivity}%`;
+  }
+
+  setMouseSensitivityHandler(fn) {
+    this.onMouseSensitivityChange = fn;
+    fn?.(this.mouseSensitivity);
+  }
+
   chooseSkill(player, skill) {
     if (player === "2") this.currentSkillP2 = skill;
     else this.currentSkill = skill;
@@ -221,12 +255,14 @@ export class UI {
   showModeScreen() {
     this.modeScreen?.classList.remove("hidden");
     this.howToPlayScreen?.classList.add("hidden");
+    this.settingsScreen?.classList.add("hidden");
     this.skillScreen?.classList.add("hidden");
     this.resultScreen?.classList.add("hidden");
   }
 
   showHowToPlayScreen() {
     this.modeScreen?.classList.add("hidden");
+    this.settingsScreen?.classList.add("hidden");
     this.howToPlayScreen?.classList.remove("hidden");
     this.skillScreen?.classList.add("hidden");
     this.resultScreen?.classList.add("hidden");
@@ -379,9 +415,7 @@ export class UI {
           <button id="startBtn" class="start restart-btn" type="button"><span>↻</span> เล่นอีกครั้ง</button>
           <button id="menuBtn" class="menu-btn" type="button">กลับเมนู</button>
         </div>
-        <div class="result-reset-area">
-          <button id="resetBestBtn" class="reset-best-btn" type="button">Reset Best</button>
-        </div>
+        <button id="resetBestBtn" class="reset-best-btn" type="button">Reset Best</button>
       </div>
     `);
 
