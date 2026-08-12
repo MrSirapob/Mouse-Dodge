@@ -714,7 +714,7 @@ export class Game {
           s.grazeCount++;
           s.shakeMag = 3;
           this.particles.spawn(b.x, b.y, '#7bed9f', 6);
-          this.spawnScorePopup(b.x, b.y - p.r - 10, gained);
+          this.ui.showScorePopup?.(gained);
         }
       }
     }

@@ -76,6 +76,7 @@ export class UI {
   cacheElements() {
     this.overlay = document.getElementById("overlay");
     this.hud = document.getElementById("hud");
+    this.scorePopupLayer = document.getElementById("scorePopupLayer");
     this.pause = document.getElementById("pauseOverlay");
     this.bannerEl = document.getElementById("waveBanner");
     this.modeScreen = document.getElementById("modeScreen");
@@ -482,6 +483,28 @@ export class UI {
     const seconds = Math.floor(total % 60);
     const tenths = Math.floor((total % 1) * 10);
     this.el.time.textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${tenths}`;
+  }
+
+  showScorePopup(amount) {
+    if (!this.scorePopupLayer) return;
+
+    const popup = document.createElement("span");
+    popup.className = "score-popup";
+    popup.textContent = `+${Math.round(amount)}`;
+
+    // Match the live SCORE typography exactly (family, size, weight, spacing).
+    if (this.el?.score) {
+      const scoreStyle = getComputedStyle(this.el.score);
+      popup.style.fontFamily = scoreStyle.fontFamily;
+      popup.style.fontSize = scoreStyle.fontSize;
+      popup.style.fontWeight = scoreStyle.fontWeight;
+      popup.style.lineHeight = scoreStyle.lineHeight;
+      popup.style.letterSpacing = scoreStyle.letterSpacing;
+      popup.style.fontVariantNumeric = scoreStyle.fontVariantNumeric;
+    }
+
+    this.scorePopupLayer.appendChild(popup);
+    popup.addEventListener("animationend", () => popup.remove(), { once: true });
   }
 
   updateScores(s, players, mode) {
