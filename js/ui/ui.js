@@ -457,8 +457,11 @@ export class UI {
     this.el.waveTitle.textContent = isBoss ? `BOSS WAVE ${n}` : `WAVE ${n}`;
     this.el.waveTitle.classList.toggle("boss-title", isBoss);
     this.el.waveSubtitle.textContent = subtitle;
-    this.bannerEl.classList.add("wave-show");
     clearTimeout(this.bannerTimer);
+    this.bannerEl.classList.remove("wave-show");
+    // Force a fresh animation frame so every wave gets exactly one fade.
+    void this.bannerEl.offsetWidth;
+    requestAnimationFrame(() => this.bannerEl.classList.add("wave-show"));
     this.bannerTimer = setTimeout(
       () => this.bannerEl.classList.remove("wave-show"),
       1000,

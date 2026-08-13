@@ -350,35 +350,26 @@ export class Game {
       return;
     }
 
-    const alreadyBuilt = this.pendingWaveBuilt === n;
-
     this.state.waveTransition = 0;
     this.state.transitionWave = 0;
+    this.state.wavePhase = 'active';
     this.state.wave = n;
     this.state.waveTime = 0;
 
-    // Keep bullets from the previous wave alive through the 1-second transition.
-    // They are frozen during transition and continue naturally afterward.
     this.ringWarnings = [];
     this.lasers = [];
+    this.actionQueue = [];
+    this.zone = null;
     this.boss.active = false;
     this.ui.setBossVisible(false);
 
-    if (!alreadyBuilt) {
-      this.actionQueue = [];
-      this.state.waveDuration = this.waveSystem.duration(n);
-      const subtitle = this.isBossWave(n)
-        ? this.waveSystem.buildBoss(n)
-        : this.waveSystem.build(n);
+    this.state.waveDuration = this.waveSystem.duration(n);
+    const subtitle = this.isBossWave(n)
+      ? this.waveSystem.buildBoss(n)
+      : this.waveSystem.build(n);
 
-      this.ui.setWave(n);
-      this.ui.banner(n, subtitle, this.isBossWave(n));
-    } else {
-      // The banner and pattern schedule were already created during transition.
-      this.state.waveDuration = this.waveSystem.duration(n);
-    }
-
-    this.pendingWaveBuilt = 0;
+    this.ui.setWave(n);
+    this.ui.banner(n, subtitle, this.isBossWave(n));
 
     if (this.isBossWave(n)) {
       this.boss.active = true;
@@ -386,33 +377,36 @@ export class Game {
     }
   }
 
-  /** One-second inter-wave pause. Existing bullets remain frozen on screen. */
   beginWaveTransition(n) {
+    // Called only after the previous wave has fully drained.
+    this.state.wavePhase = 'transition';
     this.state.waveTransition = CONFIG.wave.transition;
     this.state.transitionWave = n;
+    this.ui.setWave(n);
+    this.ui.banner(n, '', this.isBossWave(n));
+  }
 
-    // Cancel only future actions/telegraphs from the old wave.
-    // Existing bullets are deliberately preserved.
+  startWaveEnding() {
+    if (this.state.wavePhase !== 'active') return;
+
+    // The configured duration is the SPAWN WINDOW.
+    // Existing bullets/pattern effects are never deleted here.
+    this.state.wavePhase = 'draining';
     this.actionQueue = [];
     this.ringWarnings = [];
     this.lasers = [];
     this.zone = null;
     this.boss.active = false;
     this.ui.setBossVisible(false);
+  }
 
-    const isBoss = this.isBossWave(n);
-    const subtitle = isBoss
-      ? this.waveSystem.buildBoss(n)
-      : this.waveSystem.build(n);
-
-    this.state.wave = n;
-    this.state.waveDuration = this.waveSystem.duration(n);
-    this.state.waveTime = 0;
-
-    // Build and show exactly once. startWave() will only activate it after pause.
-    this.pendingWaveBuilt = n;
-    this.ui.setWave(n);
-    this.ui.banner(n, subtitle, isBoss);
+  isWaveClear() {
+    return (
+      this.bullets.items.length === 0 &&
+      this.ringWarnings.length === 0 &&
+      this.lasers.length === 0 &&
+      !this.zone
+    );
   }
 
   hitPlayer(player) {
@@ -498,14 +492,13 @@ export class Game {
     this.bulletCleanupCooldown = Math.max(0, this.bulletCleanupCooldown - rawDt);
     this.bulletCleanupUsedThisFrame = 0;
 
-    if (s.waveTransition > 0) {
-      // Player control remains live during the one-second transition. Everything
-      // that can damage or advance the encounter is frozen.
+    if (s.wavePhase === 'transition') {
       this.updatePlayers(0, rawDt);
       s.waveTransition = Math.max(0, s.waveTransition - rawDt);
       this.particles.update(rawDt);
       this.updateScorePopups(rawDt);
       this.ui.update(s, this.players, this.state.mode);
+
       if (s.waveTransition <= 0) {
         this.startWave(s.transitionWave, true);
       }
@@ -516,29 +509,34 @@ export class Game {
     this.updateScore(dt);
     this.updatePlayers(dt, rawDt);
     this.updateBoss(dt);
-    this.runScheduledActions();
+
+    if (s.wavePhase === 'active') {
+      this.runScheduledActions();
+    }
+
     this.updateRingWarnings(dt);
     this.updateZoneHazard(dt);
     this.updateLasers(dt);
 
-    if (s.waveTime >= s.waveDuration) {
-      if (s.wave >= 20) {
-        this.boss.active = false;
-        this.bullets.clear();
-        this.actionQueue = [];
-        this.ringWarnings = [];
-        this.lasers = [];
-        this.ui.setBossVisible(false);
-        this.gameOver();
-      } else {
-        this.startWave(s.wave + 1);
-      }
-      return;
+    // Duration ends only the spawning phase. Existing projectiles continue.
+    if (s.wavePhase === 'active' && s.waveTime >= s.waveDuration) {
+      this.startWaveEnding();
     }
 
     if (s.timeStopRemaining <= 0) {
       this.assistBullets(dt);
       this.updateBullets(dt);
+    }
+
+    // Do not start the next wave until every object from this wave has
+    // naturally left/finished.
+    if (s.wavePhase === 'draining' && this.isWaveClear()) {
+      if (s.wave >= 20) {
+        this.gameOver();
+        return;
+      }
+      this.beginWaveTransition(s.wave + 1);
+      return;
     }
 
     this.updateSkillEffects(rawDt);
