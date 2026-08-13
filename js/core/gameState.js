@@ -16,7 +16,11 @@ export class GameState {
     this.elapsed = 0;
     this.waveDuration = 30;
     this.waveTransition = 0;
+    this.wavePhase = 'active'; // active -> draining -> transition
     this.transitionWave = 0;
+    this.waveEnding = false;
+    this.waveEndingTime = 0;
+    this.waveEndingMax = 3.0;
     this.grazeCount = 0;
     this.combo = 0;
     this.comboTimer = 0;
