@@ -10,6 +10,7 @@ export class BulletManager{
       splitter:!!opts.splitter,
       split:false,
       bounce:!!opts.bounce,
+      wall:!!opts.wall,
       bounces:0,
       maxBounces:opts.maxBounces||3,
       homing:!!opts.homing,

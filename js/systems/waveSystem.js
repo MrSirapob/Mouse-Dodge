@@ -189,16 +189,27 @@ export class WaveSystem {
         wall(25.0, 2.55, c1, false, 0.075);
         aimed(27.0, 36, 0.24, 2.4, c2);
         spiral(29.0, 8.0, 4, 2.0, c1);
+        break;      case 6:
+        // W6 — dense new gameplay set.
+        // Machine Gun: speed 10, tightly packed with a small controlled spread.
+        this.p.machineGunTop(0.30, 220, 0.045, 10.0, 40, c1);
+
+        // Diagonal Rain removed.
+        this.p.crossfire(10.5, 7, 0.82, 12, 2.55, c1);
+        this.p.delayedBurst(15.5, 8, 0.72, 1.35, 12, 2.35, c2);
+
+        // Moving Sweep: map-sized synchronized wall with one tight opening.
+        this.p.movingSweep(20.5, 6, 1.05, 2.65, c1, true);
+
+        this.p.aimed(27.0, 300, 0.08, 2.45, c2);
+        this.p.ricochetField(33.0, 300, 0.08, 2.5, c1);
+
+        this.p.movingSweep(39.0, 4, 0.95, 2.7, c1, false);
         break;
-      case 6:
-        wall(0.5, 2.5, c1, true, 0.08);
-        aimed(2.0, 34, 0.25, 2.4, c2);
-        ring(7.0, 640, 360, 34, 2.4, c1);
-        wall(11.0, 2.55, c2, false, 0.075);
-        cross(16.0, 12, 2.5, c1);
-        aimed(22.0, 38, 0.23, 2.45, c2);
-        ring(28.0, 640, 360, 36, 2.45, c1);
-        break;
+
+
+
+
       case 7:
         aimed(0.0, 36, 0.24, 2.45);
         splitter(5.0, 8, 0.8, 1.95, c2);

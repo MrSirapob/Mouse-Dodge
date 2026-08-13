@@ -102,6 +102,14 @@ export class Game {
    * or on an obvious collision trajectory.
    */
   spawnBullet(...args) {
+    const opts = args[6] || {};
+    // A Moving Sweep is one structural wall represented by many bullets.
+    // It must not be truncated by the normal projectile-density cap.
+    if (opts.wall) {
+      this.bullets.spawn(...args);
+      return true;
+    }
+
     const cap = this.bulletCap();
     const count = this.bullets.items.length;
     const density = count / Math.max(1, cap);
@@ -138,6 +146,8 @@ export class Game {
 
     for (let i = 0; i < this.bullets.items.length; i++) {
       const b = this.bullets.items[i];
+      // Structural wall pieces are never candidates for capacity cleanup.
+      if (b.wall) continue;
       let nearest = Infinity;
       let danger = 0;
 
@@ -178,6 +188,9 @@ export class Game {
       let score = ageScore + distanceScore + edgeScore + movingAwayScore - danger;
 
       // Special bullets can create important patterns, so keep them longer.
+      // Wall bullets are structural: deleting individual pieces would create
+      // fake holes in an otherwise continuous Moving Sweep.
+      if (b.wall) score -= 60;
       if (b.splitter && !b.split) score -= 28;
       if (b.bounce && b.bounces < b.maxBounces) score -= 18;
       if (b.repulseT > 0) score -= 20;
