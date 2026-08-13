@@ -14,8 +14,8 @@ import { DevMode } from './devMode.js';
 /**
  * Game is the top-level orchestrator: it owns all entities/systems and runs
  * the per-frame update loop. Gameplay rules that don't have an obvious home
- * elsewhere (bullet movement/collision, lasers, the shrinking zone hazard,
- * scoring) live directly on this class.
+ * elsewhere (bullet movement/collision, lasers, scoring) live directly on
+ * this class.
  *
  * Frame flow: main.js calls `start()` once, which kicks off `loop()`, which
  * calls `update(dt)` then `draw()` every animation frame. `update()` is
@@ -44,7 +44,6 @@ export class Game {
     this.actionQueue = [];   // scheduled { time, fn } spawn callbacks, run when state.waveTime reaches `time`
     this.ringWarnings = [];  // telegraph rings shown before a `ring`/`bossRing` pattern fires
     this.lasers = [];        // active laser hazards (telegraph -> fire -> gone)
-    this.zone = null;        // shrinking safe-zone hazard, or null if not active this wave
     this.skillEffects = [];  // transient visual effects spawned by SkillSystem
     this.scorePopups = [];   // floating "+N" text spawned on graze (see spawnScorePopup)
     this.pendingWaveBuilt = 0;
@@ -302,7 +301,6 @@ export class Game {
     this.players[1].down = mode === GAME_MODES.SOLO;
 
     this.boss.reset();
-    this.zone = null;
     this.state.reset();
     this.state.state = GAME_STATES.PLAYING;
     this.state.mode = mode;
@@ -359,7 +357,6 @@ export class Game {
     this.ringWarnings = [];
     this.lasers = [];
     this.actionQueue = [];
-    this.zone = null;
     this.boss.active = false;
     this.ui.setBossVisible(false);
 
@@ -400,7 +397,6 @@ export class Game {
     this.actionQueue = [];
     this.ringWarnings = [];
     this.lasers = [];
-    this.zone = null;
     this.boss.active = false;
     this.ui.setBossVisible(false);
   }
@@ -409,8 +405,7 @@ export class Game {
     return (
       this.bullets.items.length === 0 &&
       this.ringWarnings.length === 0 &&
-      this.lasers.length === 0 &&
-      !this.zone
+      this.lasers.length === 0
     );
   }
 
@@ -429,12 +424,8 @@ export class Game {
     this.ui.setBest(0, 0, 0);
 
     // Refresh the currently visible Game Over comparison immediately.
+    // Values are arranged in four rows: time, wave, score, graze.
     const resetBtn = this.ui.resultScreen?.querySelector("#resetBestBtn");
-    this.ui.resultScreen?.querySelectorAll(".run-value.run-best").forEach((el) => {
-      if (el.previousElementSibling) {
-        // Values are arranged in four rows; the reset below handles all of them.
-      }
-    });
     const bestValues = this.ui.resultScreen?.querySelectorAll(".run-value.run-best");
     if (bestValues?.length === 4) {
       bestValues[0].textContent = "0.0s";
@@ -520,7 +511,6 @@ export class Game {
     }
 
     this.updateRingWarnings(dt);
-    this.updateZoneHazard(dt);
     this.updateLasers(dt);
 
     // Duration ends only the spawning phase. Existing projectiles continue.
@@ -625,21 +615,6 @@ export class Game {
       if (w.trackBoss) { w.x = this.boss.x; w.y = this.boss.y; }
       w.t += dt;
       if (w.t >= w.duration) this.ringWarnings.splice(i, 1);
-    }
-  }
-
-  /** Shrinking safe-zone hazard: damages any player caught outside the shrinking circle (after a grace period). */
-  updateZoneHazard(dt) {
-    if (!this.zone) return;
-    const z = this.zone;
-    z.t += dt;
-    const t = Math.min(z.t / z.duration, 1);
-    z.curR = z.startR + (z.minR - z.startR) * t;
-
-    for (const p of this.activePlayers()) {
-      if (p.isAlive() && z.t > z.grace && Math.hypot(p.x - z.cx, p.y - z.cy) > z.curR) {
-        this.hitPlayer(p);
-      }
     }
   }
 
@@ -770,7 +745,6 @@ export class Game {
           const mult = 1 + Math.min(p.combo, 10) * 0.12;
           const gained = 50 * mult;
           p.score += gained;
-          s.grazeCount++;
           s.shakeMag = 3;
           this.particles.spawn(b.x, b.y, '#7bed9f', 6);
           this.ui.showScorePopup?.(gained);

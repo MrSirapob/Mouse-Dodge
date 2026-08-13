@@ -92,12 +92,15 @@ between old and new files).
   on Boss Waves.
 
 ## V11 fairness assist
-- Normal spiral bursts wait while the shrinking arena zone is active, then
-  resume after the zone disappears.
-- From Wave 4 onward, or when the arena is crowded, a subtle near-miss
-  assist can gently steer a bullet that is predicted to hit.
-- Assistance is limited to small steering changes and is applied once per
-  bullet, so it should feel like a close dodge rather than an obvious cheat.
+- Introduced a subtle near-miss assist (Wave 4+, or when the arena is
+  crowded) that could gently steer a bullet predicted to hit, limited to
+  small steering changes applied once per bullet.
+- **Currently disabled**: `Game.dangerAssistDelay()` and `Game.assistBullets()`
+  are both no-ops in the present code. The shrinking-arena-zone tie-in
+  described in the original entry no longer applies either, since that
+  hazard system has been removed (see dead-code cleanup). Re-enable
+  deliberately if this fairness behavior is wanted again — don't assume
+  it's currently active.
 
 ## V12 player-friendly patterns
 - Ring patterns leave a small opening aimed toward the nearest active

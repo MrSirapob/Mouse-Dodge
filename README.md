@@ -11,7 +11,7 @@ For version history and past refactor notes, see [CHANGELOG.md](./CHANGELOG.md).
 - Solo and local 2-player Co-op
 - Responsive Canvas world with desktop + touch input
 - Skill selection via dropdown
-- 9 selectable skills:
+- 8 selectable skills:
   - Pulse
   - Shield
   - Slow
@@ -63,9 +63,9 @@ in gameplay logic.
 
 ### How to extend common things
 
-- **New wave-tier mechanic**: add another `if (n >= N) { ... }` block in
-  `js/systems/waveSystem.js`'s `build()` — each block queues patterns via
-  `this.p.<pattern>(...)` and appends a Thai label.
+- **New wave-tier mechanic**: add another `case N:` block to the
+  `switch (n)` in `js/systems/waveSystem.js`'s `build()` — each block queues
+  patterns via `this.p.<pattern>(...)` and appends a Thai label.
 - **New bullet pattern**: add a method to `js/patterns/patterns.js`
   (`PatternLibrary`), following the existing multi-line + doc-comment style.
 - **New skill**: add its config to `CONFIG.skills` in `config.js`, its

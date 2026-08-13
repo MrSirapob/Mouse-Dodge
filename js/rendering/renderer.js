@@ -414,7 +414,6 @@ export class Renderer {
   /** Draws every layer of the world in back-to-front order. */
   drawWorld(game) {
     this.drawGrid();
-    if (game.zone) this.drawZone(game.zone);
     for (const w of game.ringWarnings) this.drawWarning(w);
     for (const l of game.lasers) this.drawLaser(l);
     if (game.boss.active) this.drawBoss(game.boss);
@@ -429,25 +428,6 @@ export class Renderer {
 
     for (const fx of game.skillEffects) this.drawSkillEffect(fx);
     // Graze score popups are displayed beside the HUD SCORE value.
-  }
-
-  drawZone(z) {
-    const c = this.ctx;
-    c.save();
-    // Fill everything outside the safe circle (evenodd rule) to show the danger area.
-    c.beginPath();
-    c.rect(-30, -30, 1340, 780);
-    c.arc(z.cx, z.cy, z.curR, 0, Math.PI * 2, true);
-    c.fillStyle = 'rgba(255,0,0,.12)';
-    c.fill('evenodd');
-
-    c.beginPath();
-    c.arc(z.cx, z.cy, z.curR, 0, Math.PI * 2);
-    c.strokeStyle = '#ff5c5c';
-    c.setLineDash([8, 6]);
-    c.lineWidth = 2;
-    c.stroke();
-    c.restore();
   }
 
   drawWarning(w) {

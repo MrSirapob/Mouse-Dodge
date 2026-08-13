@@ -82,11 +82,6 @@ export class PatternLibrary {
 
     for (let i = 0; i < steps; i++) {
       const fire = () => {
-        if (this.game.zone) {
-          // Pause spiral emission while the shrinking safe-zone hazard is active.
-          this.game.queue(this.game.state.waveTime + 0.12, fire);
-          return;
-        }
         const baseAngle = i * 0.25;
         for (let a = 0; a < arms; a++) {
           const angle = baseAngle + (Math.PI * 2 * a) / arms;
@@ -97,22 +92,22 @@ export class PatternLibrary {
     }
   }
 
-  /** A wall of bullets from one edge, with a gap positioned near the player's lane. */
-  wall(start, speed, color, vertical) {
+  /** A wall of bullets from one edge, with a gap positioned near the player's lane. `gap` (0-1, fraction of the wall's span) sets the corridor width; waves narrow it over time. Falls back to a segment-based default when omitted. */
+  wall(start, speed, color, vertical, gap = null) {
     this.game.queue(start, () => {
       const alive = this.game.activePlayers().filter(p => p.isAlive());
       const player = alive.length ? alive[0] : null;
       const playerT = player ? (vertical ? player.x / 1280 : player.y / 720) : 0.15 + Math.random() * 0.7;
-      const gap = Math.max(0.08, Math.min(0.92, playerT));
+      const gapPos = Math.max(0.08, Math.min(0.92, playerT));
       // The opening is intentionally only a little wider than the real player
       // collision. Dense segments make the corridor tight instead of creating
       // a large 'safe lane'.
       const segments = vertical ? 61 : 35;
-      const gapSize = 2 / segments;
+      const gapSize = gap != null ? gap : 2 / segments;
 
       for (let i = 0; i < segments; i++) {
         const t = i / (segments - 1);
-        if (Math.abs(t - gap) < gapSize / 2) continue; // skip the gap
+        if (Math.abs(t - gapPos) < gapSize / 2) continue; // skip the gap
         if (vertical) this.game.spawnBullet(t * 1280, -20, 0, speed, 6, color);
         else this.game.spawnBullet(-20, t * 720, speed, 0, 6, color);
       }

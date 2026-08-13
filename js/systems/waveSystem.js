@@ -78,7 +78,6 @@ export class WaveSystem {
 
   build(n) {
     this.clear();
-    this.game.zone = null;
 
     const speedTier = n <= 4 ? 1.0 : n <= 9 ? 1.08 : n <= 14 ? 1.16 : 1.25;
     const c1 = this.color(n);
@@ -347,7 +346,6 @@ export class WaveSystem {
 
   buildBoss(n) {
     this.clear();
-    this.game.zone = null;
     const c1 = this.color(n, 0);
     const c2 = this.color(n, 2);
     const c3 = this.color(n, 4);
