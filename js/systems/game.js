@@ -371,6 +371,13 @@ export class Game {
     this.ui.setWave(n);
     this.ui.banner(n, subtitle, this.isBossWave(n));
 
+    // Hold off on spawning (and any other scheduled pattern events, which
+    // all flow through `queue(time, fn)` with times relative to wave start)
+    // until the wave-announcement banner has fully faded. waveTime starts
+    // negative and counts up to 0 over that wait, so every queued time
+    // (which are all >= 0) fires only once the text is gone.
+    this.state.waveTime = -(CONFIG.wave.bannerDisplayMs / 1000);
+
     if (this.isBossWave(n)) {
       this.boss.active = true;
       this.ui.setBossVisible(true);
@@ -598,7 +605,7 @@ export class Game {
     this.boss.y += (CONFIG.world.height * 0.22 - this.boss.y) * 0.03;
     this.boss.x = CONFIG.world.width / 2 + Math.sin(s.waveTime * 0.6) * CONFIG.world.width * 0.22;
     this.boss.hue += dt * 60;
-    this.ui.setBossProgress(Math.max(0, 1 - s.waveTime / s.waveDuration) * 100);
+    this.ui.setBossProgress(Math.max(0, Math.min(1, 1 - s.waveTime / s.waveDuration)) * 100);
   }
 
   /** Runs any queued pattern-spawn callbacks whose scheduled time has arrived. */

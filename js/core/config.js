@@ -28,7 +28,7 @@ export const CONFIG = {
     phase: { cooldown: 9, duration: 2.0 }
   },
   revive: { duration: 2.0, radius: 46 },
-  wave: { baseDuration: 30, minDuration: 30, bossBase: 60, bossMax: 60, transition: 1 },
+  wave: { baseDuration: 30, minDuration: 30, bossBase: 60, bossMax: 60, transition: 1, bannerDisplayMs: 3000 },
   bullets: {
     capEarly: 260,
     capMid: 340,

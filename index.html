@@ -1,225 +1,249 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#07090d">
-  <title>WAVE DODGE — SEALED</title>
-  <style>
-    :root {
-      --bg:#07090d;
-      --text:#f4f5f7;
-      --muted:#858b96;
-      --line:rgba(255,255,255,.10);
-      --soft:rgba(255,255,255,.055);
-    }
-    *{box-sizing:border-box}
-    html,body{width:100%;min-height:100%;margin:0}
-    body{
-      min-height:100vh; min-height:100svh; overflow:hidden;
-      display:grid; place-items:center; padding:22px;
-      color:var(--text);
-      background:
-        radial-gradient(circle at 50% 45%,rgba(255,255,255,.06),transparent 30%),
-        radial-gradient(circle at 50% 50%,rgba(255,255,255,.025),transparent 52%),
-        var(--bg);
-      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
-    }
-
-    .scene{position:fixed;inset:0;pointer-events:none;overflow:hidden}
-    .scan{
-      position:absolute;inset:0;opacity:.18;
-      background:repeating-linear-gradient(
-        to bottom,transparent 0,transparent 3px,
-        rgba(255,255,255,.018) 4px,transparent 5px
-      );
-      animation:scan 7s linear infinite;
-    }
-    .grid{
-      position:absolute;inset:-25%;
-      opacity:.12;
-      background-image:
-        linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
-        linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
-      background-size:52px 52px;
-      transform:perspective(500px) rotateX(62deg) translateY(19%);
-      transform-origin:center bottom;
-      animation:grid 8s linear infinite;
-    }
-    .ring{
-      position:absolute;left:50%;top:50%;
-      border:1px solid rgba(255,255,255,.055);
-      border-radius:50%;
-      transform:translate(-50%,-50%);
-      animation:expand 5s ease-in-out infinite;
-    }
-    .r1{width:360px;height:360px}
-    .r2{width:600px;height:600px;animation-delay:-2.5s;opacity:.55}
-    .particle{
-      position:absolute;width:2px;height:2px;border-radius:50%;
-      background:rgba(255,255,255,.7);
-      box-shadow:0 0 12px rgba(255,255,255,.4);
-      animation:particle 5s ease-in-out infinite;
-    }
-    .p1{left:15%;top:23%;animation-delay:-1s}
-    .p2{left:81%;top:20%;animation-delay:-3s}
-    .p3{left:19%;top:77%;animation-delay:-2s}
-    .p4{left:86%;top:73%;animation-delay:-4s}
-    .p5{left:67%;top:12%;animation-delay:-2.6s}
-
-    .card{
-      position:relative;z-index:2;width:min(650px,100%);
-      padding:clamp(34px,7vw,62px) clamp(24px,7vw,64px);
-      text-align:center;
-      border:1px solid var(--line);
-      background:rgba(9,11,16,.80);
-      backdrop-filter:blur(17px);-webkit-backdrop-filter:blur(17px);
-      box-shadow:0 35px 110px rgba(0,0,0,.56),inset 0 1px 0 rgba(255,255,255,.035);
-      animation:cardIn .9s cubic-bezier(.22,1,.36,1) both;
-    }
-    .card:before,.card:after{
-      content:"";position:absolute;width:26px;height:26px;opacity:.6;
-    }
-    .card:before{left:-1px;top:-1px;border-left:1px solid #aaa;border-top:1px solid #aaa}
-    .card:after{right:-1px;bottom:-1px;border-right:1px solid #aaa;border-bottom:1px solid #aaa}
-
-    .seal{
-      width:112px;height:112px;margin:0 auto 25px;position:relative;
-      display:grid;place-items:center;
-      animation:sealIn 1s .12s cubic-bezier(.22,1,.36,1) both;
-    }
-    .seal:before{
-      content:"";position:absolute;inset:4px;
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:50%;
-      animation:spin 14s linear infinite;
-    }
-    .seal:after{
-      content:"";position:absolute;inset:15px;
-      border:1px dashed rgba(255,255,255,.16);
-      border-radius:50%;
-      animation:spinReverse 9s linear infinite;
-    }
-    .core{
-      width:54px;height:54px;display:grid;place-items:center;
-      border:1px solid rgba(255,255,255,.22);
-      transform:rotate(45deg);
-      box-shadow:0 0 34px rgba(255,255,255,.07);
-      animation:corePulse 2.4s ease-in-out infinite;
-    }
-    .core span{
-      transform:rotate(-45deg);
-      font-size:25px;
-      opacity:.88;
-    }
-
-    .eyebrow{
-      margin-bottom:11px;color:#777e89;
-      font-size:10px;font-weight:700;letter-spacing:.34em;
-      text-transform:uppercase;animation:fadeUp .7s .32s both;
-    }
-    h1{
-      margin:0;
-      font-size:clamp(31px,7.5vw,55px);
-      line-height:1.08;letter-spacing:-.045em;font-weight:800;
-      animation:fadeUp .7s .42s both;
-    }
-    .divider{
-      width:90px;height:1px;margin:20px auto 20px;
-      background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);
-      animation:lineIn .8s .5s both;
-    }
-    .desc{
-      margin:0 auto;max-width:470px;color:#8c929c;
-      font-size:14px;line-height:1.9;
-      animation:fadeUp .7s .55s both;
-    }
-    .quote{
-      margin-top:18px;color:#d1d4d9;font-size:13px;
-      letter-spacing:.05em;
-      animation:fadeUp .7s .62s both;
-    }
-    .status{
-      display:inline-flex;align-items:center;gap:9px;
-      margin-top:28px;padding:9px 15px;
-      border:1px solid rgba(255,255,255,.10);
-      color:#858b95;font-size:9px;font-weight:700;letter-spacing:.22em;
-      animation:fadeUp .7s .7s both;
-    }
-    .pulse{
-      width:5px;height:5px;border-radius:50%;background:#c4c7cc;
-      box-shadow:0 0 0 0 rgba(255,255,255,.35);
-      animation:pulse 1.7s ease-out infinite;
-    }
-    .code{
-      position:absolute;left:18px;top:14px;
-      color:rgba(255,255,255,.18);font:9px/1 monospace;
-      letter-spacing:.15em;
-    }
-    .code2{
-      position:absolute;right:18px;bottom:14px;
-      color:rgba(255,255,255,.18);font:9px/1 monospace;
-      letter-spacing:.15em;
-    }
-
-    @keyframes cardIn{from{opacity:0;transform:translateY(22px) scale(.985)}to{opacity:1;transform:none}}
-    @keyframes sealIn{from{opacity:0;transform:scale(.5) rotate(-35deg)}to{opacity:1;transform:none}}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-    @keyframes lineIn{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    @keyframes spinReverse{to{transform:rotate(-360deg)}}
-    @keyframes corePulse{0%,100%{box-shadow:0 0 18px rgba(255,255,255,.035);transform:rotate(45deg) scale(.96)}50%{box-shadow:0 0 40px rgba(255,255,255,.12);transform:rotate(45deg) scale(1.04)}}
-    @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.3)}70%{box-shadow:0 0 0 8px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
-    @keyframes expand{0%,100%{transform:translate(-50%,-50%) scale(.96);opacity:.25}50%{transform:translate(-50%,-50%) scale(1.04);opacity:.7}}
-    @keyframes grid{to{background-position:0 52px,52px 0}}
-    @keyframes scan{from{transform:translateY(-5%)}to{transform:translateY(5%)}}
-    @keyframes particle{0%,100%{transform:translateY(0);opacity:.2}50%{transform:translateY(-16px);opacity:.85}}
-
-    @media(max-width:520px){
-      body{padding:15px}
-      .card{padding:34px 20px}
-      .seal{width:96px;height:96px}
-      .desc{font-size:13px}
-      .r1{width:270px;height:270px}.r2{width:470px;height:470px}
-    }
-    @media(prefers-reduced-motion:reduce){
-      *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important}
-    }
-  </style>
+  <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="apple-touch-icon" href="assets/favicon.png">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <title>Wave Dodge — Survival</title>
+  <link rel="stylesheet" href="./css/main.css">
 </head>
 <body>
-  <div class="scene" aria-hidden="true">
-    <div class="grid"></div>
-    <div class="scan"></div>
-    <div class="ring r1"></div>
-    <div class="ring r2"></div>
-    <i class="particle p1"></i><i class="particle p2"></i><i class="particle p3"></i>
-    <i class="particle p4"></i><i class="particle p5"></i>
-  </div>
-
-  <main class="card">
-    <span class="code">WD // 000</span>
-    <span class="code2">SEAL // ACTIVE</span>
-
-    <div class="seal" aria-hidden="true">
-      <div class="core"><span>⚙</span></div>
+<main id="gameRoot">
+  <canvas id="game" aria-label="เกมหลบกระสุน"></canvas>
+  <section id="hud" class="hidden" aria-live="polite">
+    <div class="hud-zone hud-p1" aria-label="Player 1">
+      <div class="hud-player-title p1-title"><span class="player-dot"></span>PLAYER 1</div>
+      <div class="hud-row">
+        <div class="hud-card lives-card p1-lives"><span class="hud-label">LIVES</span><b id="lives">❤️❤️❤️</b></div>
+        <div class="hud-card player-score p1-score"><span class="hud-label">SCORE</span><b id="p1Score">0</b></div>
+      </div>
+      <div class="hud-card skill-card" id="skillChip">
+        <div class="skill-head"><span class="hud-label">SKILL</span><b id="skillName">PULSE</b></div>
+        <div class="skill-status"><span id="skillStatus">READY</span><span id="skillVal">READY</span></div>
+        <div class="skill-bar"><i id="skillBarFill"></i></div>
+      </div>
     </div>
 
-    <div class="eyebrow">WAVE DODGE // SYSTEM STATUS</div>
-    <h1>การต่อสู้ยังไม่จบ</h1>
-    <div class="divider"></div>
-
-    <p class="desc">
-      สนามรบแห่งนี้กำลังถูกปิดผนึกชั่วคราว<br>
-      เพื่อเตรียมรับมือกับสิ่งที่กำลังจะมา
-    </p>
-
-    <div class="quote">เมื่อประตูเปิดอีกครั้ง... จงเตรียมตัวให้พร้อม</div>
-
-    <div class="status">
-      <span class="pulse"></span>
-      THE NEXT WAVE IS COMING
+    <div class="hud-zone" aria-label="Game status">
+      <div class="hud-stat"><span class="hud-label">WAVE</span><b id="wave">1</b></div>
+      <div class="hud-stat"><span class="hud-label">TIME</span><b id="time">00:00.0</b></div>
+      <div class="hud-stat score-hud-stat">
+  <span class="hud-label" id="scoreLabel">SCORE</span>
+  <span class="score-line"><b id="score">0</b><span id="scorePopupLayer" class="score-popup-layer" aria-hidden="true"></span></span>
+</div>
+      <div class="hud-stat hud-extra" aria-hidden="true"><span>BEST</span><b id="bestWave">0</b></div>
+      <div class="hud-stat hud-extra" aria-hidden="true"><span>GRAZE</span><b id="graze">0</b></div>
+      <div class="hud-stat hud-extra hidden" id="comboChip" aria-hidden="true"><span>COMBO</span><b id="comboVal">x1.0</b></div>
     </div>
-  </main>
+    <div class="hud-zone hud-p2 hidden" id="p2Hud" aria-label="Player 2">
+      <div class="hud-player-title p2-title"><span class="player-dot"></span>PLAYER 2</div>
+      <div class="hud-row">
+        <div class="hud-card player-score p2-score"><span class="hud-label">SCORE</span><b id="p2Score">0</b></div>
+        <div class="hud-card lives-card p2-lives"><span class="hud-label">LIVES</span><b id="p2Lives">❤️❤️❤️</b></div>
+      </div>
+      <div class="hud-card skill-card p2-skill" id="p2SkillChip">
+        <div class="skill-head"><span class="hud-label">SKILL</span><b id="p2SkillName">PULSE</b></div>
+        <div class="skill-status"><span id="p2SkillStatus">READY</span><span id="p2SkillVal">READY</span></div>
+        <div class="skill-bar"><i id="p2SkillBarFill"></i></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="bossWrap" class="hidden"><div id="bossLabel">⚠ BOSS INCOMING</div><div id="bossBar"><div id="bossBarFill"></div></div></section>
+  <section id="waveBanner"><div id="waveTitle"></div><div id="waveSubtitle"></div></section>
+  <section id="downBanner" class="hidden" aria-live="assertive"></section>
+
+  <section id="overlay">
+    <div class="menu-screen" id="modeScreen">
+      <div class="hero-title-wrap">
+        <div class="hero-kicker">SURVIVAL GAME</div>
+        <h1>WAVE DODGE</h1>
+        <div class="hero-line"></div>
+        <p>หลบกระสุนให้นานที่สุด และทำสถิติของคุณ</p>
+      </div>
+      <div class="screen-label">เลือกโหมดการเล่น</div>
+      <div class="mode-menu">
+        <button class="mode-choice" data-mode="solo" type="button">
+          <span class="mode-number">01</span><span><strong>เล่นคนเดียว</strong><small>SOLO</small></span><span class="mode-arrow">›</span>
+        </button>
+        <button class="mode-choice" data-mode="coop" type="button">
+          <span class="mode-number">02</span><span><strong>เล่น 2 คน</strong><small>CO-OP</small></span><span class="mode-arrow">›</span>
+        </button>
+      </div>
+      <div class="menu-actions">
+        <button id="howToPlayBtn" class="howto-btn" type="button">วิธีการเล่น</button>
+        <button id="settingsBtn" class="howto-btn settings-btn" type="button">ตั้งค่า</button>
+      </div>
+    </div>
+
+    <div class="menu-screen hidden" id="settingsScreen">
+      <button class="back-btn" id="backSettingsBtn" type="button">‹ กลับ</button>
+
+      <div class="howto-head">
+        <div class="hero-kicker">SETTINGS</div>
+        <h2>ตั้งค่า</h2>
+        <p>ปรับการควบคุมให้เหมาะกับการเล่นของคุณ</p>
+      </div>
+
+      <div class="settings-panel">
+        <div class="settings-row">
+          <div class="settings-copy">
+            <strong>ความไวเมาส์</strong>
+            <span>ปรับความเร็วในการตอบสนองของตัวละครตามเมาส์</span>
+          </div>
+          <output id="mouseSensitivityValue" class="settings-value" for="mouseSensitivity">100%</output>
+        </div>
+        <input id="mouseSensitivity" class="settings-range" type="range" min="25" max="300" step="5" value="100" aria-label="ความไวเมาส์">
+        <div class="settings-scale"><span>ช้ามาก</span><span>ปกติ</span><span>เร็วมาก</span></div>
+      </div>
+    </div>
+
+    <div class="menu-screen hidden" id="howToPlayScreen">
+      <button class="back-btn" id="backHowToPlayBtn" type="button">‹ กลับ</button>
+
+      <div class="howto-head">
+        <div class="hero-kicker">HOW TO PLAY</div>
+        <h2>วิธีการเล่น</h2>
+        <p>เลือกอุปกรณ์และโหมดที่ต้องการดู</p>
+      </div>
+
+      <div class="howto-platforms" role="tablist" aria-label="อุปกรณ์">
+        <button class="howto-platform active" data-platform="pc" type="button">PC</button>
+        <button class="howto-platform" data-platform="mobile" type="button">มือถือ</button>
+      </div>
+
+      <div class="howto-panel active" data-platform-panel="pc">
+        <div class="howto-mode-tabs" role="tablist" aria-label="โหมด PC">
+          <button class="howto-mode active" data-howto-mode="solo" type="button">เล่นคนเดียว</button>
+          <button class="howto-mode" data-howto-mode="coop" type="button">เล่น 2 คน</button>
+        </div>
+
+        <div class="howto-content active" data-howto-content="pc-solo">
+          <div class="howto-section">
+            <h3>PC · เล่นคนเดียว</h3>
+            <div class="control-list">
+              <div><kbd>เมาส์</kbd><span>เคลื่อนที่ตัวละคร</span></div>
+              <div><kbd>คลิกซ้าย</kbd><span>ใช้สกิล</span></div>
+              <div><kbd>SPACE</kbd><span>หยุด / เล่นต่อ</span></div>
+            </div>
+          </div>
+          <div class="howto-section">
+            <h3>เป้าหมาย</h3>
+            <p>หลบกระสุนให้นานที่สุด เก็บ Score และทำ Wave กับ Graze ให้สูงขึ้น</p>
+          </div>
+          <div class="howto-tip">เข้าใกล้กระสุนโดยไม่โดน จะได้ <strong>Graze</strong> และเพิ่มคะแนน</div>
+        </div>
+
+        <div class="howto-content" data-howto-content="pc-coop">
+          <div class="howto-section">
+            <h3>PC · เล่น 2 คน</h3>
+            <div class="control-list">
+              <div><kbd>P1 · เมาส์</kbd><span>เคลื่อนที่ Player 1</span></div>
+              <div><kbd>คลิกซ้าย</kbd><span>ใช้สกิล P1</span></div>
+              <div><kbd>P2 · WASD</kbd><span>เคลื่อนที่ Player 2</span></div>
+              <div><kbd>↑ ↓ ← →</kbd><span>เคลื่อนที่ Player 2</span></div>
+              <div><kbd>/</kbd><span>ใช้สกิล P2</span></div>
+              <div><kbd>SPACE</kbd><span>หยุด / เล่นต่อ</span></div>
+            </div>
+          </div>
+          <div class="howto-section">
+            <h3>เป้าหมาย</h3>
+            <p>ช่วยกันเอาตัวรอดและทำ <strong>Team Score</strong> ให้สูงที่สุด</p>
+          </div>
+          <div class="howto-tip">ถ้าเพื่อนอยู่ในสถานะ DOWN ให้ช่วยเพื่อนเพื่อกลับมาเล่นต่อ</div>
+        </div>
+      </div>
+
+      <div class="howto-panel" data-platform-panel="mobile">
+        <div class="howto-mode-tabs single">
+          <button class="howto-mode active" type="button">เล่นคนเดียว</button>
+        </div>
+
+        <div class="howto-content active">
+          <div class="howto-section">
+            <h3>มือถือ · เล่นคนเดียว</h3>
+            <div class="control-list">
+              <div><kbd>ลากนิ้ว</kbd><span>เคลื่อนที่ตัวละคร</span></div>
+              <div><kbd>แตะ 2 ครั้ง</kbd><span>ใช้สกิล</span></div>
+            </div>
+          </div>
+          <div class="howto-section">
+            <h3>เป้าหมาย</h3>
+            <p>หลบกระสุนให้นานที่สุด เก็บ Score และทำ Wave กับ Graze ให้สูงขึ้น</p>
+          </div>
+          <div class="howto-tip">มือถือรองรับ <strong>เล่นคนเดียว</strong> เท่านั้น · โหมด 2 คนต้องเล่นบน PC</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="menu-screen hidden" id="skillScreen">
+      <button class="back-btn" id="backModeBtn" type="button">‹ กลับ</button>
+      <div class="skill-screen-head">
+        <div class="hero-kicker">LOADOUT</div>
+        <h2>เลือกสกิล</h2>
+        <p id="skillScreenSub">เลือกสกิลที่ต้องการก่อนเริ่มเกม</p>
+      </div>
+
+      <div class="skill-player-block" id="p1SkillPicker">
+        <div class="skill-player-head"><strong>PLAYER 1</strong><span>เมาส์ใช้สกิล</span></div>
+        <div class="skill-card-grid" data-skill-player="1"></div>
+      </div>
+
+      <div class="skill-player-block hidden" id="p2SkillPicker">
+        <div class="skill-player-head"><strong>PLAYER 2</strong><span>กด / ใช้สกิล</span></div>
+        <div class="skill-card-grid" data-skill-player="2"></div>
+      </div>
+
+      <div class="selected-loadout" id="selectedLoadout"></div>
+      <button id="startBtn" class="start" type="button">เริ่มเล่น</button>
+      <div class="menu-hint" id="controlHint">P1: เมาส์ · Space: หยุดเกม</div>
+    </div>
+
+    <div class="menu-screen hidden" id="resultScreen"></div>
+  </section>
+
+  <section id="devPanel" class="hidden" aria-label="Developer Mode">
+    <div class="dev-title">
+      <div><span class="dev-dot"></span><b>DEV MODE</b><span id="devBulletCount">BULLETS 0/0</span></div>
+      <button class="dev-collapse" id="devCollapse" type="button" aria-label="ย่อ Dev Mode">−</button>
+    </div>
+    <div class="dev-body">
+      <div class="dev-group">
+        <span class="dev-group-label">PLAYER</span>
+        <div class="dev-row">
+          <button data-dev="life" title="เพิ่มหัวใจให้ผู้เล่น">+ LIFE</button>
+          <button data-dev="kill" title="ลดหัวใจผู้เล่น">− LIFE</button>
+          <button data-dev="ready" title="รีเซ็ต Cooldown สกิล">SKILL READY</button>
+        </div>
+      </div>
+      <div class="dev-group">
+        <span class="dev-group-label">GAME</span>
+        <div class="dev-row">
+          <button data-dev="wave" title="ข้ามไป Wave ถัดไป">NEXT WAVE</button>
+          <button data-dev="clear" title="ล้างกระสุนทั้งหมด">CLEAR</button>
+          <button data-dev="boss" title="เรียก Boss Wave">BOSS</button>
+        </div>
+      </div>
+      <div class="dev-group">
+        <span class="dev-group-label">CONTROL</span>
+        <div class="dev-row">
+          <button data-dev="god" title="เปิด/ปิดอมตะ">GOD: OFF</button>
+          <button data-dev="pause" title="หยุดหรือเล่นเกมต่อ">PAUSE</button>
+          <button data-dev="restart" class="dev-danger" title="เริ่มเกมใหม่">RESTART</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section id="pauseOverlay" class="hidden">
+    <div class="big">⏸ หยุดชั่วคราว</div>
+    <div class="small">กด SPACE เพื่อเล่นต่อ</div>
+    <div class="pause-actions">
+      <button id="pauseRestartBtn" class="start restart-btn" type="button"><span>↻</span> เล่นใหม่</button>
+      <button id="pauseMenuBtn" class="menu-btn" type="button">กลับเมนู</button>
+    </div>
+  </section>
+</main>
+<script type="module" src="./js/main.js"></script>
 </body>
 </html>

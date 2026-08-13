@@ -457,14 +457,17 @@ export class UI {
     this.el.waveTitle.textContent = isBoss ? `BOSS WAVE ${n}` : `WAVE ${n}`;
     this.el.waveTitle.classList.toggle("boss-title", isBoss);
     this.el.waveSubtitle.textContent = subtitle;
+    const displayMs = CONFIG.wave.bannerDisplayMs;
     clearTimeout(this.bannerTimer);
     this.bannerEl.classList.remove("wave-show");
+    // Keep the CSS fade animation's duration in sync with the on-screen time.
+    this.bannerEl.style.setProperty("--wave-banner-ms", `${displayMs}ms`);
     // Force a fresh animation frame so every wave gets exactly one fade.
     void this.bannerEl.offsetWidth;
     requestAnimationFrame(() => this.bannerEl.classList.add("wave-show"));
     this.bannerTimer = setTimeout(
       () => this.bannerEl.classList.remove("wave-show"),
-      1000,
+      displayMs,
     );
   }
 
