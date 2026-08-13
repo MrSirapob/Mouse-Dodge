@@ -14,7 +14,9 @@ export class GameState {
     this.wave = 1;
     this.waveTime = 0;
     this.elapsed = 0;
-    this.waveDuration = 18;
+    this.waveDuration = 30;
+    this.waveTransition = 0;
+    this.transitionWave = 0;
     this.grazeCount = 0;
     this.combo = 0;
     this.comboTimer = 0;

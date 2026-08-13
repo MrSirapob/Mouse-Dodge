@@ -153,16 +153,16 @@ export class DevMode {
     }
 
     if (type === 'boss') {
-      g.startWave(Math.max(5, Math.ceil(g.state.wave / 5) * 5));
+      g.startWave(Math.max(5, Math.ceil(g.state.wave / 5) * 5), true);
     }
 
     if (type === 'waveNext') {
-      g.startWave(g.state.wave + 1);
+      g.startWave(g.state.wave + 1, true);
     }
 
     if (type === 'wavePrev') {
       const previous = Math.max(1, g.state.wave - 1);
-      g.startWave(previous);
+      g.startWave(previous, true);
     }
 
     if (type === 'restart') {

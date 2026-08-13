@@ -2900,3 +2900,49 @@
     left:calc(100% + 5px) !important;
   }
 }
+
+/* Corrected wave transition: centered, smooth fade, no scale pop */
+#waveBanner{
+  top:50% !important;
+  left:50% !important;
+  transform:translate(-50%,-50%) !important;
+  opacity:0;
+  transition:opacity .28s ease-in-out !important;
+}
+#waveBanner.wave-show{
+  opacity:1 !important;
+  transform:translate(-50%,-50%) !important;
+  animation:none !important;
+}
+
+
+/* Final wave banner animation: centered, fade only, no pop/slide/scale. */
+#waveBanner {
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  opacity: 0 !important;
+  visibility: hidden;
+  transition: none !important;
+}
+
+#waveBanner.wave-show {
+  visibility: visible;
+  opacity: 1 !important;
+  transform: translate(-50%, -50%) !important;
+  animation: waveBannerFade 1000ms ease-in-out both;
+}
+
+@keyframes waveBannerFade {
+  0%   { opacity: 0; }
+  18%  { opacity: 1; }
+  72%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #waveBanner.wave-show {
+    animation: none;
+    opacity: 1 !important;
+  }
+}

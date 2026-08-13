@@ -12,6 +12,8 @@ export class BulletManager{
       bounce:!!opts.bounce,
       bounces:0,
       maxBounces:opts.maxBounces||3,
+      homing:!!opts.homing,
+      homingStrength:opts.homingStrength||0,
       repulseT:0,
       repulseStrength:0,
       assistCooldown:0,

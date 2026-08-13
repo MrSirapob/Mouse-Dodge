@@ -28,14 +28,14 @@ export const CONFIG = {
     phase: { cooldown: 9, duration: 2.0 }
   },
   revive: { duration: 2.0, radius: 46 },
-  wave: { baseDuration: 18, minDuration: 12, bossBase: 22, bossMax: 32 },
+  wave: { baseDuration: 30, minDuration: 30, bossBase: 60, bossMax: 60, transition: 1 },
   bullets: {
-    capEarly: 180,
-    capMid: 260,
-    capHigh: 340,
-    capLate: 420,
-    capEndless: 500,
-    capBossBonus: 60,
+    capEarly: 260,
+    capMid: 340,
+    capHigh: 420,
+    capLate: 500,
+    capEndless: 560,
+    capBossBonus: 80,
 
     // Keep the arena dense, but prevent it from slowly becoming unwinnable.
     // Cleanup starts only when the arena is nearly full and removes a few

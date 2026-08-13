@@ -54,7 +54,7 @@ export class PatternLibrary {
   /** A ring of bullets exploding outward from (x, y), with a gap aimed at the player. */
   ring(start, x, y, count, speed, color) {
     const warnDuration = 0.95;
-    const gapWidth = 0.34;
+    const gapWidth = 0.28;
     let gapAngle = 0;
 
     // Lock the gap angle at telegraph time so the warning always matches
@@ -103,9 +103,12 @@ export class PatternLibrary {
       const alive = this.game.activePlayers().filter(p => p.isAlive());
       const player = alive.length ? alive[0] : null;
       const playerT = player ? (vertical ? player.x / 1280 : player.y / 720) : 0.15 + Math.random() * 0.7;
-      const gap = Math.max(0.14, Math.min(0.86, playerT));
-      const gapSize = 0.20;
-      const segments = 22;
+      const gap = Math.max(0.08, Math.min(0.92, playerT));
+      // The opening is intentionally only a little wider than the real player
+      // collision. Dense segments make the corridor tight instead of creating
+      // a large 'safe lane'.
+      const segments = vertical ? 61 : 35;
+      const gapSize = 2 / segments;
 
       for (let i = 0; i < segments; i++) {
         const t = i / (segments - 1);
@@ -194,7 +197,7 @@ export class PatternLibrary {
   /** Boss ring attack: bullets explode outward from the boss, with a gap aimed at the player. */
   bossRing(start, count, speed, color) {
     const warnDuration = 1.1;
-    const gapWidth = 0.26;
+    const gapWidth = 0.22;
     let gapAngle = 0;
 
     // Lock the gap angle at telegraph time so it can't move before firing.
@@ -238,6 +241,17 @@ export class PatternLibrary {
         const target = this.targetPlayer(this.game.boss.x, this.game.boss.y);
         const angle = Math.atan2(target.y - this.game.boss.y, target.x - this.game.boss.x) + (-0.15 + Math.random() * 0.3);
         this.game.spawnBullet(this.game.boss.x, this.game.boss.y, Math.cos(angle) * speed, Math.sin(angle) * speed, 7, color);
+      });
+    }
+  }
+
+  /** Boss homing shots: slow, readable tracking projectiles used in later bosses. */
+  bossHoming(start, count, interval, speed, color) {
+    for (let i = 0; i < count; i++) {
+      this.game.queue(start + i * interval, () => {
+        const target = this.targetPlayer(this.game.boss.x, this.game.boss.y);
+        const angle = Math.atan2(target.y - this.game.boss.y, target.x - this.game.boss.x);
+        this.game.spawnBullet(this.game.boss.x, this.game.boss.y, Math.cos(angle) * speed, Math.sin(angle) * speed, 7, color, { homing: true, homingStrength: 0.018 });
       });
     }
   }

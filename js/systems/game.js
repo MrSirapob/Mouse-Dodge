@@ -47,6 +47,7 @@ export class Game {
     this.zone = null;        // shrinking safe-zone hazard, or null if not active this wave
     this.skillEffects = [];  // transient visual effects spawned by SkillSystem
     this.scorePopups = [];   // floating "+N" text spawned on graze (see spawnScorePopup)
+    this.pendingWaveBuilt = 0;
 
     // Bullet-density cleanup state. The cleanup system is deliberately small:
     // it only activates near the cap and removes low-risk bullets.
@@ -308,7 +309,7 @@ export class Game {
     this.state.skill = skill;
     this.state.skillP2 = skillP2;
 
-    this.startWave(1);
+    this.startWave(1, true);
   }
 
   start(mode, skill, skillP2) {
@@ -343,19 +344,75 @@ export class Game {
     this.ui.returnToMenu();
   }
 
-  startWave(n) {
+  startWave(n, immediate = false) {
+    if (!immediate) {
+      this.beginWaveTransition(n);
+      return;
+    }
+
+    const alreadyBuilt = this.pendingWaveBuilt === n;
+
+    this.state.waveTransition = 0;
+    this.state.transitionWave = 0;
     this.state.wave = n;
     this.state.waveTime = 0;
+
+    // Keep bullets from the previous wave alive through the 1-second transition.
+    // They are frozen during transition and continue naturally afterward.
+    this.ringWarnings = [];
     this.lasers = [];
     this.boss.active = false;
     this.ui.setBossVisible(false);
 
-    this.state.waveDuration = this.waveSystem.duration(n);
-    const subtitle = this.isBossWave(n) ? this.waveSystem.buildBoss(n) : this.waveSystem.build(n);
+    if (!alreadyBuilt) {
+      this.actionQueue = [];
+      this.state.waveDuration = this.waveSystem.duration(n);
+      const subtitle = this.isBossWave(n)
+        ? this.waveSystem.buildBoss(n)
+        : this.waveSystem.build(n);
 
+      this.ui.setWave(n);
+      this.ui.banner(n, subtitle, this.isBossWave(n));
+    } else {
+      // The banner and pattern schedule were already created during transition.
+      this.state.waveDuration = this.waveSystem.duration(n);
+    }
+
+    this.pendingWaveBuilt = 0;
+
+    if (this.isBossWave(n)) {
+      this.boss.active = true;
+      this.ui.setBossVisible(true);
+    }
+  }
+
+  /** One-second inter-wave pause. Existing bullets remain frozen on screen. */
+  beginWaveTransition(n) {
+    this.state.waveTransition = CONFIG.wave.transition;
+    this.state.transitionWave = n;
+
+    // Cancel only future actions/telegraphs from the old wave.
+    // Existing bullets are deliberately preserved.
+    this.actionQueue = [];
+    this.ringWarnings = [];
+    this.lasers = [];
+    this.zone = null;
+    this.boss.active = false;
+    this.ui.setBossVisible(false);
+
+    const isBoss = this.isBossWave(n);
+    const subtitle = isBoss
+      ? this.waveSystem.buildBoss(n)
+      : this.waveSystem.build(n);
+
+    this.state.wave = n;
+    this.state.waveDuration = this.waveSystem.duration(n);
+    this.state.waveTime = 0;
+
+    // Build and show exactly once. startWave() will only activate it after pause.
+    this.pendingWaveBuilt = n;
     this.ui.setWave(n);
-    this.ui.banner(n, subtitle, this.isBossWave(n));
-    if (this.isBossWave(n)) this.ui.setBossVisible(true);
+    this.ui.banner(n, subtitle, isBoss);
   }
 
   hitPlayer(player) {
@@ -420,24 +477,7 @@ export class Game {
 
   /** True if spawning should briefly pause because a player is in a dense bullet cluster (wave 4+). */
   dangerAssistDelay() {
-    const n = this.state.wave;
-    if (n < 4) return false;
-
-    const players = this.activePlayers();
-    if (!players.length) return false;
-
-    const cap = this.bulletCap();
-    const crowded = this.bullets.items.length >= cap * 0.78;
-    if (!crowded) return false;
-
-    // Only pause spawns when a player actually has a dense local danger field.
-    return players.some(p => {
-      let near = 0;
-      for (const b of this.bullets.items) {
-        if (Math.hypot(b.x - p.x, b.y - p.y) < 190) near++;
-      }
-      return near >= 8;
-    });
+    return false;
   }
 
   /**
@@ -446,43 +486,8 @@ export class Game {
    * trajectory, nudging them just enough to turn a hit into a near miss.
    */
   assistBullets(dt) {
-    const n = this.state.wave;
-    const cap = this.bulletCap();
-    const crowded = this.bullets.items.length >= cap * 0.82;
-    if (n < 4 && !crowded) return;
+    return;
 
-    const density = Math.min(1, this.bullets.items.length / Math.max(1, cap));
-    const assistChance = Math.min(0.48, 0.12 + Math.max(0, n - 3) * 0.010 + Math.max(0, density - 0.75) * 0.55);
-
-    for (const b of this.bullets.items) {
-      if (b.assistCooldown > 0) { b.assistCooldown -= dt; continue; }
-      if (b.assistUsed) continue;
-      if (Math.random() > assistChance) continue;
-
-      const speed = Math.hypot(b.vx, b.vy);
-      if (speed < 0.35) continue;
-
-      let best = null;
-      for (const p of this.activePlayers()) {
-        if (!p.isAlive() || !p.canBeHit()) continue;
-        const px = p.x - b.x, py = p.y - b.y;
-        const along = (px * b.vx + py * b.vy) / (speed * speed);
-        if (along <= 0 || along > 0.9) continue;
-        const tx = b.x + b.vx * along, ty = b.y + b.vy * along;
-        const miss = Math.hypot(p.x - tx, p.y - ty);
-        if (miss <= p.r + b.r + 9 && (!best || miss < best.miss)) best = { p, miss };
-      }
-      if (!best) continue;
-
-      // Rotate only a little, so it looks like the player barely grazed it.
-      const sign = Math.random() < 0.5 ? -1 : 1;
-      const angle = Math.atan2(b.vy, b.vx) + sign * (0.10 + Math.random() * 0.08);
-      const speed2 = speed * (0.94 + Math.random() * 0.04);
-      b.vx = Math.cos(angle) * speed2;
-      b.vy = Math.sin(angle) * speed2;
-      b.assistUsed = true;
-      b.assistCooldown = 0.8;
-    }
   }
 
   // --- Per-frame update, split into ordered sub-steps -------------------------------------------------
@@ -492,6 +497,20 @@ export class Game {
 
     this.bulletCleanupCooldown = Math.max(0, this.bulletCleanupCooldown - rawDt);
     this.bulletCleanupUsedThisFrame = 0;
+
+    if (s.waveTransition > 0) {
+      // Player control remains live during the one-second transition. Everything
+      // that can damage or advance the encounter is frozen.
+      this.updatePlayers(0, rawDt);
+      s.waveTransition = Math.max(0, s.waveTransition - rawDt);
+      this.particles.update(rawDt);
+      this.updateScorePopups(rawDt);
+      this.ui.update(s, this.players, this.state.mode);
+      if (s.waveTransition <= 0) {
+        this.startWave(s.transitionWave, true);
+      }
+      return;
+    }
 
     const dt = this.updateTimers(rawDt);
     this.updateScore(dt);
@@ -503,7 +522,17 @@ export class Game {
     this.updateLasers(dt);
 
     if (s.waveTime >= s.waveDuration) {
-      this.startWave(s.wave + 1);
+      if (s.wave >= 20) {
+        this.boss.active = false;
+        this.bullets.clear();
+        this.actionQueue = [];
+        this.ringWarnings = [];
+        this.lasers = [];
+        this.ui.setBossVisible(false);
+        this.gameOver();
+      } else {
+        this.startWave(s.wave + 1);
+      }
       return;
     }
 
@@ -630,6 +659,14 @@ export class Game {
     }
   }
 
+  targetPlayerForBullet(x, y) {
+    const alive = this.activePlayers().filter(p => p.isAlive());
+    if (!alive.length) return null;
+    return alive.reduce((best, p) => (
+      Math.hypot(p.x - x, p.y - y) < Math.hypot(best.x - x, best.y - y) ? p : best
+    ), alive[0]);
+  }
+
   /** Moves every bullet, handles wall-bouncing, splitter bullets, off-screen cleanup, and player collision/graze. */
   updateBullets(dt) {
     const s = this.state;
@@ -648,6 +685,20 @@ export class Game {
           const ny = b.vy / speed;
           b.vx += nx * b.repulseStrength * dt * 60;
           b.vy += ny * b.repulseStrength * dt * 60;
+        }
+      }
+
+      if (b.homing && b.homingStrength > 0 && b.age > 0.25) {
+        const target = this.targetPlayerForBullet(b.x, b.y);
+        if (target) {
+          const speed = Math.hypot(b.vx, b.vy) || 1;
+          const desired = Math.atan2(target.y - b.y, target.x - b.x);
+          const current = Math.atan2(b.vy, b.vx);
+          let delta = Math.atan2(Math.sin(desired - current), Math.cos(desired - current));
+          delta = Math.max(-b.homingStrength, Math.min(b.homingStrength, delta));
+          const next = current + delta;
+          b.vx = Math.cos(next) * speed;
+          b.vy = Math.sin(next) * speed;
         }
       }
 
