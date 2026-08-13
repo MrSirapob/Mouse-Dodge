@@ -1,0 +1,52 @@
+name: Maintenance Mode
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "เลือกสถานะของเว็บไซต์"
+        required: true
+        type: choice
+        options:
+          - ON
+          - OFF
+        default: OFF
+
+permissions:
+  contents: write
+
+jobs:
+  set-maintenance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set maintenance mode
+        shell: bash
+        env:
+          MODE: ${{ inputs.mode }}
+        run: |
+          if [ "$MODE" = "ON" ]; then
+            VALUE=true
+          else
+            VALUE=false
+          fi
+
+          cat > maintenance.json <<EOF
+          {
+            "maintenance": $VALUE
+          }
+          EOF
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add maintenance.json
+          if git diff --cached --quiet; then
+            echo "Maintenance state is already ${{ inputs.mode }}."
+            exit 0
+          fi
+          git commit -m "chore: maintenance ${{ inputs.mode }}"
+          git push

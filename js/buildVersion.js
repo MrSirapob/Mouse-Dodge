@@ -1,2 +1,3 @@
-// Generated automatically by GitHub Actions.
-export const BUILD_VERSION = "845fa178da3c9a54f99cb25d858101341f6ab15c";
+// Generated automatically by GitHub Actions on deploy.
+// Local fallback used when testing without the workflow.
+export const BUILD_VERSION = "dev-local";
