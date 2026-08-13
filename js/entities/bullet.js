@@ -14,6 +14,9 @@ export class BulletManager{
       maxBounces:opts.maxBounces||3,
       homing:!!opts.homing,
       homingStrength:opts.homingStrength||0,
+       // Homing bullets must have a finite lifetime; otherwise they can
+       // keep tracking the player forever and block wave transition.
+       maxAge:opts.maxAge ?? (opts.homing ? 7.0 : Infinity),
       repulseT:0,
       repulseStrength:0,
       assistCooldown:0,

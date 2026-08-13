@@ -690,6 +690,14 @@ export class Game {
         else if (b.y > CONFIG.world.height - b.r) { b.y = CONFIG.world.height - b.r; b.vy = -Math.abs(b.vy); b.bounces++; }
       }
 
+      // Homing bullets can follow the player indefinitely, so they need
+      // an explicit lifetime. Remove them before they can stall wave draining.
+      if (b.age >= b.maxAge) {
+        this.particles.spawn(b.x, b.y, b.color, 4);
+        this.bullets.remove(i);
+        continue;
+      }
+
       if (b.splitter && !b.split && b.age >= 0.9) {
         b.split = true;
         const base = Math.atan2(b.vy, b.vx);
