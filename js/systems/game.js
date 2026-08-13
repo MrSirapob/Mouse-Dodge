@@ -382,10 +382,6 @@ export class Game {
     this.state.wavePhase = 'transition';
     this.state.waveTransition = CONFIG.wave.transition;
     this.state.transitionWave = n;
-}
-
-  startWaveEnding() {
-    if (this.state.wavePhase !== 'active') return;
 
     // The configured duration is the SPAWN WINDOW.
     // Existing bullets/pattern effects are never deleted here.
