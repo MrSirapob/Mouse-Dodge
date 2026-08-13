@@ -3,6 +3,51 @@ import { CONFIG } from "../core/config.js";
 const WAVE_COLORS = ["#ff5c5c", "#ff9f43", "#c56cf0", "#ff5cc0", "#54a0ff"];
 
 /**
+ * ========================= PATTERN GUIDE FOR AI =========================
+ *
+ * IMPORTANT:
+ * - The helper function name is the source of truth for gameplay behavior.
+ * - The Thai name in labels.add(...) is ONLY a display/lore name.
+ * - Do not infer mechanics from the display name.
+ *
+ * NORMAL PATTERNS:
+ *
+ * AIMED    = projectiles aimed directly at the player's current position.
+ * RING     = projectiles fired outward in a circular/ring formation.
+ * WALL     = a moving wall/line of projectiles with a gap; `vertical`
+ *            controls orientation and `gap` controls the opening.
+ * SPIRAL   = rotating/spiral projectile pattern; `arms` controls spiral arms.
+ * CROSS    = projectiles fired in a four-direction cross formation.
+ * LASER    = a timed barrage of laser attacks; `interval` controls spacing.
+ * HOMING   = projectiles that track/follow the player.
+ * SPLITTER = projectiles that split into additional projectiles.
+ * BOUNCER  = projectiles that bounce/reflect and can change direction.
+ *
+ * BOSS PATTERNS:
+ *
+ * bossAimed  = Boss version of AIMED; targets the player.
+ * bossRing   = Boss version of RING; circular spread.
+ * bossSpiral = Boss version of SPIRAL; rotating spiral spread.
+ * bossHoming = Boss version of HOMING; tracking projectiles.
+ *
+ * DESIGN RULE FOR FUTURE AI:
+ * - When reading a wave, identify the mechanic from the helper call itself:
+ *   aimed -> AIMED
+ *   ring -> RING
+ *   wall -> WALL
+ *   spiral -> SPIRAL
+ *   cross -> CROSS
+ *   laser -> LASER
+ *   homing -> HOMING
+ *   splitter -> SPLITTER
+ *   bouncer -> BOUNCER
+ * - Keep this mapping intact when editing or adding waves.
+ * - The dramatic Thai labels are presentation/lore only.
+ * - Boss patterns are intentionally layered with little dead air.
+ * =========================================================================
+ */
+
+/**
  * WaveSystem owns the actual encounter design. Normal waves deliberately reuse
  * familiar patterns in different combinations; bosses are where the special
  * gimmicks and phase changes live.
