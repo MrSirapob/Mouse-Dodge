@@ -201,7 +201,7 @@ export class WaveSystem {
         // Moving Sweep: map-sized synchronized wall with one tight opening.
         this.p.movingSweep(20.5, 6, 1.05, 2.65, c1, true);
 
-        this.p.aimed(27.0, 300, 0.08, 2.45, c2);
+        this.p.aimed(27.0, 600, 0.055, 3.0, c2);
         this.p.ricochetField(33.0, 300, 0.08, 2.5, c1);
 
         this.p.movingSweep(39.0, 4, 0.95, 2.7, c1, false);

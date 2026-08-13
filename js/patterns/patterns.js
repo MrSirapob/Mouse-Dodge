@@ -306,9 +306,15 @@ export class PatternLibrary {
     for (let i = 0; i < bursts; i++) {
       this.game.queue(start + i * interval, () => {
         const shift = ((i % 4) - 1.5) * 0.08;
+
+        // Cover the entire 720px map height. The safe route is created by
+        // the crossing geometry itself, not by leaving empty top/bottom zones.
+        const laneSpan = 720;
+        const laneInset = 18;
+
         for (let k = 0; k < count; k++) {
           const t = k / Math.max(1, count - 1);
-          const y = 40 + t * 640;
+          const y = laneInset + t * (laneSpan - laneInset * 2);
           const leftAngle = shift + 0.05;
           const rightAngle = Math.PI - shift - 0.05;
 
@@ -319,6 +325,7 @@ export class PatternLibrary {
             5, color,
             { maxAge: 11 }
           );
+
           this.game.spawnBullet(
             1304, y,
             Math.cos(rightAngle) * speed,
