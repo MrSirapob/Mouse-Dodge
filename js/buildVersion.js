@@ -1,2 +1,2 @@
 // Generated automatically by GitHub Actions.
-export const BUILD_VERSION = "845fa178da3c9a54f99cb25d858101341f6ab15c";
+export const BUILD_VERSION = "2f9f826b13e1c190bb03df4f191d20d4f16c1e55";
