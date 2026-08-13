@@ -1,6 +1,6 @@
-import { CONFIG } from '../core/config.js';
+import { CONFIG } from "../core/config.js";
 
-const WAVE_COLORS = ['#ff5c5c', '#ff9f43', '#c56cf0', '#ff5cc0', '#54a0ff'];
+const WAVE_COLORS = ["#ff5c5c", "#ff9f43", "#c56cf0", "#ff5cc0", "#54a0ff"];
 
 /**
  * WaveSystem owns the actual encounter design. Normal waves deliberately reuse
@@ -14,7 +14,9 @@ export class WaveSystem {
     this.queue = [];
   }
 
-  clear() { this.queue.length = 0; }
+  clear() {
+    this.queue.length = 0;
+  }
 
   duration(n) {
     if (this.game.isBossWave(n)) return 60;
@@ -29,7 +31,6 @@ export class WaveSystem {
     return WAVE_COLORS[(n + offset) % WAVE_COLORS.length];
   }
 
-
   build(n) {
     this.clear();
     this.game.zone = null;
@@ -40,55 +41,81 @@ export class WaveSystem {
     const c3 = this.color(n, 4);
     const labels = new Set();
 
-    const aimed = (t, count, interval = 0.30, spd = 2.15, color = c1) => {
+    const aimed = (t, count, interval = 0.3, spd = 2.15, color = c1) => {
       this.p.aimed(t, Math.ceil(count * 1.7), interval, spd * speedTier, color);
-      labels.add('AIMED');
+      labels.add("คำพิพากษาแห่งผู้ไร้ทางรอด");
     };
+
     const ring = (t, x = 640, y = 360, count = 28, spd = 2.25, color = c2) => {
       this.p.ring(t, x, y, Math.ceil(count * 1.7), spd * speedTier, color);
-      labels.add('RING');
+      labels.add("วงแหวนกลืนกินสรรพสิ่ง");
     };
+
     const wall = (t, spd = 2.45, color = c1, vertical = false, gap = null) => {
       this.p.wall(t, spd * speedTier, color, vertical, gap);
-      labels.add('WALL');
+      labels.add("กำแพงทมิฬปิดฟากสวรรค์");
     };
+
     const spiral = (t, len, arms = 3, spd = 1.9, color = c2) => {
       this.p.spiral(t, len, arms, spd * speedTier, color);
-      labels.add('SPIRAL');
+      labels.add("มหาวังวนกลืนกินดวงวิญญาณ");
     };
+
     const cross = (t, count, spd = 2.45, color = c1) => {
       this.p.cross(t, Math.ceil(count * 1.7), spd * speedTier, color);
-      labels.add('CROSS');
+      labels.add("กางเขนประหารสี่ทิศ");
     };
+
     const laser = (t, count, interval = 0.9, color = c3) => {
       this.p.laserBarrage(t, Math.ceil(count * 1.35), interval, color);
-      labels.add('LASER');
+      labels.add("มหาลำแสงพิพากษาเหนือปฐพี");
     };
+
     const homing = (t, count, interval = 0.45, spd = 1.85, color = c2) => {
-      this.p.homing(t, Math.ceil(count * 1.7), interval, spd * speedTier, color);
-      labels.add('HOMING');
+      this.p.homing(
+        t,
+        Math.ceil(count * 1.7),
+        interval,
+        spd * speedTier,
+        color,
+      );
+      labels.add("เหล่าวิญญาณอาฆาตผู้ไม่เคยพลาดเป้า");
     };
+
     const splitter = (t, count, interval = 0.8, spd = 1.95, color = c1) => {
-      this.p.splitter(t, Math.ceil(count * 1.7), interval, spd * speedTier, color);
-      labels.add('SPLITTER');
+      this.p.splitter(
+        t,
+        Math.ceil(count * 1.7),
+        interval,
+        spd * speedTier,
+        color,
+      );
+      labels.add("การกำเนิดแห่งหายนะไร้ที่สิ้นสุด");
     };
+
     const bouncer = (t, count, interval = 0.72, spd = 2.0, color = c2) => {
-      this.p.bouncer(t, Math.ceil(count * 1.7), interval, spd * speedTier, color);
-      labels.add('BOUNCER');
+      this.p.bouncer(
+        t,
+        Math.ceil(count * 1.7),
+        interval,
+        spd * speedTier,
+        color,
+      );
+      labels.add("เศษซากแห่งกาลเวลาตามล่าผู้มีชีวิต");
     };
 
     // V1.7-style timed layering: multiple attack events are distributed
     // through each wave so the player must keep repositioning.
     switch (n) {
       case 1:
-        aimed(0.0, 36, 0.30, 2.15);
-        aimed(8.0, 30, 0.28, 2.20, c2);
+        aimed(0.0, 36, 0.3, 2.15);
+        aimed(8.0, 30, 0.28, 2.2, c2);
         ring(15.0, 640, 360, 26, 2.25);
         aimed(22.0, 34, 0.27, 2.25, c1);
         wall(27.0, 2.35, c2, true, 0.09);
         break;
       case 2:
-        aimed(0.0, 30, 0.28, 2.20);
+        aimed(0.0, 30, 0.28, 2.2);
         ring(5.0, 640, 360, 28, 2.25);
         aimed(10.0, 32, 0.27, 2.25, c2);
         wall(15.5, 2.4, c1, false, 0.09);
@@ -154,8 +181,8 @@ export class WaveSystem {
         homing(7.0, 9, 0.42, 1.9, c1);
         ring(11.0, 640, 360, 38, 2.5, c2);
         wall(16.0, 2.75, c1, false, 0.055);
-        homing(20.0, 10, 0.40, 1.95, c2);
-        aimed(25.0, 42, 0.20, 2.6, c1);
+        homing(20.0, 10, 0.4, 1.95, c2);
+        aimed(25.0, 42, 0.2, 2.6, c1);
         ring(30.0, 640, 360, 40, 2.55, c2);
         wall(33.0, 2.8, c1, true, 0.055);
         break;
@@ -172,7 +199,7 @@ export class WaveSystem {
         aimed(37.0, 44, 0.19, 2.65, c1);
         break;
       case 12:
-        aimed(0.0, 44, 0.20, 2.65);
+        aimed(0.0, 44, 0.2, 2.65);
         wall(4.0, 2.8, c1, false, 0.05);
         spiral(8.0, 10.0, 4, 2.0, c2);
         homing(12.0, 10, 0.38, 2.0, c1);
@@ -224,7 +251,7 @@ export class WaveSystem {
         aimed(2.0, 52, 0.16, 2.8, c2);
         bouncer(6.0, 10, 0.6, 2.1, c1);
         wall(10.0, 3.0, c2, false, 0.035);
-        homing(14.0, 13, 0.30, 2.05, c1);
+        homing(14.0, 13, 0.3, 2.05, c1);
         spiral(19.0, 12.0, 5, 2.15, c2);
         ring(25.0, 400, 500, 52, 2.8, c1);
         wall(30.0, 3.05, c2, true, 0.035);
@@ -236,7 +263,7 @@ export class WaveSystem {
         aimed(0.0, 54, 0.15, 2.85);
         spiral(4.0, 12.0, 5, 2.15, c1);
         wall(7.0, 3.05, c2, true, 0.03);
-        homing(11.0, 14, 0.30, 2.1, c1);
+        homing(11.0, 14, 0.3, 2.1, c1);
         splitter(15.0, 11, 0.62, 2.1, c2);
         ring(20.0, 640, 360, 54, 2.85, c1);
         bouncer(24.0, 11, 0.58, 2.15, c2);
@@ -270,7 +297,7 @@ export class WaveSystem {
         break;
     }
 
-    return [...labels].join(' + ');
+    return [...labels].join(" + ");
   }
 
   buildBoss(n) {
@@ -289,9 +316,9 @@ export class WaveSystem {
       this.p.bossAimed(0, 34, 0.22, 2.45, c1);
       this.p.bossRing(3.5, 32, 2.5, c2);
       this.p.bossSpiral(7, 15, 3, 2.05, c3);
-      this.p.bossAimed(13, 34, 0.20, 2.55, c1);
+      this.p.bossAimed(13, 34, 0.2, 2.55, c1);
       this.p.bossRing(17, 34, 2.6, c2);
-      this.p.bossSpiral(21, 16, 4, 2.10, c3);
+      this.p.bossSpiral(21, 16, 4, 2.1, c3);
       this.p.bossAimed(28, 38, 0.18, 2.65, c1);
       this.p.bossHoming(31, 14, 0.32, 1.95, c2);
       this.p.bossRing(35, 36, 2.7, c1);
@@ -300,7 +327,7 @@ export class WaveSystem {
       this.p.bossRing(50, 38, 2.8, c1);
       this.p.bossHoming(54, 16, 0.28, 2.0, c3);
       this.p.bossSpiral(55, 5, 5, 2.2, c2);
-      return 'AIMED + RING + SPIRAL + HOMING';
+      return "「บทที่หนึ่ง : ผู้ต้องห้ามตื่นจากนิทรา」";
     }
 
     if (n === 10) {
@@ -311,7 +338,7 @@ export class WaveSystem {
       this.p.bossRing(40, 28, 2.6, c2);
       this.p.bossSpiral(49, 10, 4, 2.15, c3);
       this.p.bossAimed(54, 24, 0.22, 2.65, c1);
-      return 'RING + HOMING + SPIRAL';
+      return "「บทที่สอง : เมื่อสวรรค์ถูกลากลงจากบัลลังก์」";
     }
 
     if (n === 15) {
@@ -322,7 +349,7 @@ export class WaveSystem {
       this.p.bossRing(39, 30, 2.7, c1);
       this.p.bossSpiral(47, 13, 4, 2.2, c3);
       this.p.bossHoming?.(53, 10, 0.35, 2.0, c2);
-      return 'SPIRAL + HOMING + RING';
+      return "「บทที่สาม : พิธีกรรมคืนโลกสู่ความว่างเปล่า」";
     }
 
     this.p.bossAimed(1, 26, 0.22, 2.7, c1);
@@ -332,6 +359,6 @@ export class WaveSystem {
     this.p.bossRing(38, 32, 2.8, c2);
     this.p.bossSpiral(47, 13, 5, 2.25, c3);
     this.p.bossAimed(54, 28, 0.2, 2.85, c1);
-    return 'AIMED + RING + HOMING + SPIRAL';
+    return "「บทสุดท้าย : เมื่อแม้แต่ความว่างเปล่าก็ถึงกาลอวสาน」";
   }
 }
