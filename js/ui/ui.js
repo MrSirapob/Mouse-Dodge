@@ -90,17 +90,6 @@ export class UI {
     this.controlHint = document.getElementById("controlHint");
     this.skillScreenSub = document.getElementById("skillScreenSub");
     this.resultScreen = document.getElementById("resultScreen");
-    this.updateOverlay = document.getElementById("updateOverlay");
-    this.updateReloadBtn = document.getElementById("updateReloadBtn");
-    this.updateLaterBtn = document.getElementById("updateLaterBtn");
-    this.updateOverlayVersion = null;
-
-    this.updateReloadBtn?.addEventListener("click", () => {
-      window.location.reload();
-    });
-    this.updateLaterBtn?.addEventListener("click", () => {
-      this.hideUpdateAvailable();
-    });
 
     this.el = {
       best: document.getElementById("best"),
@@ -652,14 +641,4 @@ export class UI {
 
     document.getElementById(chipId).classList.toggle("ready", ready);
   }
-  showUpdateAvailable(version = null) {
-    if (!this.updateOverlay) return;
-    this.updateOverlayVersion = version;
-    this.updateOverlay.classList.remove("hidden");
-  }
-
-  hideUpdateAvailable() {
-    this.updateOverlay?.classList.add("hidden");
-  }
-
 }

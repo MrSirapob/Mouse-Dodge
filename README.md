@@ -83,23 +83,3 @@ in gameplay logic.
   re-queried every frame.
 - **Dev Mode tooling**: `js/systems/devMode.js`, toggled with F2 during
   gameplay.
-
-
-## Update notification
-
-The game checks `version.json` when it starts and every 10 minutes. If a newer build is detected,
-the update is kept silent while the player is actively playing. The update prompt is shown only at
-a safe point: Pause or Game Over. Reload is always manual.
-
-### Test the update UI
-
-Open the game with:
-
-`?testUpdate=1`
-
-Example:
-
-`https://your-domain.example/?testUpdate=1`
-
-Then start a game and press Pause. The update dialog should appear without any automatic reload.
-You can also wait for Game Over to see it there. Remove `?testUpdate=1` for normal behavior.
