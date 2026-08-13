@@ -330,6 +330,7 @@ export class Game {
     if (this.state.state === GAME_STATES.PLAYING) {
       this.state.state = GAME_STATES.PAUSED;
       this.ui.showPause(true);
+      this.updateChecker?.notifySafePoint(this.state.state);
     } else if (this.state.state === GAME_STATES.PAUSED) {
       this.state.state = GAME_STATES.PLAYING;
       this.ui.showPause(false);
@@ -456,7 +457,10 @@ export class Game {
 
     clearTimeout(this.state.gameOverTimer);
     this.state.gameOverTimer = setTimeout(
-      () => this.ui.showGameOver(s.elapsed, s.wave, s.grazeCount, this.state.mode, this.players, finalScore, this.bestScore, this.bestTime, this.bestWave, this.bestGraze),
+      () => {
+        this.ui.showGameOver(s.elapsed, s.wave, s.grazeCount, this.state.mode, this.players, finalScore, this.bestScore, this.bestTime, this.bestWave, this.bestGraze);
+        this.updateChecker?.notifySafePoint(this.state.state);
+      },
       350
     );
   }

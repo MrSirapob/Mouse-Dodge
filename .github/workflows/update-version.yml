@@ -1,0 +1,45 @@
+name: Update game build version
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  stamp-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate build files
+        shell: bash
+        run: |
+          SHA="${GITHUB_SHA}"
+          SHORT_SHA="${SHA:0:7}"
+          cat > js/buildVersion.js <<EOF
+          // Generated automatically by GitHub Actions.
+          export const BUILD_VERSION = "${SHA}";
+          EOF
+
+          cat > version.json <<EOF
+          {
+            "version": "${SHA}",
+            "shortVersion": "${SHORT_SHA}"
+          }
+          EOF
+
+      - name: Commit generated version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/buildVersion.js version.json
+          if git diff --cached --quiet; then
+            echo "No version changes to commit."
+            exit 0
+          fi
+          git commit -m "chore: stamp build ${GITHUB_SHA::7} [skip ci]"
+          git push
