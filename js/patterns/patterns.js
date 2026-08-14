@@ -297,9 +297,64 @@ export class PatternLibrary {
     }
   }
 
-  // --- Boss-only variants: same shapes, but centered on the boss position. ---
 
-  /** Boss ring attack: bullets explode outward from the boss, with a gap aimed at the player. */
+  bossPerimeterCrossfire(start, duration, count, interval, speed, color) {
+    // Two clearly visible rectangular layers. Each volley is distributed over
+    // all four edges, then every bullet aims at the player's current position.
+    // The attack intentionally uses moderate density so the global bullet cap
+    // cannot erase the formation before the player can read it.
+    const end = start + duration;
+    let volley = 0;
+
+    for (let t = start; t < end; t += interval, volley++) {
+      this.game.queue(t, () => {
+        const layers = [16, 72];
+
+        for (let layer = 0; layer < layers.length; layer++) {
+          const inset = layers[layer];
+          const w = 1280 - inset * 2;
+          const h = 720 - inset * 2;
+          const perimeter = 2 * (w + h);
+
+          // Four evenly distributed points per side, repeated across volleys.
+          const total = Math.max(8, count);
+          for (let k = 0; k < total; k++) {
+            const d = ((k + volley * 0.5) / total) * perimeter;
+            let x, y;
+
+            if (d < w) {
+              x = inset + d;
+              y = inset;
+            } else if (d < w + h) {
+              x = 1280 - inset;
+              y = inset + (d - w);
+            } else if (d < 2 * w + h) {
+              x = 1280 - inset - (d - w - h);
+              y = 720 - inset;
+            } else {
+              x = inset;
+              y = 720 - inset - (d - 2 * w - h);
+            }
+
+            const target = this.targetPlayer(x, y);
+            const angle = Math.atan2(target.y - y, target.x - x);
+
+            this.game.spawnBullet(
+              x, y,
+              Math.cos(angle) * speed,
+              Math.sin(angle) * speed,
+              6,
+              color,
+              {
+                maxAge: 8,
+                perimeterBullet: true
+              }
+            );
+          }
+        }
+      });
+    }
+  }
   bossRing(start, count, speed, color) {
     const warnDuration = 1.1;
     const gapWidth = 0.22;
@@ -327,19 +382,38 @@ export class PatternLibrary {
 
   /** Boss spiral attack: a rotating multi-armed spiral centered on the boss. */
   bossSpiral(start, duration, arms, speed, color) {
+    const warnDuration = 0.8;
+    this.game.queue(Math.max(0, start - warnDuration), () => {
+      this.game.ringWarnings.push({
+        x: this.game.boss.x,
+        y: this.game.boss.y,
+        t: 0,
+        duration: warnDuration,
+        color,
+        radius: 72,
+        trackBoss: true
+      });
+    });
+
+    const fireStart = start;
     const steps = Math.floor(duration * 20);
     for (let i = 0; i < steps; i++) {
-      this.game.queue(start + i * (duration / steps), () => {
+      this.game.queue(fireStart + i * (duration / steps), () => {
         const baseAngle = i * 0.3;
         for (let a = 0; a < arms; a++) {
           const angle = baseAngle + (Math.PI * 2 * a) / arms;
-          this.game.spawnBullet(this.game.boss.x, this.game.boss.y, Math.cos(angle) * speed, Math.sin(angle) * speed, 5, color);
+          this.game.spawnBullet(
+            this.game.boss.x,
+            this.game.boss.y,
+            Math.cos(angle) * speed,
+            Math.sin(angle) * speed,
+            5,
+            color
+          );
         }
       });
     }
   }
-
-  /** Boss aimed attack: shots from the boss toward the nearest player. */
   bossAimed(start, count, interval, speed, color) {
     for (let i = 0; i < count; i++) {
       this.game.queue(start + i * interval, () => {

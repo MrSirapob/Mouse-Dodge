@@ -400,33 +400,54 @@ export class WaveSystem {
       return "「บทที่หนึ่ง : ผู้ต้องห้ามตื่นจากนิทรา」";
     }
     if (n === 10) {
-      // W10 BOSS — "เมื่อสวรรค์ถูกลากลงจากบัลลังก์"
-      // No tutorial phase: pressure is high immediately.
-      // The boss combines radial pressure, tracking, spiral movement,
-      // lasers and bouncing projectiles so the arena itself becomes hostile.
-      this.p.bossRing(0.5, 38, 2.7, c2);
-      this.p.laserBarrage(2.0, 5, 0.62, c3);
-      this.p.bossAimed(4.5, 38, 0.18, 2.7, c1);
+      // W10 BOSS — 「เมื่อสวรรค์ถูกลากลงจากบัลลังก์」
+      // Five distinct phases. The goal is not simply "more bullets":
+      // each phase introduces a recognizable movement/trajectory rule.
+      //
+      // PHASE 1 (0-12s) — THE GAZE
+      // Fan-shaped aimed fire + rotating radial pressure.
+      this.p.bossAimed(0.0, 28, 0.22, 3.0, c1);
+      this.p.bossRing(3.0, 54, 2.8, c2);
+      this.p.bossAimed(7.0, 30, 0.18, 3.2, c1);
+      this.p.bossPerimeterCrossfire(9.0, 3.5, 10, 0.55, 2.1, c3);
 
-      this.p.bossSpiral(9.0, 9.0, 4, 2.1, c3);
-      this.p.bouncer(10.0, 12, 0.45, 2.2, c2);
-      this.p.bossHoming?.(15.0, 14, 0.3, 2.0, c1);
+      // PHASE 2 (12-25s) — SHATTERED HEAVEN
+      // Ring gap + delayed explosions near the player's current position.
+      // The player cannot simply camp in the center of a normal ring.
+      this.p.bossRing(12.5, 62, 2.9, c2);
+      this.p.explodeNearPlayer(14.0, 10, 0.32, 78, 3.8, c3);
+      this.p.bossPerimeterCrossfire(17.0, 5.0, 12, 0.48, 2.3, c1);
+      this.p.delayedBurst(20.0, 9, 0.45, 1.1, 5.0, c3);
+      this.p.bossRing(23.0, 60, 3.0, c2);
 
-      this.p.bossRing(20.0, 42, 2.8, c2);
-      this.p.laserBarrage(22.0, 7, 0.58, c3);
-      this.p.bossSpiral(26.0, 10.0, 5, 2.15, c1);
+      // PHASE 3 (25-38s) — THE RETURN
+      // Bullets cross the arena and come back. Homing pressure fills the
+      // moments between reversals.
+      this.p.reverseRain(25.0, 22, 0.18, 2.8, 1.45, c1, true);
+      this.p.bossHoming(27.0, 18, 0.32, 2.4, c2);
+      this.p.bossPerimeterCrossfire(29.0, 5.0, 14, 0.42, 2.5, c3);
+      this.p.reverseRain(33.0, 24, 0.16, 2.9, 1.35, c1, false);
+      this.p.explodeNearPlayer(35.0, 8, 0.28, 70, 4.0, c2);
 
-      this.p.bossAimed(31.0, 44, 0.16, 2.85, c2);
-      this.p.bossHoming?.(34.0, 18, 0.24, 2.05, c1);
-      this.p.bouncer(36.0, 16, 0.4, 2.3, c3);
+      // PHASE 4 (38-50s) — JUDGEMENT FROM ABOVE
+      // Machine-gun sweep: dense top-down fire that tracks the player's
+      // horizontal position, with moving walls forcing route changes.
+      this.p.machineGunTop(38.0, 52, 0.09, 5.2, 0.7, c1);
+      this.p.movingSweep(41.0, 2.8, 0.0, c2);
+      this.p.machineGunTop(44.0, 58, 0.075, 5.5, 0.8, c1);
+      this.p.explodeNearPlayer(47.0, 8, 0.3, 72, 4.1, c3);
+      this.p.bossRing(48.0, 58, 3.0, c2);
 
-      this.p.bossRing(40.0, 46, 2.9, c1);
-      this.p.laserBarrage(42.0, 8, 0.55, c3);
-      this.p.bossSpiral(46.0, 9.0, 5, 2.2, c2);
+      // PHASE 5 (50-60s) — HEAVEN COLLAPSES
+      // Final burst: reverse + sine + spiral + ring + machine gun.
+      // No "safe" reset between attacks.
+      this.p.sineRain(50.0, 28, 0.13, 3.0, 145, 0.82, c3, true);
+      this.p.bossPerimeterCrossfire(52.0, 5.0, 16, 0.36, 2.8, c1);
+      this.p.bossHoming(54.0, 18, 0.24, 2.55, c2);
+      this.p.bossRing(55.0, 64, 3.1, c3);
+      this.p.reverseRain(56.0, 24, 0.14, 3.0, 1.15, c1, false);
+      this.p.machineGunTop(58.0, 28, 0.07, 5.8, 0.75, c2);
 
-      this.p.bossAimed(51.0, 50, 0.14, 3.0, c1);
-      this.p.bossHoming?.(54.0, 20, 0.22, 2.1, c2);
-      this.p.bossRing(56.0, 48, 3.0, c3);
       return "「บทที่สอง : เมื่อสวรรค์ถูกลากลงจากบัลลังก์」";
     }
 
