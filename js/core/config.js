@@ -60,12 +60,12 @@ export const CONFIG = {
   rank: {
     // Score thresholds for the end-of-run rank.
     thresholds: [
-      { rank: "SSS", min: 100000 },
-      { rank: "SS", min: 80000 },
-      { rank: "S", min: 60000 },
-      { rank: "A", min: 40000 },
-      { rank: "B", min: 25000 },
-      { rank: "C", min: 10000 },
+      { rank: "SSS", min: 200000 },
+      { rank: "SS", min: 160000 },
+      { rank: "S", min: 120000 },
+      { rank: "A", min: 85000 },
+      { rank: "B", min: 50000 },
+      { rank: "C", min: 20000 },
       { rank: "D", min: 0 },
     ],
   },
