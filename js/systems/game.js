@@ -10,6 +10,7 @@ import { WaveSystem } from './waveSystem.js';
 import { SkillSystem } from './skillSystem.js';
 import { LifeSystem } from './lifeSystem.js';
 import { DevMode } from './devMode.js';
+import { ItemSystem } from './itemSystem.js';
 
 /**
  * Game is the top-level orchestrator: it owns all entities/systems and runs
@@ -40,6 +41,7 @@ export class Game {
     this.skillSystem = new SkillSystem(this);
     this.lifeSystem = new LifeSystem(this);
     this.devMode = new DevMode(this);
+    this.itemSystem = new ItemSystem(this);
 
     this.actionQueue = [];   // scheduled { time, fn } spawn callbacks, run when state.waveTime reaches `time`
     this.ringWarnings = [];  // telegraph rings shown before a `ring`/`bossRing` pattern fires
@@ -273,12 +275,16 @@ export class Game {
     this.skillEffects.push({ type, x: player.x, y: player.y, color: player.color, t: 0, duration, ...data });
   }
 
-  /** Spawns a floating "+N" text at (x, y) — used to call out graze score gains. */
-  spawnScorePopup(x, y, amount, color = '#7bed9f') {
+  /**
+   * Spawns a floating text popup at (x, y) — used for graze score gains and
+   * item-pickup feedback. Pass `label` to show custom text (e.g. "+1 ชีวิต")
+   * instead of the default "+N" score format.
+   */
+  spawnScorePopup(x, y, amount, color = '#7bed9f', label = null) {
     this.scorePopups.push({
       x,
       y,
-      text: `+${Math.round(amount)}`,
+      text: label ?? `+${Math.round(amount)}`,
       color,
       age: 0,
       duration: 0.85,
@@ -308,6 +314,7 @@ export class Game {
     this.skillEffects = [];
     this.bulletCleanupCooldown = 0;
     this.bulletCleanupUsedThisFrame = 0;
+    this.itemSystem.clear();
 
     // Solo play should center the player. The 420/860 split is only
     // meaningful in COOP, where both players need distinct starting
@@ -383,6 +390,7 @@ export class Game {
     this.actionQueue = [];
     this.boss.active = false;
     this.ui.setBossVisible(false);
+    this.itemSystem.clear();
 
     this.state.waveDuration = this.waveSystem.duration(n);
     const subtitle = this.isBossWave(n)
@@ -558,6 +566,7 @@ export class Game {
       return;
     }
 
+    this.itemSystem.update(dt);
     this.updateSkillEffects(rawDt);
     this.lifeSystem.updateRevive(dt);
     this.particles.update(rawDt);

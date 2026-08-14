@@ -45,5 +45,24 @@ export const CONFIG = {
     cleanupCooldown: 0.12
   },
   combo: { window: 1.1 },
+  items: {
+    // Seconds between spawn attempts (randomized between min/max).
+    spawnMin: 9,
+    spawnMax: 15,
+    // Max pickups allowed on the field at once.
+    maxActive: 3,
+    radius: 15,
+    // How long an uncollected pickup stays before disappearing.
+    ttl: 12,
+    // Extra forgiveness added to (player.r + item.r) when checking pickup range.
+    pickupPadding: 6,
+    // Relative spawn weights. `heart` gets `heartWeightBoost` added on top
+    // whenever any active player is missing a life, making heals more
+    // likely to appear when they're actually needed.
+    weights: { heart: 35, energy: 25, shield: 15, score: 25 },
+    heartWeightBoost: 40,
+    scoreValue: 220,
+    shieldDuration: 3.0
+  },
   storage: { bestTime: 'waveDodgeBestTime', bestWave: 'waveDodgeBestWave', bestScore: 'waveDodgeBestScore', bestGraze: 'waveDodgeBestGraze' }
 };

@@ -1,3 +1,71 @@
+import { ITEM_COLORS } from '../systems/itemSystem.js';
+
+/**
+ * One draw function per item type, keyed by `item.type` (mirrors the
+ * SKILL_EFFECT_DRAWERS pattern above). Each receives the canvas context
+ * (already translated to the item's bob position, with fill/stroke color
+ * pre-set to that item's color) and `s`, a half-size to draw within.
+ * To add a new item icon: add an entry here whose key matches the `type`
+ * used in ItemSystem.collect().
+ */
+const ITEM_ICON_DRAWERS = {
+  heart(c, s) {
+    const w = s * 1.7;
+    const h = s * 1.6;
+    const topCurveHeight = h * 0.3;
+    const y = -h / 2;
+    c.beginPath();
+    c.moveTo(0, y + topCurveHeight);
+    c.bezierCurveTo(0, y, -w / 2, y, -w / 2, y + topCurveHeight);
+    c.bezierCurveTo(-w / 2, y + (h + topCurveHeight) / 2, 0, y + (h + topCurveHeight) / 2, 0, y + h);
+    c.bezierCurveTo(0, y + (h + topCurveHeight) / 2, w / 2, y + (h + topCurveHeight) / 2, w / 2, y + topCurveHeight);
+    c.bezierCurveTo(w / 2, y, 0, y, 0, y + topCurveHeight);
+    c.closePath();
+    c.fill();
+  },
+  energy(c, s) {
+    // Lightning bolt.
+    c.beginPath();
+    c.moveTo(-s * 0.35, -s);
+    c.lineTo(s * 0.5, -s * 0.15);
+    c.lineTo(0, -s * 0.15);
+    c.lineTo(s * 0.35, s);
+    c.lineTo(-s * 0.5, s * 0.15);
+    c.lineTo(0, s * 0.15);
+    c.closePath();
+    c.fill();
+  },
+  shield(c, s) {
+    // Shield outline: flat-ish top, curved point at the bottom.
+    c.beginPath();
+    c.moveTo(0, -s);
+    c.lineTo(s, -s * 0.4);
+    c.lineTo(s * 0.7, s * 0.5);
+    c.quadraticCurveTo(s * 0.35, s * 1.05, 0, s * 1.2);
+    c.quadraticCurveTo(-s * 0.35, s * 1.05, -s * 0.7, s * 0.5);
+    c.lineTo(-s, -s * 0.4);
+    c.closePath();
+    c.stroke();
+  },
+  score(c, s) {
+    // Gem/diamond with a couple of facet lines for sparkle.
+    c.beginPath();
+    c.moveTo(0, -s);
+    c.lineTo(s, -s * 0.15);
+    c.lineTo(0, s);
+    c.lineTo(-s, -s * 0.15);
+    c.closePath();
+    c.fill();
+    c.beginPath();
+    c.moveTo(-s, -s * 0.15);
+    c.lineTo(s, -s * 0.15);
+    c.moveTo(0, -s);
+    c.lineTo(0, s);
+    c.globalAlpha *= 0.5;
+    c.stroke();
+  }
+};
+
 const WORLD = { width: 1280, height: 720 };
 
 /**
@@ -417,6 +485,7 @@ export class Renderer {
     for (const w of game.ringWarnings) this.drawWarning(w);
     for (const l of game.lasers) this.drawLaser(l);
     if (game.boss.active) this.drawBoss(game.boss);
+    for (const item of game.itemSystem.items) this.drawItem(item);
     for (const b of game.bullets.items) this.drawBullet(b);
     for (const p of game.particles.items) this.drawParticle(p);
     for (const p of game.activePlayers()) this.drawPlayer(p);
@@ -427,7 +496,70 @@ export class Renderer {
     }
 
     for (const fx of game.skillEffects) this.drawSkillEffect(fx);
-    // Graze score popups are displayed beside the HUD SCORE value.
+    for (const p of game.scorePopups) this.drawScorePopup(p);
+  }
+
+  /** Draws a drop-item pickup: a glowing dark disc with a type icon inside, bobbing gently, and blinking just before it despawns. */
+  drawItem(item) {
+    const color = ITEM_COLORS[item.type] || '#fff';
+    const remaining = item.ttl - item.age;
+    if (remaining < 2.5 && Math.floor(item.age * 8) % 2 === 0) return;
+
+    const c = this.ctx;
+    const bobY = Math.sin(item.bob * 2.4) * 3;
+    const pulse = 0.75 + Math.sin(item.bob * 3) * 0.25;
+
+    c.save();
+    c.translate(item.x, item.y + bobY);
+
+    c.globalAlpha = 0.32 * pulse;
+    c.shadowColor = color;
+    c.shadowBlur = 20;
+    c.beginPath();
+    c.arc(0, 0, item.r + 10, 0, Math.PI * 2);
+    c.fillStyle = color;
+    c.fill();
+
+    c.globalAlpha = 1;
+    c.shadowBlur = 10;
+    c.beginPath();
+    c.arc(0, 0, item.r, 0, Math.PI * 2);
+    c.fillStyle = 'rgba(10,10,18,.88)';
+    c.fill();
+    c.lineWidth = 2;
+    c.strokeStyle = color;
+    c.stroke();
+
+    c.shadowBlur = 0;
+    c.strokeStyle = color;
+    c.fillStyle = color;
+    c.lineWidth = 2.4;
+    c.lineCap = 'round';
+    c.lineJoin = 'round';
+
+    const s = item.r * 0.55;
+    const drawIcon = ITEM_ICON_DRAWERS[item.type] || ITEM_ICON_DRAWERS.score;
+    drawIcon(c, s);
+
+    c.restore();
+  }
+
+  /** Draws a floating text popup (graze score / item pickup feedback), rising and fading out. */
+  drawScorePopup(p) {
+    const c = this.ctx;
+    if (p.life <= 0) return;
+    const riseY = (1 - p.life) * -34;
+
+    c.save();
+    c.globalAlpha = Math.max(0, p.life);
+    c.font = 'bold 16px system-ui, sans-serif';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillStyle = p.color;
+    c.shadowColor = p.color;
+    c.shadowBlur = 8;
+    c.fillText(p.text, p.x, p.y + riseY);
+    c.restore();
   }
 
   drawWarning(w) {
