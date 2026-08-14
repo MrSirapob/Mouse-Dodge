@@ -30,39 +30,56 @@ export class InputManager {
       const sx = (clientX - r.left) * (this.canvas.clientWidth / r.width);
       let sy = (clientY - r.top) * (this.canvas.clientHeight / r.height);
 
-      // Lift the touch target above the finger. Mouse control remains 1:1.
+      // Mouse control remains 1:1. Touch movement is handled as a
+      // relative drag so a new touch never teleports the player.
       if (pointerType === 'touch') {
         sy -= this.touchTargetOffset;
         this.p1.isTouch = true;
       } else {
         this.p1.isTouch = false;
+        this.p1.x = Math.max(0, Math.min(this.canvas.clientWidth, sx));
+        this.p1.y = Math.max(0, Math.min(this.canvas.clientHeight, sy));
       }
+    };
 
-      this.p1.x = Math.max(0, Math.min(this.canvas.clientWidth, sx));
-      this.p1.y = Math.max(0, Math.min(this.canvas.clientHeight, sy));
+    const moveTouchRelative = (clientX, clientY, gesture) => {
+      const r = this.canvas.getBoundingClientRect();
+      const dx = (clientX - gesture.x) * (this.canvas.clientWidth / r.width);
+      const dy = (clientY - gesture.y) * (this.canvas.clientHeight / r.height);
+
+      // Keep the player's position from before this touch. Moving the
+      // finger then moves the player by the same amount from that position.
+      this.p1.x = Math.max(0, Math.min(this.canvas.clientWidth, gesture.playerX + dx));
+      this.p1.y = Math.max(0, Math.min(this.canvas.clientHeight, gesture.playerY + dy));
+      this.p1.isTouch = true;
     };
 
     this.canvas.addEventListener('pointermove', e => {
-      pointer(e.clientX, e.clientY, e.pointerType);
-
       if (e.pointerType === 'touch' && this.touchGesture) {
         const dx = e.clientX - this.touchGesture.x;
         const dy = e.clientY - this.touchGesture.y;
         if (Math.hypot(dx, dy) > 18) this.touchGesture.moved = true;
+        moveTouchRelative(e.clientX, e.clientY, this.touchGesture);
+        return;
       }
+
+      pointer(e.clientX, e.clientY, e.pointerType);
     }, { passive: true });
 
     this.canvas.addEventListener('pointerdown', e => {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
 
-      pointer(e.clientX, e.clientY, e.pointerType);
-
       if (e.pointerType === 'touch') {
+        // Start the gesture from the player's CURRENT position.
+        // The initial touch location must not move/teleport the player.
         this.touchGesture = {
           x: e.clientX,
           y: e.clientY,
+          playerX: this.p1.x,
+          playerY: this.p1.y,
           moved: false
         };
+        this.p1.isTouch = true;
       } else {
         // Desktop: keep the existing single-click skill control.
         this.p1.actionPressed = true;
