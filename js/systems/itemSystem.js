@@ -9,8 +9,10 @@ export const ITEM_COLORS = {
 
 /**
  * ItemSystem periodically drops a pickup somewhere on the map while a wave
- * is active. Pickups sit still, bob gently, and disappear on their own if
- * nobody walks over them in time (`CONFIG.items.ttl`).
+ * is actively spawning. Pickups stay live (bobbing, aging, and collectible)
+ * through the 'draining' tail of a wave too, and disappear on their own if
+ * nobody walks over them in time (`CONFIG.items.ttl`). They only pause
+ * during the 'transition' banner, when players are frozen as well.
  *
  * Types:
  *  - heart  : restores 1 life (falls back to bonus score if already at max)
@@ -85,15 +87,22 @@ export class ItemSystem {
   }
 
   update(dt) {
-    // Only spawn/tick while a wave is actively spawning threats; pickups
-    // already on the field simply hold still during transitions.
-    if (this.game.state.wavePhase !== 'active') return;
+    // Pickups only truly freeze during 'transition' (the wave-announcement
+    // banner), where players themselves are frozen (updatePlayers(0, ...))
+    // and couldn't reach an item anyway. During 'draining' the wave has
+    // simply stopped spawning new threats — players are still moving and
+    // dodging, so existing items must keep aging and stay collectible or
+    // they silently become unpickable until itemSystem.clear() wipes them.
+    const phase = this.game.state.wavePhase;
+    if (phase === 'transition') return;
 
     const cfg = CONFIG.items;
-    this.spawnTimer -= dt;
-    if (this.spawnTimer <= 0) {
-      this.trySpawn();
-      this.spawnTimer = this.rollSpawnDelay();
+    if (phase === 'active') {
+      this.spawnTimer -= dt;
+      if (this.spawnTimer <= 0) {
+        this.trySpawn();
+        this.spawnTimer = this.rollSpawnDelay();
+      }
     }
 
     for (let i = this.items.length - 1; i >= 0; i--) {
