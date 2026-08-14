@@ -2843,3 +2843,32 @@
     opacity:1;
   }
 }
+
+/* ============================================================
+   MOBILE HUD SPACING — final override.
+   #hud has been redefined many times above as the layout was
+   iterated on; on phones around iPhone XR width (414px CSS px)
+   the winning rule was the max-width:600px block far above,
+   which squeezed the gap between P1 | center | P2 down to 3px
+   and the gap inside each player block down to 2px, making the
+   top HUD look cramped. Bump both back up a bit here, keeping
+   the same gap on the p1 and p2 side so it stays symmetric.
+   ============================================================ */
+@media (max-width:600px){
+  #hud{
+    gap:9px !important;
+  }
+  #hud .hud-p1,
+  #hud .hud-p2{
+    gap:6px !important;
+  }
+}
+@media (max-width:430px){
+  #hud{
+    gap:7px !important;
+  }
+  #hud .hud-p1,
+  #hud .hud-p2{
+    gap:4px !important;
+  }
+}
