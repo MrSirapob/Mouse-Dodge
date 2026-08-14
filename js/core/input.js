@@ -1,7 +1,13 @@
 export class InputManager {
   constructor(canvas) {
     this.canvas = canvas;
-    this.p1 = { x: 640, y: 360, actionPressed: false, isTouch: false };
+    // hasInput starts false: p1.x/y below are placeholders in a
+    // screen-space that assumes a 1280x720-ish screen. On mobile the
+    // real screen is much narrower, so feeding these into
+    // renderer.worldPoint() before any real pointer event arrives
+    // clamps the player to the right edge. game.js should skip
+    // updateMouse() until hasInput flips true.
+    this.p1 = { x: 640, y: 360, actionPressed: false, isTouch: false, hasInput: false };
     this.p2 = { x: 360, y: 360, up: false, down: false, left: false, right: false, actionPressed: false, lastDir: { x: 1, y: 0 } };
     this.onPause = null;
     this.onP1Action = null;
@@ -40,6 +46,7 @@ export class InputManager {
         this.p1.x = Math.max(0, Math.min(this.canvas.clientWidth, sx));
         this.p1.y = Math.max(0, Math.min(this.canvas.clientHeight, sy));
       }
+      this.p1.hasInput = true;
     };
 
     const moveTouchRelative = (clientX, clientY, gesture) => {
@@ -52,6 +59,7 @@ export class InputManager {
       this.p1.x = Math.max(0, Math.min(this.canvas.clientWidth, gesture.playerX + dx));
       this.p1.y = Math.max(0, Math.min(this.canvas.clientHeight, gesture.playerY + dy));
       this.p1.isTouch = true;
+      this.p1.hasInput = true;
     };
 
     this.canvas.addEventListener('pointermove', e => {
@@ -70,16 +78,25 @@ export class InputManager {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
 
       if (e.pointerType === 'touch') {
-        // Start the gesture from the player's CURRENT position.
-        // The initial touch location must not move/teleport the player.
+        // Start the gesture from the player's CURRENT position. The
+        // initial touch location must not move/teleport the player.
+        // Before any real input, this.p1.x/y are still the 1280x720
+        // placeholder default, which is meaningless on a narrower
+        // phone screen -- fall back to the screen center instead so
+        // the very first drag doesn't jump the player to an edge.
+        const baseX = this.p1.hasInput ? this.p1.x : this.canvas.clientWidth / 2;
+        const baseY = this.p1.hasInput ? this.p1.y : this.canvas.clientHeight / 2;
         this.touchGesture = {
           x: e.clientX,
           y: e.clientY,
-          playerX: this.p1.x,
-          playerY: this.p1.y,
+          playerX: baseX,
+          playerY: baseY,
           moved: false
         };
+        this.p1.x = baseX;
+        this.p1.y = baseY;
         this.p1.isTouch = true;
+        this.p1.hasInput = true;
       } else {
         // Desktop: keep the existing single-click skill control.
         this.p1.actionPressed = true;

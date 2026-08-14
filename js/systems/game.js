@@ -309,8 +309,19 @@ export class Game {
     this.bulletCleanupCooldown = 0;
     this.bulletCleanupUsedThisFrame = 0;
 
-    this.players[0].reset(420, 360);
-    this.players[1].reset(860, 360);
+    // Solo play should center the player. The 420/860 split is only
+    // meaningful in COOP, where both players need distinct starting
+    // spots; using it in SOLO put the player noticeably off-center,
+    // which barely showed on a wide desktop canvas but put the player
+    // near the left edge of the narrow slice of the world visible on
+    // a portrait phone.
+    if (mode === GAME_MODES.COOP) {
+      this.players[0].reset(420, 360);
+      this.players[1].reset(860, 360);
+    } else {
+      this.players[0].reset(640, 360);
+      this.players[1].reset(860, 360);
+    }
     this.players[1].down = mode === GAME_MODES.SOLO;
 
     this.boss.reset();
@@ -593,8 +604,15 @@ export class Game {
     // Slow skill also crippled the player's own mouse/keyboard responsiveness
     // by the same factor as the bullets — largely canceling out the point of
     // a "bullet time" skill. Bullets/score/boss still use the scaled `dt`.
-    const target = this.renderer.worldPoint(this.input.p1.x, this.input.p1.y);
-    if (this.players[0].isAlive()) this.players[0].updateMouse(target.x, target.y, rawDt, this.input.p1.isTouch, this.input.mouseSensitivity);
+    // Skip until the player has actually moved the mouse/touched the
+    // screen: input.p1.x/y start out as a 1280x720 screen-space
+    // placeholder, which on a narrower mobile screen maps (via
+    // worldPoint's clamp) to the right edge of the visible world --
+    // pinning the player there before they've touched anything.
+    if (this.input.p1.hasInput) {
+      const target = this.renderer.worldPoint(this.input.p1.x, this.input.p1.y);
+      if (this.players[0].isAlive()) this.players[0].updateMouse(target.x, target.y, rawDt, this.input.p1.isTouch, this.input.mouseSensitivity);
+    }
     if (this.state.mode === GAME_MODES.COOP && this.players[1].isAlive()) {
       this.players[1].updateKeyboard(this.input.p2Direction(), rawDt);
     }
