@@ -103,11 +103,15 @@ export class PatternLibrary {
       // collision. Dense segments make the corridor tight instead of creating
       // a large 'safe lane'.
       const segments = vertical ? 61 : 35;
-      const gapSize = gap != null ? gap : 2 / segments;
+      // `gap` is a fraction of the wall span. Convert it to a segment count
+      // so values such as 0.06 consistently create a real player-sized route.
+      const gapSize = gap != null
+        ? Math.max(2 / segments, gap * segments)
+        : 2;
 
       for (let i = 0; i < segments; i++) {
         const t = i / (segments - 1);
-        if (Math.abs(t - gapPos) < gapSize / 2) continue; // skip the gap
+        if (Math.abs(t - gapPos) < gapSize / 2 / segments) continue; // skip the gap
         if (vertical) this.game.spawnBullet(t * 1280, -20, 0, speed, 6, color);
         else this.game.spawnBullet(-20, t * 720, speed, 0, 6, color);
       }

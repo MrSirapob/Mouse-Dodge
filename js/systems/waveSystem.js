@@ -66,7 +66,7 @@ export class WaveSystem {
   duration(n) {
     if (this.game.isBossWave(n)) return 60;
     if (n <= 4) return 30;
-    if (n <= 9) return 35;
+    if (n <= 9) return 40;
     if (n <= 14) return 40;
     if (n <= 19) return 45;
     return 60;
@@ -206,41 +206,52 @@ export class WaveSystem {
 
         this.p.movingSweep(39.0, 4, 0.95, 2.7, c1, false);
         break;
-
-
-
-
       case 7:
-        aimed(0.0, 36, 0.24, 2.45);
-        splitter(5.0, 8, 0.8, 1.95, c2);
-        wall(9.0, 2.6, c1, false, 0.07);
-        ring(13.0, 640, 360, 36, 2.45, c2);
-        spiral(18.0, 9.0, 3, 2.0, c1);
-        aimed(23.0, 40, 0.22, 2.5, c2);
-        wall(29.0, 2.65, c1, true, 0.065);
-        ring(33.0, 640, 360, 38, 2.5, c2);
+        // W7 — true layering: several mechanics remain active while the next
+        // mechanic starts. No tutorial pacing; pressure is continuous.
+        aimed(0.0, 54, 0.17, 2.65);
+        splitter(3.0, 12, 0.52, 2.1, c2);
+        wall(6.0, 2.75, c1, false, 0.07);
+        cross(9.0, 16, 2.7, c2);
+        bouncer(12.0, 16, 0.42, 2.2, c1);
+        aimed(16.0, 56, 0.15, 2.75, c2);
+        spiral(20.0, 9.0, 4, 2.2, c1);
+        wall(25.0, 2.8, c2, true, 0.065);
+        laser(28.0, 7, 0.55, c3);
+        bouncer(32.0, 14, 0.38, 2.3, c1);
+        aimed(34.0, 48, 0.13, 2.9, c2);
+        laser(35.0, 7, 0.5, c3);
         break;
+
       case 8:
-        ring(1.0, 330, 220, 34, 2.45, c1);
-        aimed(3.0, 38, 0.23, 2.5, c2);
-        wall(7.0, 2.65, c1, true, 0.065);
-        ring(12.0, 950, 500, 36, 2.5, c2);
-        bouncer(16.0, 7, 0.7, 2.0, c1);
-        aimed(21.0, 40, 0.21, 2.55, c2);
-        wall(27.0, 2.7, c1, false, 0.06);
-        ring(31.0, 640, 360, 38, 2.55, c1);
+        // W8 — movement is no longer predictable: bounce + spiral + laser.
+        bouncer(0.0, 14, 0.45, 2.2, c1);
+        ring(3.0, 330, 220, 42, 2.6, c2);
+        aimed(5.0, 46, 0.18, 2.7, c1);
+        wall(9.0, 2.75, c2, true, 0.06);
+        spiral(12.0, 9.0, 5, 2.15, c1);
+        splitter(17.0, 11, 0.58, 2.1, c2);
+        laser(21.0, 7, 0.68, c3);
+        aimed(25.0, 50, 0.16, 2.75, c1);
+        bouncer(29.0, 12, 0.42, 2.25, c2);
+        wall(32.0, 2.8, c1, false, 0.055);
         break;
+
       case 9:
-        aimed(0.0, 40, 0.22, 2.55);
-        wall(4.0, 2.7, c2, true, 0.06);
-        homing(7.0, 9, 0.42, 1.9, c1);
-        ring(11.0, 640, 360, 38, 2.5, c2);
-        wall(16.0, 2.75, c1, false, 0.055);
-        homing(20.0, 10, 0.4, 1.95, c2);
-        aimed(25.0, 42, 0.2, 2.6, c1);
-        ring(30.0, 640, 360, 40, 2.55, c2);
-        wall(33.0, 2.8, c1, true, 0.055);
+        // W9 — multi-axis pressure: space control + tracking + delayed coverage.
+        laser(0.5, 6, 0.62, c3);
+        aimed(2.0, 50, 0.17, 2.8, c1);
+        cross(6.0, 15, 2.7, c2);
+        wall(10.0, 2.8, c1, true, 0.055);
+        homing(13.0, 14, 0.32, 2.1, c2);
+        splitter(17.0, 11, 0.55, 2.1, c1);
+        ring(21.0, 640, 360, 48, 2.7, c2);
+        bouncer(25.0, 14, 0.4, 2.25, c1);
+        wall(29.0, 2.85, c2, false, 0.05);
+        aimed(32.0, 54, 0.14, 2.9, c1);
+        laser(34.0, 4, 0.55, c3);
         break;
+
 
       case 11:
         cross(0.0, 13, 2.55, c1);
@@ -383,17 +394,37 @@ export class WaveSystem {
       this.p.bossSpiral(55, 5, 5, 2.2, c2);
       return "「บทที่หนึ่ง : ผู้ต้องห้ามตื่นจากนิทรา」";
     }
-
     if (n === 10) {
-      this.p.bossRing(1, 26, 2.45, c2);
-      this.p.bossAimed(12, 22, 0.28, 2.45, c1);
-      this.p.bossSpiral(22, 14, 3, 2.0, c3);
-      this.p.bossHoming?.(31, 10, 0.45, 1.8, c1);
-      this.p.bossRing(40, 28, 2.6, c2);
-      this.p.bossSpiral(49, 10, 4, 2.15, c3);
-      this.p.bossAimed(54, 24, 0.22, 2.65, c1);
+      // W10 BOSS — "เมื่อสวรรค์ถูกลากลงจากบัลลังก์"
+      // No tutorial phase: pressure is high immediately.
+      // The boss combines radial pressure, tracking, spiral movement,
+      // lasers and bouncing projectiles so the arena itself becomes hostile.
+      this.p.bossRing(0.5, 38, 2.7, c2);
+      this.p.laserBarrage(2.0, 5, 0.62, c3);
+      this.p.bossAimed(4.5, 38, 0.18, 2.7, c1);
+
+      this.p.bossSpiral(9.0, 9.0, 4, 2.1, c3);
+      this.p.bouncer(10.0, 12, 0.45, 2.2, c2);
+      this.p.bossHoming?.(15.0, 14, 0.3, 2.0, c1);
+
+      this.p.bossRing(20.0, 42, 2.8, c2);
+      this.p.laserBarrage(22.0, 7, 0.58, c3);
+      this.p.bossSpiral(26.0, 10.0, 5, 2.15, c1);
+
+      this.p.bossAimed(31.0, 44, 0.16, 2.85, c2);
+      this.p.bossHoming?.(34.0, 18, 0.24, 2.05, c1);
+      this.p.bouncer(36.0, 16, 0.4, 2.3, c3);
+
+      this.p.bossRing(40.0, 46, 2.9, c1);
+      this.p.laserBarrage(42.0, 8, 0.55, c3);
+      this.p.bossSpiral(46.0, 9.0, 5, 2.2, c2);
+
+      this.p.bossAimed(51.0, 50, 0.14, 3.0, c1);
+      this.p.bossHoming?.(54.0, 20, 0.22, 2.1, c2);
+      this.p.bossRing(56.0, 48, 3.0, c3);
       return "「บทที่สอง : เมื่อสวรรค์ถูกลากลงจากบัลลังก์」";
     }
+
 
     if (n === 15) {
       this.p.bossSpiral(1, 14, 3, 2.0, c3);
