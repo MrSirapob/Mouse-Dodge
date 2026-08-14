@@ -7,15 +7,20 @@ export const GRAZE_REWARD = Object.freeze({
 
   // Never let graze recovery refill more than this fraction
   // of the skill's original cooldown in a single activation cycle.
-  maxReduction: 0.60,
+  maxReduction: 0.6,
 
   // Existing graze combo window.
-  comboWindow: 1.0
+  comboWindow: 1.0,
 });
 
 export const CONFIG = {
   world: { width: 1280, height: 720 },
-  player: { radius: 10, followLerp: 0.28, color: '#4ecdc4', p2Color: '#ffd166' },
+  player: {
+    radius: 10,
+    followLerp: 0.28,
+    color: "#4ecdc4",
+    p2Color: "#ffd166",
+  },
   lives: { max: 3, hitInvulnerability: 3.0, respawnInvulnerability: 1.0 },
   skills: {
     pulse: { cooldown: 5, radius: 115 },
@@ -25,10 +30,17 @@ export const CONFIG = {
     timestop: { cooldown: 10, duration: 2.0 },
     heal: { cooldown: 12 },
     repulse: { cooldown: 8, radius: 190, force: 14.0, minPush: 8.0 },
-    phase: { cooldown: 9, duration: 2.0 }
+    phase: { cooldown: 9, duration: 2.0 },
   },
   revive: { duration: 2.0, radius: 46 },
-  wave: { baseDuration: 30, minDuration: 30, bossBase: 60, bossMax: 60, transition: 1, bannerDisplayMs: 3000 },
+  wave: {
+    baseDuration: 30,
+    minDuration: 30,
+    bossBase: 60,
+    bossMax: 60,
+    transition: 1,
+    bannerDisplayMs: 3000,
+  },
   bullets: {
     capEarly: 260,
     capMid: 340,
@@ -42,20 +54,20 @@ export const CONFIG = {
     // low-risk old bullets instead of randomly deleting threats.
     cleanupStart: 0.95,
     cleanupPerFrame: 4,
-    cleanupCooldown: 0.12
+    cleanupCooldown: 0.12,
   },
   combo: { window: 1.1 },
   rank: {
     // Score thresholds for the end-of-run rank.
     thresholds: [
-      { rank: 'SSS', min: 400000 },
-      { rank: 'SS', min: 200000 },
-      { rank: 'S', min: 100000 },
-      { rank: 'A', min: 50000 },
-      { rank: 'B', min: 25000 },
-      { rank: 'C', min: 10000 },
-      { rank: 'D', min: 0 }
-    ]
+      { rank: "SSS", min: 100000 },
+      { rank: "SS", min: 80000 },
+      { rank: "S", min: 60000 },
+      { rank: "A", min: 40000 },
+      { rank: "B", min: 25000 },
+      { rank: "C", min: 10000 },
+      { rank: "D", min: 0 },
+    ],
   },
   items: {
     // Seconds between spawn attempts (randomized between min/max).
@@ -74,7 +86,12 @@ export const CONFIG = {
     weights: { heart: 35, energy: 25, shield: 15, score: 25 },
     heartWeightBoost: 40,
     scoreValue: 220,
-    shieldDuration: 3.0
+    shieldDuration: 3.0,
   },
-  storage: { bestTime: 'waveDodgeBestTime', bestWave: 'waveDodgeBestWave', bestScore: 'waveDodgeBestScore', bestGraze: 'waveDodgeBestGraze' }
+  storage: {
+    bestTime: "waveDodgeBestTime",
+    bestWave: "waveDodgeBestWave",
+    bestScore: "waveDodgeBestScore",
+    bestGraze: "waveDodgeBestGraze",
+  },
 };
