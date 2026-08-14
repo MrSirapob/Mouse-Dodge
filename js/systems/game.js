@@ -693,6 +693,36 @@ export class Game {
         }
       }
 
+      if (b.trajectory) {
+        b.trajAge = (b.trajAge || 0) + dt;
+        if (b.trajectory === 'sine') {
+          b.x = (b.originX ?? b.x) + Math.sin(b.trajAge * b.frequency * Math.PI * 2) * b.amplitude;
+        } else if (b.trajectory === 'accelerate') {
+          b.vy += (b.dir || 1) * b.accel * dt * 60;
+        } else if (b.trajectory === 'stopGo') {
+          if (b.trajAge >= b.stopAfter && b.trajAge < b.stopAfter + b.pause) {
+            b.vx = 0; b.vy = 0;
+          } else if (b.trajAge >= b.stopAfter + b.pause && !b.resumed) {
+            b.vy = (b.dir || 1) * b.resumeSpeed; b.resumed = true;
+          }
+        } else if (b.trajectory === 'reverse') {
+          if (!b.reversed && b.trajAge >= b.reverseAfter) {
+            b.vy = -(b.dir || 1) * Math.abs(b.vy); b.reversed = true;
+          }
+        } else if (b.trajectory === 'orbit') {
+          b.angle += b.orbitSpeed * dt;
+          b.x = b.centerX + Math.cos(b.angle) * b.radius;
+          b.y = b.centerY + Math.sin(b.angle) * b.radius;
+          continue;
+        }
+      }
+      if (b.curve) {
+        const speed = Math.hypot(b.vx, b.vy) || 1;
+        const nx = -b.vy / speed, ny = b.vx / speed;
+        b.vx += nx * b.curve * dt * 60;
+        b.vy += ny * b.curve * dt * 60;
+      }
+
       b.x += b.vx * dt * 60;
       b.y += b.vy * dt * 60;
 
@@ -711,11 +741,12 @@ export class Game {
         continue;
       }
 
-      if (b.splitter && !b.split && b.age >= 0.9) {
+      if (b.splitter && !b.split && b.age >= (b.splitDelay ?? 0.9)) {
         b.split = true;
         const base = Math.atan2(b.vy, b.vx);
         const speed = Math.hypot(b.vx, b.vy) * 0.9;
-        for (let k = 0; k < 6; k++) {
+        const splitCount = b.splitCount ?? 6;
+        for (let k = 0; k < splitCount; k++) {
           const angle = base + (Math.PI * 2 * k) / 6;
           this.spawnBullet(b.x, b.y, Math.cos(angle) * speed, Math.sin(angle) * speed, 4, b.color);
         }

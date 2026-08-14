@@ -191,6 +191,85 @@ export class PatternLibrary {
     for (let i = 0; i < count; i++) this.laser(start + i * interval, color);
   }
 
+
+  // --- Trajectory variants ----------------------------------------------------
+  // Reusable flight-path modifiers for Bullet Hell variety.
+  sineRain(start, count, interval, speed, amplitude, frequency, color, fromTop = true) {
+    for (let i = 0; i < count; i++) this.game.queue(start + i * interval, () => {
+      const x0 = (i / Math.max(1, count - 1)) * 1280;
+      const y0 = fromTop ? -18 : 738, dir = fromTop ? 1 : -1;
+      this.game.spawnBullet(x0, y0, 0, dir * speed, 5, color,
+        { trajectory: 'sine', originX: x0, amplitude, frequency, dir });
+    });
+  }
+
+  accelerateRain(start, count, interval, startSpeed, accel, color, fromTop = true) {
+    for (let i = 0; i < count; i++) this.game.queue(start + i * interval, () => {
+      const x = Math.random() * 1280, y = fromTop ? -18 : 738, dir = fromTop ? 1 : -1;
+      this.game.spawnBullet(x, y, 0, dir * startSpeed, 5, color,
+        { trajectory: 'accelerate', accel, dir });
+    });
+  }
+
+  stopAndGo(start, count, interval, speed, stopAfter, pause, color, fromTop = true) {
+    for (let i = 0; i < count; i++) this.game.queue(start + i * interval, () => {
+      const x = Math.random() * 1280, y = fromTop ? -18 : 738, dir = fromTop ? 1 : -1;
+      this.game.spawnBullet(x, y, 0, dir * speed, 5, color,
+        { trajectory: 'stopGo', stopAfter, pause, dir, resumeSpeed: speed });
+    });
+  }
+
+  reverseRain(start, count, interval, speed, reverseAfter, color, fromTop = true) {
+    for (let i = 0; i < count; i++) this.game.queue(start + i * interval, () => {
+      const x = Math.random() * 1280, y = fromTop ? -18 : 738, dir = fromTop ? 1 : -1;
+      this.game.spawnBullet(x, y, 0, dir * speed, 5, color,
+        { trajectory: 'reverse', reverseAfter, dir });
+    });
+  }
+
+  orbitBurst(start, count, interval, radius, orbitSpeed, releaseSpeed, color) {
+    for (let i = 0; i < count; i++) this.game.queue(start + i * interval, () => {
+      const a = (Math.PI * 2 * i) / Math.max(1, count);
+      this.game.spawnBullet(
+        640 + Math.cos(a) * radius, 360 + Math.sin(a) * radius,
+        Math.cos(a) * releaseSpeed, Math.sin(a) * releaseSpeed, 5, color,
+        { trajectory: 'orbit', centerX: 640, centerY: 360, angle: a, radius, orbitSpeed }
+      );
+    });
+  }
+
+  curvingSplit(start, count, interval, speed, color) {
+    for (let i = 0; i < count; i++) this.game.queue(start + i * interval, () => {
+      const x = i % 2 === 0 ? -18 : 1298;
+      const y = 70 + (i / Math.max(1, count - 1)) * 580;
+      const target = this.targetPlayer(x, y);
+      const angle = Math.atan2(target.y - y, target.x - x);
+      this.game.spawnBullet(x, y, Math.cos(angle) * speed, Math.sin(angle) * speed, 8, color,
+        { splitter: true, curve: 0.004 * (i % 2 ? -1 : 1) });
+    });
+  }
+
+
+  explodeNearPlayer(start, count, interval, radius, speed, color) {
+    for (let i = 0; i < count; i++) {
+      this.game.queue(start + i * interval, () => {
+        const p = this.targetPlayer(640, 360);
+        const a = (Math.PI * 2 * i) / Math.max(1, count);
+        const r = radius + ((i * 17) % 31);
+        const x = Math.max(18, Math.min(1262, p.x + Math.cos(a) * r));
+        const y = Math.max(18, Math.min(702, p.y + Math.sin(a) * r));
+        const angle = a + Math.PI + ((i % 3) - 1) * 0.18;
+        this.game.spawnBullet(
+          x, y,
+          Math.cos(angle) * speed,
+          Math.sin(angle) * speed,
+          6, color,
+          { splitter: true, splitDelay: 0.65, splitCount: 6 }
+        );
+      });
+    }
+  }
+
   // --- Boss-only variants: same shapes, but centered on the boss position. ---
 
   /** Boss ring attack: bullets explode outward from the boss, with a gap aimed at the player. */

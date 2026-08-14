@@ -207,51 +207,56 @@ export class WaveSystem {
         this.p.movingSweep(39.0, 4, 0.95, 2.7, c1, false);
         break;
       case 7:
-        // W7 — true layering: several mechanics remain active while the next
-        // mechanic starts. No tutorial pacing; pressure is continuous.
-        aimed(0.0, 54, 0.17, 2.65);
-        splitter(3.0, 12, 0.52, 2.1, c2);
-        wall(6.0, 2.75, c1, false, 0.07);
-        cross(9.0, 16, 2.7, c2);
-        bouncer(12.0, 16, 0.42, 2.2, c1);
-        aimed(16.0, 56, 0.15, 2.75, c2);
-        spiral(20.0, 9.0, 4, 2.2, c1);
-        wall(25.0, 2.8, c2, true, 0.065);
-        laser(28.0, 7, 0.55, c3);
-        bouncer(32.0, 14, 0.38, 2.3, c1);
-        aimed(34.0, 48, 0.13, 2.9, c2);
-        laser(35.0, 7, 0.5, c3);
+        // W7 — sine, curve, stop/go, acceleration and bounce.
+        aimed(0.0, 50, 0.18, 5.3);
+        this.p.sineRain(3.0, 26, 0.16, 4.4, 120, 0.72, c2, true);
+        wall(7.0, 11.0, c1, false, 0.07);
+        wall(8.8, 10.0, c2, true, 0.08);
+        this.p.curvingSplit(10.0, 14, 0.45, 4.3, c2);
+        this.p.explodeNearPlayer(13.0, 7, 0.35, 70, 4.0, c3);
+        bouncer(14.0, 16, 0.42, 4.4, c1);
+        this.p.stopAndGo(18.0, 20, 0.22, 5.4, 1.8, 0.55, c2, true);
+        spiral(23.0, 8.5, 4, 4.4, c1);
+        this.p.accelerateRain(28.0, 22, 0.18, 1.6, 1.8, c3, false);
+        cross(32.0, 16, 5.5, c2);
+        laser(35.0, 6, 0.55, c3);
         break;
 
       case 8:
-        // W8 — movement is no longer predictable: bounce + spiral + laser.
-        bouncer(0.0, 14, 0.45, 2.2, c1);
-        ring(3.0, 330, 220, 42, 2.6, c2);
-        aimed(5.0, 46, 0.18, 2.7, c1);
-        wall(9.0, 2.75, c2, true, 0.06);
-        spiral(12.0, 9.0, 5, 2.15, c1);
-        splitter(17.0, 11, 0.58, 2.1, c2);
-        laser(21.0, 7, 0.68, c3);
-        aimed(25.0, 50, 0.16, 2.75, c1);
-        bouncer(29.0, 12, 0.42, 2.25, c2);
-        wall(32.0, 2.8, c1, false, 0.055);
+        // W8 — orbit, acceleration, reversal and sine trajectories.
+        this.p.orbitBurst(0.0, 18, 0.22, 90, 1.8, 0.7, c1);
+        ring(3.0, 330, 220, 44, 2.65, c2);
+        this.p.accelerateRain(6.0, 24, 0.17, 0.7, 2.0, c1, true);
+        wall(10.0, 5.6, c2, true, 0.065);
+        wall(11.7, 5.2, c1, false, 0.075);
+        this.p.reverseRain(13.0, 22, 0.2, 2.45, 1.55, c3, true);
+        spiral(17.0, 9.0, 5, 2.2, c1);
+        this.p.sineRain(22.0, 28, 0.14, 2.35, 145, 0.85, c2, false);
+        bouncer(26.0, 16, 0.38, 2.3, c1);
+        this.p.curvingSplit(30.0, 16, 0.38, 2.25, c3);
+        this.p.explodeNearPlayer(33.0, 8, 0.3, 65, 4.2, c2);
+        aimed(34.0, 54, 0.14, 2.9, c1);
+        laser(37.0, 7, 0.5, c3);
         break;
-
       case 9:
-        // W9 — multi-axis pressure: space control + tracking + delayed coverage.
-        laser(0.5, 6, 0.62, c3);
-        aimed(2.0, 50, 0.17, 2.8, c1);
-        cross(6.0, 15, 2.7, c2);
-        wall(10.0, 2.8, c1, true, 0.055);
-        homing(13.0, 14, 0.32, 2.1, c2);
-        splitter(17.0, 11, 0.55, 2.1, c1);
-        ring(21.0, 640, 360, 48, 2.7, c2);
-        bouncer(25.0, 14, 0.4, 2.25, c1);
-        wall(29.0, 2.85, c2, false, 0.05);
-        aimed(32.0, 54, 0.14, 2.9, c1);
-        laser(34.0, 4, 0.55, c3);
+        // W9 — reverse, curve, sine, orbit, split and accelerating fire.
+        laser(0.5, 6, 0.58, c3);
+        this.p.curvingSplit(2.0, 18, 0.32, 4.6, c1);
+        this.p.sineRain(5.0, 30, 0.13, 4.9, 160, 0.9, c2, true);
+        wall(9.0, 5.7, c1, true, 0.055);
+        wall(10.8, 5.4, c2, false, 0.065);
+        wall(12.6, 5.2, c1, true, 0.07);
+        this.p.reverseRain(12.0, 26, 0.17, 5.2, 1.35, c2, false);
+        this.p.orbitBurst(16.0, 22, 0.16, 120, 2.2, 1.8, c1);
+        this.p.explodeNearPlayer(19.0, 9, 0.28, 75, 4.5, c3);
+        splitter(20.0, 12, 0.42, 4.4, c2);
+        ring(23.0, 640, 360, 50, 5.6, c2);
+        this.p.accelerateRain(27.0, 26, 0.14, 1.6, 2.2, c3, true);
+        bouncer(31.0, 18, 0.34, 4.7, c1);
+        this.p.stopAndGo(34.0, 24, 0.17, 5.8, 1.25, 0.45, c2, false);
+        aimed(37.0, 56, 0.12, 6, c1);
+        laser(39.0, 6, 0.5, c3);
         break;
-
 
       case 11:
         cross(0.0, 13, 2.55, c1);
