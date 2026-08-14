@@ -33,6 +33,74 @@ const SKILL_ICONS = {
   phase: "assets/skills/phase.png",
 };
 
+const RANK_PHRASES = {
+  D: [
+    "ผู้ยังมิพร้อมเผชิญชะตา",
+    "ผู้หลงทางในม่านกระสุน",
+    "ผู้พ่ายแพ้ต่อโชคชะตา",
+    "ผู้ที่ยังต้องฝึกฝน"
+  ],
+  C: [
+    "ผู้เริ่มมองเห็นวิถีกระสุน",
+    "ผู้ก้าวแรกสู่เส้นทางแห่งความตาย",
+    "ผู้เริ่มท้าทายชะตากรรม",
+    "ผู้รอดชีวิตหน้าใหม่"
+  ],
+  B: [
+    "นักเต้นรำท่ามกลางกระสุน",
+    "ผู้หลีกหนีเงื้อมมือแห่งความตาย",
+    "ผู้เดินอยู่บนเส้นแบ่งแห่งชะตา",
+    "ผู้เริ่มเข้าใกล้ขอบเขตมนุษย์"
+  ],
+  A: [
+    "ผู้ก้าวข้ามขีดจำกัด",
+    "ผู้เหนือวิถีแห่งกระสุน",
+    "ผู้ท้าทายความตาย",
+    "ผู้ยืนเหนือชะตากรรม"
+  ],
+  S: [
+    "นักเต้นรำเหนือความตาย",
+    "ผู้ที่ความตายมิอาจเอื้อมถึง",
+    "ผู้ก้าวข้ามม่านกระสุน",
+    "ผู้ท้าทายบัญชาแห่งชะตา",
+    "ผู้ฉีกกระชากเส้นทางแห่งโชคชะตา"
+  ],
+  SS: [
+    "ผู้ซึ่งชะตากรรมมิอาจควบคุม",
+    "ผู้เดินเหนือกฎแห่งความตาย",
+    "ผู้ทำให้โชคชะตาต้องหวาดหวั่น",
+    "ผู้หลุดพ้นจากพันธนาการแห่งความตาย",
+    "ผู้ที่แม้ความตายยังต้องหลีกทาง"
+  ],
+  SSS: [
+    "ผู้เขียนจุดจบของชะตากรรมด้วยตนเอง",
+    "ผู้ทำลายกฎแห่งความตาย",
+    "ผู้ซึ่งอยู่เหนือคำว่าชะตากรรม",
+    "ผู้ที่แม้โชคชะตายังต้องศิโรราบ",
+    "ผู้ที่ความตายมิกล้าเอ่ยนาม"
+  ]
+};
+
+let lastRankPhrase = {};
+
+function getScoreRank(score) {
+  const value = Math.max(0, Number(score) || 0);
+  const thresholds = CONFIG.rank?.thresholds || [];
+  return thresholds.find((entry) => value >= entry.min)?.rank || 'D';
+}
+
+function getRankPhrase(rank) {
+  const pool = RANK_PHRASES[rank] || RANK_PHRASES.D;
+  if (pool.length === 1) return pool[0];
+
+  let index = Math.floor(Math.random() * pool.length);
+  if (pool[index] === lastRankPhrase[rank]) {
+    index = (index + 1 + Math.floor(Math.random() * (pool.length - 1))) % pool.length;
+  }
+  lastRankPhrase[rank] = pool[index];
+  return pool[index];
+}
+
 const SKILL_ORDER = [
   "pulse",
   "shield",
@@ -377,11 +445,20 @@ export class UI {
            <div class="winner-line">${p1 === p2 ? "เสมอกัน" : p1 > p2 ? "P1 ทำคะแนนสูงสุด" : "P2 ทำคะแนนสูงสุด"}</div>`
         : "";
 
+    const rank = getScoreRank(finalScore);
+    const rankPhrase = getRankPhrase(rank);
+
     this.showResultScreen(`
       <div class="panel">
         <div class="logo">RUN COMPLETE</div>
         <h1>จบเกม!</h1>
         <p class="tagline">${mode === "coop" ? "Co-op · แข่งคะแนนกันในทีมเดียว" : "Solo Run"}</p>
+
+        <div class="rank-result rank-${rank.toLowerCase()}">
+          <div class="rank-kicker">RANK</div>
+          <div class="rank-letter">${rank}</div>
+          <div class="rank-phrase">${rankPhrase}</div>
+        </div>
 
         <div class="run-comparison">
           <div class="run-comparison-header">

@@ -45,6 +45,18 @@ export const CONFIG = {
     cleanupCooldown: 0.12
   },
   combo: { window: 1.1 },
+  rank: {
+    // Score thresholds for the end-of-run rank.
+    thresholds: [
+      { rank: 'SSS', min: 400000 },
+      { rank: 'SS', min: 200000 },
+      { rank: 'S', min: 100000 },
+      { rank: 'A', min: 50000 },
+      { rank: 'B', min: 25000 },
+      { rank: 'C', min: 10000 },
+      { rank: 'D', min: 0 }
+    ]
+  },
   items: {
     // Seconds between spawn attempts (randomized between min/max).
     spawnMin: 9,

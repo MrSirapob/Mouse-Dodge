@@ -363,6 +363,16 @@
 #downBanner.critical{border-color:rgba(255,92,92,.9);background:rgba(55,6,10,.95)}
 #downBanner.critical b{font-size:20px}
 @keyframes down-pulse{from{transform:translateX(-50%) scale(1);box-shadow:0 10px 32px rgba(0,0,0,.42),0 0 12px rgba(255,92,92,.12)}to{transform:translateX(-50%) scale(1.025);box-shadow:0 10px 32px rgba(0,0,0,.42),0 0 28px rgba(255,92,92,.28)}}
+.rank-result{margin:18px auto 14px;padding:14px 16px 16px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));text-align:center;box-shadow:0 8px 28px rgba(0,0,0,.22)}
+.rank-kicker{font-size:10px;font-weight:900;letter-spacing:4px;color:#8e95a8}
+.rank-letter{margin:1px 0 -2px;font-size:clamp(54px,12vw,76px);line-height:1;font-weight:1000;letter-spacing:2px;text-shadow:0 6px 22px rgba(255,255,255,.10);animation:rank-reveal .5s cubic-bezier(.2,.8,.2,1) both}
+.rank-phrase{font-size:13px;line-height:1.5;color:#d8dbe4;font-weight:700;letter-spacing:.3px}
+.rank-s .rank-letter,.rank-ss .rank-letter,.rank-sss .rank-letter{color:var(--gold)}
+.rank-a .rank-letter,.rank-b .rank-letter{color:var(--accent)}
+.rank-d .rank-letter{color:#8e95a8}
+.rank-sss{border-color:rgba(255,217,61,.34);background:linear-gradient(180deg,rgba(255,217,61,.09),rgba(255,255,255,.018))}
+.rank-ss{border-color:rgba(255,217,61,.24)}
+@keyframes rank-reveal{from{opacity:0;transform:scale(.72) translateY(8px);filter:blur(5px)}to{opacity:1;transform:scale(1) translateY(0);filter:blur(0)}}
 .run-comparison{margin:18px 0 14px;border:1px solid rgba(255,255,255,.10);border-radius:12px;overflow:hidden;background:rgba(255,255,255,.025)}
 .run-comparison-header,.run-comparison-row{display:grid;grid-template-columns:76px 1fr 1fr;align-items:center}
 .run-comparison-header{min-height:42px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025)}
