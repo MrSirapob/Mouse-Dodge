@@ -713,7 +713,7 @@ export class Game {
           b.angle += b.orbitSpeed * dt;
           b.x = b.centerX + Math.cos(b.angle) * b.radius;
           b.y = b.centerY + Math.sin(b.angle) * b.radius;
-          continue;
+          b.skipNormalMove = true;
         }
       }
       if (b.curve) {
@@ -723,8 +723,11 @@ export class Game {
         b.vy += ny * b.curve * dt * 60;
       }
 
-      b.x += b.vx * dt * 60;
-      b.y += b.vy * dt * 60;
+      if (!b.skipNormalMove) {
+        b.x += b.vx * dt * 60;
+        b.y += b.vy * dt * 60;
+      }
+      b.skipNormalMove = false;
 
       if (b.bounce && b.bounces < b.maxBounces) {
         if (b.x < b.r) { b.x = b.r; b.vx = Math.abs(b.vx); b.bounces++; }

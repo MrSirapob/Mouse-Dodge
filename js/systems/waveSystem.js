@@ -224,7 +224,7 @@ export class WaveSystem {
 
       case 8:
         // W8 — orbit, acceleration, reversal and sine trajectories.
-        this.p.orbitBurst(0.0, 18, 0.22, 90, 1.8, 0.7, c1);
+        this.p.orbitBurst(0.0, 32, 0.12, 92, 4.0, 0.9, c1);
         ring(3.0, 330, 220, 44, 2.65, c2);
         this.p.accelerateRain(6.0, 24, 0.17, 0.7, 2.0, c1, true);
         wall(10.0, 5.6, c2, true, 0.065);

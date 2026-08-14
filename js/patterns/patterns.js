@@ -77,6 +77,22 @@ export class PatternLibrary {
 
   /** A rotating multi-armed spiral of bullets from a fixed center point. */
   spiral(start, duration, arms, speed, color, cx = 640, cy = 360) {
+    // Telegraph first: the warning is visible before the spiral releases.
+    // Reuses the game's existing warning renderer so it stays consistent
+    // with Ring/Laser telegraphs.
+    const warningDuration = 0.9;
+    this.game.queue(start, () => {
+      this.game.ringWarnings.push({
+        x: cx,
+        y: cy,
+        radius: 58,
+        color,
+        t: 0,
+        duration: warningDuration,
+      });
+    });
+
+    const fireStart = start + warningDuration;
     const steps = Math.floor(duration * 10);
     const interval = duration / Math.max(steps, 1);
 
@@ -85,14 +101,18 @@ export class PatternLibrary {
         const baseAngle = i * 0.25;
         for (let a = 0; a < arms; a++) {
           const angle = baseAngle + (Math.PI * 2 * a) / arms;
-          this.game.spawnBullet(cx, cy, Math.cos(angle) * speed, Math.sin(angle) * speed, 5, color);
+          this.game.spawnBullet(
+            cx, cy,
+            Math.cos(angle) * speed,
+            Math.sin(angle) * speed,
+            5,
+            color
+          );
         }
       };
-      this.game.queue(start + i * interval, fire);
+      this.game.queue(fireStart + i * interval, fire);
     }
   }
-
-  /** A wall of bullets from one edge, with a gap positioned near the player's lane. `gap` (0-1, fraction of the wall's span) sets the corridor width; waves narrow it over time. Falls back to a segment-based default when omitted. */
   wall(start, speed, color, vertical, gap = null) {
     this.game.queue(start, () => {
       const alive = this.game.activePlayers().filter(p => p.isAlive());
@@ -227,17 +247,24 @@ export class PatternLibrary {
     });
   }
 
-  orbitBurst(start, count, interval, radius, orbitSpeed, releaseSpeed, color) {
-    for (let i = 0; i < count; i++) this.game.queue(start + i * interval, () => {
-      const a = (Math.PI * 2 * i) / Math.max(1, count);
-      this.game.spawnBullet(
-        640 + Math.cos(a) * radius, 360 + Math.sin(a) * radius,
-        Math.cos(a) * releaseSpeed, Math.sin(a) * releaseSpeed, 5, color,
-        { trajectory: 'orbit', centerX: 640, centerY: 360, angle: a, radius, orbitSpeed }
-      );
-    });
+  orbitBurst(start, count, interval, radius, orbitSpeed, releaseSpeed, color, split = true) {
+    for (let i = 0; i < count; i++) {
+      this.game.queue(start + i * interval, () => {
+        const a = (Math.PI * 2 * i) / Math.max(1, count);
+        this.game.spawnBullet(
+          640 + Math.cos(a) * radius,
+          360 + Math.sin(a) * radius,
+          Math.cos(a) * releaseSpeed,
+          Math.sin(a) * releaseSpeed,
+          5,
+          color,
+          split
+            ? { trajectory: 'orbit', centerX: 640, centerY: 360, angle: a, radius, orbitSpeed, splitter: true, splitDelay: 0.85, splitCount: 8 }
+            : { trajectory: 'orbit', centerX: 640, centerY: 360, angle: a, radius, orbitSpeed }
+        );
+      });
+    }
   }
-
   curvingSplit(start, count, interval, speed, color) {
     for (let i = 0; i < count; i++) this.game.queue(start + i * interval, () => {
       const x = i % 2 === 0 ? -18 : 1298;
