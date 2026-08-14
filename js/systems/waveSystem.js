@@ -1,4 +1,4 @@
-import { CONFIG } from "../core/config.js";
+import { CONFIG } from "../core/config.js?v=20260814w10final&v=20260814w10b";
 
 const WAVE_COLORS = ["#ff5c5c", "#ff9f43", "#c56cf0", "#ff5cc0", "#54a0ff"];
 
@@ -400,73 +400,63 @@ export class WaveSystem {
       return "「บทที่หนึ่ง : ผู้ต้องห้ามตื่นจากนิทรา」";
     }
     if (n === 10) {
-      // W10 BOSS — 「เมื่อสวรรค์ถูกลากลงจากบัลลังก์」
-      // Five distinct phases. The goal is not simply "more bullets":
-      // each phase introduces a recognizable movement/trajectory rule.
-      //
-      // PHASE 1 (0-12s) — THE GAZE
-      // Fan-shaped aimed fire + rotating radial pressure.
+      // W10 BOSS — five phases.
+      // Perimeter Formation is intentionally SOLO during its windows:
+      // no Ring/Aimed/Homing/etc. is layered on top of it.
+
+      // PHASE 1 — THE GAZE
       this.p.bossAimed(0.0, 28, 0.22, 3.0, c1);
       this.p.bossRing(3.0, 54, 2.8, c2);
       this.p.bossAimed(7.0, 30, 0.18, 3.2, c1);
+
+      // PHASE 1 SIGNATURE: perimeter formation only.
       this.p.bossPerimeterCrossfire(9.0, 3.5, 10, 0.55, 2.1, c3);
 
-      // PHASE 2 (12-25s) — SHATTERED HEAVEN
-      // Ring gap + delayed explosions near the player's current position.
-      // The player cannot simply camp in the center of a normal ring.
-      this.p.bossRing(12.5, 62, 2.9, c2);
-      this.p.explodeNearPlayer(14.0, 10, 0.32, 78, 3.8, c3);
-      this.p.bossPerimeterCrossfire(17.0, 5.0, 12, 0.48, 2.3, c1);
-      this.p.delayedBurst(20.0, 9, 0.45, 1.1, 5.0, c3);
-      this.p.bossRing(23.0, 60, 3.0, c2);
+      // PHASE 2
+      this.p.bossRing(13.0, 62, 2.9, c2);
+      this.p.explodeNearPlayer(15.0, 10, 0.32, 78, 3.8, c3);
 
-      // PHASE 3 (25-38s) — THE RETURN
-      // Bullets cross the arena and come back. Homing pressure fills the
-      // moments between reversals.
+      // PHASE 2 SIGNATURE: perimeter formation only.
+      this.p.bossPerimeterCrossfire(17.0, 5.0, 12, 0.48, 2.3, c1);
+
+      // PHASE 3
       this.p.reverseRain(25.0, 22, 0.18, 2.8, 1.45, c1, true);
       this.p.bossHoming(27.0, 18, 0.32, 2.4, c2);
-      this.p.bossPerimeterCrossfire(29.0, 5.0, 14, 0.42, 2.5, c3);
-      this.p.reverseRain(33.0, 24, 0.16, 2.9, 1.35, c1, false);
-      this.p.explodeNearPlayer(35.0, 8, 0.28, 70, 4.0, c2);
 
-      // PHASE 4 (38-50s) — JUDGEMENT FROM ABOVE
-      // Machine-gun sweep: dense top-down fire that tracks the player's
-      // horizontal position, with moving walls forcing route changes.
+      // PHASE 3 SIGNATURE: perimeter formation only.
+      this.p.bossPerimeterCrossfire(29.0, 5.0, 14, 0.42, 2.5, c3);
+      this.p.reverseRain(35.0, 24, 0.16, 2.9, 1.35, c1, false);
+
+      // PHASE 4 — machine gun + moving sweep.
       this.p.machineGunTop(38.0, 52, 0.09, 5.2, 0.7, c1);
       this.p.movingSweep(41.0, 2.8, 0.0, c2);
       this.p.machineGunTop(44.0, 58, 0.075, 5.5, 0.8, c1);
       this.p.explodeNearPlayer(47.0, 8, 0.3, 72, 4.1, c3);
       this.p.bossRing(48.0, 58, 3.0, c2);
 
-      // PHASE 5 (50-60s) — HEAVEN COLLAPSES
-      // Final burst: reverse + sine + spiral + ring + machine gun.
-      // No "safe" reset between attacks.
+      // PHASE 5 — final perimeter formation, again SOLO.
       this.p.sineRain(50.0, 28, 0.13, 3.0, 145, 0.82, c3, true);
       this.p.bossPerimeterCrossfire(52.0, 5.0, 16, 0.36, 2.8, c1);
-      this.p.bossHoming(54.0, 18, 0.24, 2.55, c2);
-      this.p.bossRing(55.0, 64, 3.1, c3);
-      this.p.reverseRain(56.0, 24, 0.14, 3.0, 1.15, c1, false);
-      this.p.machineGunTop(58.0, 28, 0.07, 5.8, 0.75, c2);
+      this.p.bossHoming(58.0, 18, 0.24, 2.55, c2);
 
       return "「บทที่สอง : เมื่อสวรรค์ถูกลากลงจากบัลลังก์」";
     }
 
-
     if (n === 15) {
       this.p.bossSpiral(1, 14, 3, 2.0, c3);
       this.p.bossRing(10, 28, 2.55, c2);
-      this.p.bossHoming?.(20, 12, 0.4, 1.95, c1);
+      this.p.bossHoming(20, 12, 0.4, 1.95, c1);
       this.p.bossAimed(30, 24, 0.23, 2.65, c2);
       this.p.bossRing(39, 30, 2.7, c1);
       this.p.bossSpiral(47, 13, 4, 2.2, c3);
-      this.p.bossHoming?.(53, 10, 0.35, 2.0, c2);
+      this.p.bossHoming(53, 10, 0.35, 2.0, c2);
       return "「บทที่สาม : พิธีกรรมคืนโลกสู่ความว่างเปล่า」";
     }
 
     this.p.bossAimed(1, 26, 0.22, 2.7, c1);
     this.p.bossRing(10, 30, 2.65, c2);
     this.p.bossSpiral(19, 15, 4, 2.15, c3);
-    this.p.bossHoming?.(29, 12, 0.36, 2.0, c1);
+    this.p.bossHoming(29, 12, 0.36, 2.0, c1);
     this.p.bossRing(38, 32, 2.8, c2);
     this.p.bossSpiral(47, 13, 5, 2.25, c3);
     this.p.bossAimed(54, 28, 0.2, 2.85, c1);

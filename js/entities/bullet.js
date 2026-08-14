@@ -18,6 +18,37 @@ export class BulletManager{
        // Homing bullets must have a finite lifetime; otherwise they can
        // keep tracking the player forever and block wave transition.
        maxAge:opts.maxAge ?? (opts.homing ? 7.0 : Infinity),
+
+      // Custom trajectory / boss-pattern state.
+      trajectory: opts.trajectory || null,
+      originX: opts.originX,
+      amplitude: opts.amplitude,
+      frequency: opts.frequency,
+      dir: opts.dir,
+      accel: opts.accel,
+      stopAfter: opts.stopAfter,
+      pause: opts.pause,
+      resumeSpeed: opts.resumeSpeed,
+      resumed: false,
+      reverseAfter: opts.reverseAfter,
+      reversed: false,
+      angle: opts.angle,
+      centerX: opts.centerX,
+      centerY: opts.centerY,
+      radius: opts.radius,
+      orbitSpeed: opts.orbitSpeed,
+      skipNormalMove: false,
+      curve: opts.curve || 0,
+      splitDelay: opts.splitDelay,
+      splitCount: opts.splitCount,
+
+      // W10 perimeter formation state.
+      perimeterBullet: !!opts.perimeterBullet,
+      perimeterHold: !!opts.perimeterHold,
+      perimeterReleased: false,
+      releaseDelay: opts.releaseDelay ?? 0,
+      perimeterSpeed: opts.perimeterSpeed ?? 0,
+
       repulseT:0,
       repulseStrength:0,
       assistCooldown:0,

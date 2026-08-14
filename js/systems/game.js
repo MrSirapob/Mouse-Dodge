@@ -1,16 +1,16 @@
-import { CONFIG, GRAZE_REWARD } from '../core/config.js';
-import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js';
-import { circleHit, circleNear } from '../core/collision.js';
-import { Player } from '../entities/player.js';
-import { BulletManager } from '../entities/bullet.js';
-import { Boss } from '../entities/boss.js';
-import { ParticleSystem } from '../rendering/particles.js';
-import { PatternLibrary } from '../patterns/patterns.js';
-import { WaveSystem } from './waveSystem.js';
-import { SkillSystem } from './skillSystem.js';
-import { LifeSystem } from './lifeSystem.js';
-import { DevMode } from './devMode.js';
-import { ItemSystem } from './itemSystem.js';
+import { CONFIG, GRAZE_REWARD } from '../core/config.js?v=20260814w10final&v=20260814w10b';
+import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260814w10final&v=20260814w10b';
+import { circleHit, circleNear } from '../core/collision.js?v=20260814w10final&v=20260814w10b';
+import { Player } from '../entities/player.js?v=20260814w10final&v=20260814w10b';
+import { BulletManager } from '../entities/bullet.js?v=20260814w10final&v=20260814w10b';
+import { Boss } from '../entities/boss.js?v=20260814w10final&v=20260814w10b';
+import { ParticleSystem } from '../rendering/particles.js?v=20260814w10final&v=20260814w10b';
+import { PatternLibrary } from '../patterns/patterns.js?v=20260814w10final&v=20260814w10b';
+import { WaveSystem } from './waveSystem.js?v=20260814w10final&v=20260814w10b';
+import { SkillSystem } from './skillSystem.js?v=20260814w10final&v=20260814w10b';
+import { LifeSystem } from './lifeSystem.js?v=20260814w10final&v=20260814w10b';
+import { DevMode } from './devMode.js?v=20260814w10final&v=20260814w10b';
+import { ItemSystem } from './itemSystem.js?v=20260814w10final&v=20260814w10b';
 
 /**
  * Game is the top-level orchestrator: it owns all entities/systems and runs
@@ -691,6 +691,25 @@ export class Game {
     for (let i = this.bullets.items.length - 1; i >= 0; i--) {
       const b = this.bullets.items[i];
       b.age += dt;
+
+      // Perimeter formation bullets stay frozen in their square position
+      // until their individual release time. Then they lock onto the player
+      // and leave the formation one by one.
+      if (b.perimeterHold && !b.perimeterReleased) {
+        if (b.age < b.releaseDelay) {
+          b.vx = 0;
+          b.vy = 0;
+          continue;
+        }
+
+        const target = this.targetPlayerForBullet(b.x, b.y);
+        if (target) {
+          const angle = Math.atan2(target.y - b.y, target.x - b.x);
+          b.vx = Math.cos(angle) * b.perimeterSpeed;
+          b.vy = Math.sin(angle) * b.perimeterSpeed;
+        }
+        b.perimeterReleased = true;
+      }
 
       // Short continuation of the Repulse impulse so bullets visibly travel
       // away from the player for a few frames instead of instantly resuming

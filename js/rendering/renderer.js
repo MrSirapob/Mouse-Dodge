@@ -1,4 +1,4 @@
-import { ITEM_COLORS } from '../systems/itemSystem.js';
+import { ITEM_COLORS } from '../systems/itemSystem.js?v=20260814w10final&v=20260814w10b';
 
 /**
  * One draw function per item type, keyed by `item.type` (mirrors the
@@ -576,7 +576,11 @@ export class Renderer {
     c.lineWidth = 3;
 
     c.beginPath();
-    if (typeof w.gapAngle === 'number') {
+    if (w.shape === 'square') {
+      const halfW = w.width * (0.55 + p * 0.45);
+      const halfH = w.height * (0.55 + p * 0.45);
+      c.rect(w.x - halfW, w.y - halfH, halfW * 2, halfH * 2);
+    } else if (typeof w.gapAngle === 'number') {
       const gap = w.gapWidth || 0.3;
       c.arc(w.x, w.y, r, w.gapAngle + gap, w.gapAngle + Math.PI * 2 - gap);
     } else {

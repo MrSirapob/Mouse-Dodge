@@ -299,61 +299,115 @@ export class PatternLibrary {
 
 
   bossPerimeterCrossfire(start, duration, count, interval, speed, color) {
-    // Two clearly visible rectangular layers. Each volley is distributed over
-    // all four edges, then every bullet aims at the player's current position.
-    // The attack intentionally uses moderate density so the global bullet cap
-    // cannot erase the formation before the player can read it.
-    const end = start + duration;
-    let volley = 0;
+    // W10 SIGNATURE:
+    // Build ONE complete two-layer rectangular formation first.
+    // Then release exactly one bullet at a time. Unreleased bullets remain
+    // locked to their square positions until their own release time.
+    this.game.queue(Math.max(0, start - 1.0), () => {
+      const view = this.game.renderer?.visibleWorldBounds?.() || WORLD;
+      const margin = 22;
+      const left = view.left + margin;
+      const right = view.right - margin;
+      const top = view.top + margin;
+      const bottom = view.bottom - margin;
 
-    for (let t = start; t < end; t += interval, volley++) {
-      this.game.queue(t, () => {
-        const layers = [16, 72];
+      // Telegraph exactly where the formation will appear.
+      const cx = (left + right) / 2;
+      const cy = (top + bottom) / 2;
+      const outerW = right - left;
+      const outerH = bottom - top;
+      const innerInset = Math.min(24, Math.min(outerW, outerH) * 0.055);
 
-        for (let layer = 0; layer < layers.length; layer++) {
-          const inset = layers[layer];
-          const w = 1280 - inset * 2;
-          const h = 720 - inset * 2;
-          const perimeter = 2 * (w + h);
+      this.game.ringWarnings.push({
+        shape: 'square', x: cx, y: cy,
+        width: outerW, height: outerH,
+        t: 0, duration: 1.0, color
+      });
+      this.game.ringWarnings.push({
+        shape: 'square', x: cx, y: cy,
+        width: outerW - innerInset * 2,
+        height: outerH - innerInset * 2,
+        t: 0, duration: 1.0, color
+      });
+    });
 
-          // Four evenly distributed points per side, repeated across volleys.
-          const total = Math.max(8, count);
-          for (let k = 0; k < total; k++) {
-            const d = ((k + volley * 0.5) / total) * perimeter;
-            let x, y;
+    this.game.queue(start, () => {
+      const view = this.game.renderer?.visibleWorldBounds?.() || WORLD;
+      const margin = 22;
+      const left = view.left + margin;
+      const right = view.right - margin;
+      const top = view.top + margin;
+      const bottom = view.bottom - margin;
 
-            if (d < w) {
-              x = inset + d;
-              y = inset;
-            } else if (d < w + h) {
-              x = 1280 - inset;
-              y = inset + (d - w);
-            } else if (d < 2 * w + h) {
-              x = 1280 - inset - (d - w - h);
-              y = 720 - inset;
-            } else {
-              x = inset;
-              y = 720 - inset - (d - 2 * w - h);
-            }
+      const outerW = right - left;
+      const outerH = bottom - top;
+      const innerInset = Math.min(24, Math.min(outerW, outerH) * 0.055);
 
-            const target = this.targetPlayer(x, y);
-            const angle = Math.atan2(target.y - y, target.x - x);
+      // 48 points per rectangle = clearly visible on all four sides.
+      // Use the same number for both layers so the formation reads as two
+      // complete rectangles rather than random scattered bullets.
+      const pointsPerLayer = 48;
+      const layers = [
+        [left, right, top, bottom],
+        [left + innerInset, right - innerInset,
+         top + innerInset, bottom - innerInset]
+      ];
 
-            this.game.spawnBullet(
-              x, y,
-              Math.cos(angle) * speed,
-              Math.sin(angle) * speed,
-              6,
-              color,
+  
+      // Build both layers visually, but ONLY the inner rectangle is armed.
+      // Outer rectangle remains a visual pressure boundary.
+      for (let layerIndex = 0; layerIndex < layers.length; layerIndex++) {
+        const [L, R, T, B] = layers[layerIndex];
+        const W = R - L;
+        const H = B - T;
+        const perimeter = 2 * (W + H);
+
+        for (let k = 0; k < pointsPerLayer; k++) {
+          const d = (k / pointsPerLayer) * perimeter;
+          let x, y;
+
+          if (d < W) {
+            x = L + d; y = T;
+          } else if (d < W + H) {
+            x = R; y = T + (d - W);
+          } else if (d < 2 * W + H) {
+            x = R - (d - W - H); y = B;
+          } else {
+            x = L; y = B - (d - 2 * W - H);
+          }
+
+          // Both rectangles are visible, but only the INNER rectangle
+          // contains live bullets. Pick release order randomly so the player
+          // cannot predict a clockwise/counter-clockwise sequence.
+          if (layerIndex === 1) {
+            this.game.bullets.spawn(
+              x, y, 0, 0, 6, color,
               {
-                maxAge: 8,
-                perimeterBullet: true
+                maxAge: Math.max(12, duration + 6),
+                perimeterBullet: true,
+                perimeterHold: true,
+                releaseDelay: 0,
+                perimeterSpeed: speed * 5
               }
             );
           }
         }
+      }
+
+      // Randomize the actual inner-layer release order after all bullets
+      // have been created. Each selected bullet receives a unique delay.
+      const inner = this.game.bullets.items.filter(b =>
+        b.perimeterBullet && b.perimeterHold && !b.perimeterReleased
+      );
+      for (let i = inner.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [inner[i], inner[j]] = [inner[j], inner[i]];
+      }
+      const randomStep = Math.max(0.055, interval * 0.55);
+      inner.forEach((b, i) => {
+        b.releaseDelay = i * randomStep;
       });
-    }
+    });
   }
   bossRing(start, count, speed, color) {
     const warnDuration = 1.1;
