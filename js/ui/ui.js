@@ -39,47 +39,50 @@ const RANK_PHRASES = {
     "ผู้ซึ่งชื่อยังมิถูกจารึกไว้ในตำนาน",
     "ผู้พ่ายแพ้ต่อโชคชะตา",
     "ผู้ยืนอยู่เบื้องล่างของผู้ท้าทายชะตา",
-    "ผู้ไร้นามในสมรภูมิแห่งความตาย"
+    "ผู้ไร้นามในสมรภูมิแห่งความตาย",
   ],
   C: [
     "นี่คือก้าวแรกก่อนตำนานจะถือกำเนิด",
     "ผู้เริ่มทำให้ชะตากรรมสั่นคลอน",
-    "ก้าวแรกสู่การเป็นผู้เหนือชะตา",
-    "โซ่ตรวนแห่งโชคชะตาเริ่มปริแตก"
+    "คำพยากรณ์เริ่มคลาดเคลื่อนจากความจริง",
+    "พลังที่ถูกผนึกเริ่มเรียกร้องอิสรภาพ",
+    "กระสุนทุกนัดกำลังกลายเป็นบททดสอบ",
   ],
   B: [
-    "นักเต้นรำท่ามกลางกระสุน",
-    "ผู้หลีกหนีเงื้อมมือแห่งความตาย",
-    "ผู้เดินอยู่บนเส้นแบ่งแห่งชะตา",
-    "ผู้เริ่มเข้าใกล้ขอบเขตมนุษย์"
+    "ลิขิตแห่งความตายเริ่มถูกเขียนใหม่",
+    "ขีดจำกัดของมนุษย์เริ่มเลือนหาย",
+    "เสียงกระซิบแห่งตำนานเริ่มเอ่ยนามของเจ้า",
+    "ระยะห่างระหว่างชีวิตกับความตายกำลังเพิ่มขึ้น",
+    "บางสิ่งที่ไม่ควรตื่น กำลังลืมตาขึ้น",
   ],
   A: [
-    "ผู้ก้าวข้ามขีดจำกัด",
-    "ผู้เหนือวิถีแห่งกระสุน",
-    "ผู้ท้าทายความตาย",
-    "ผู้ยืนเหนือชะตากรรม"
+    "ก้าวข้ามขีดจำกัดของมนุษย์",
+    "ความเร็วเพียงเสี้ยววินาทีตัดสินระหว่างรอดและตาย",
+    "เจ้ากำลังเข้าใกล้ขอบเขตที่มิใช่ทุกคนจะไปถึง",
+    "ฝีเท้านี้กำลังเข้าใกล้จุดที่มนุษย์ไม่ควรแตะต้อง",
+    "ยืนอยู่บนจุดสูงสุดของผู้ฝึกฝน",
   ],
   S: [
-    "นักเต้นรำเหนือความตาย",
-    "ผู้ที่ความตายมิอาจเอื้อมถึง",
-    "ผู้ก้าวข้ามม่านกระสุน",
-    "ผู้ท้าทายบัญชาแห่งชะตา",
-    "ผู้ฉีกกระชากเส้นทางแห่งโชคชะตา"
+    "ฝีเท้าของเจ้าเริ่มทิ้งเงาไว้เหนือผู้คน",
+    "ชะตากรรมคือสิ่งที่เจ้าปฏิเสธจะยอมรับ",
+    "ชะตากรรมมิอาจกำหนดจุดจบของเจ้า",
+    "ทุกนัดที่พลาดคือหลักฐานแห่งความเหนือชั้น",
+    "ห่ากระสุนกลายเป็นเพียงสายลมที่พัดผ่าน",
   ],
   SS: [
-    "ผู้ซึ่งชะตากรรมมิอาจควบคุม",
-    "ผู้เดินเหนือกฎแห่งความตาย",
-    "ผู้ทำให้โชคชะตาต้องหวาดหวั่น",
-    "ผู้หลุดพ้นจากพันธนาการแห่งความตาย",
-    "ผู้ที่แม้ความตายยังต้องหลีกทาง"
+    "คำสั่งของสวรรค์มิอาจบังคับให้เจ้าคุกเข่า",
+    "ลิขิตนับพันมิอาจกำหนดแม้เพียงก้าวเดียวของเจ้า",
+    "ความตายมิใช่สิ่งที่เจ้าหลีกหนีอีกต่อไป แต่มันต่างหากที่หลีกหนีเจ้า",
+    "ผู้ที่ยืนอยู่เหนือประตูแห่งความตาย",
+    "ผู้ก้าวข้ามขอบเขตระหว่างชีวิตและความตาย",
   ],
   SSS: [
-    "ผู้เขียนจุดจบของชะตากรรมด้วยตนเอง",
-    "ผู้ทำลายกฎแห่งความตาย",
-    "ผู้ซึ่งอยู่เหนือคำว่าชะตากรรม",
-    "ผู้ที่แม้โชคชะตายังต้องศิโรราบ",
-    "ผู้ที่ความตายมิกล้าเอ่ยนาม"
-  ]
+    "ผู้ที่ชะตากรรมมิอาจแม้แต่จะเอ่ยนาม",
+    "ผู้ที่ไม่มีชื่ออยู่ในบัญชีของความตาย",
+    "ผู้ซึ่งแม้กฎของโลกยังมิอาจอธิบาย",
+    "ทุกกฎมีจุดสิ้นสุด และเจ้าคือผู้ก้าวข้ามมัน",
+    "เมื่อไม่มีเส้นทางเหลืออยู่ เจ้าได้สร้างเส้นทางขึ้นมาเอง",
+  ],
 };
 
 let lastRankPhrase = {};
@@ -87,7 +90,7 @@ let lastRankPhrase = {};
 function getScoreRank(score) {
   const value = Math.max(0, Number(score) || 0);
   const thresholds = CONFIG.rank?.thresholds || [];
-  return thresholds.find((entry) => value >= entry.min)?.rank || 'D';
+  return thresholds.find((entry) => value >= entry.min)?.rank || "D";
 }
 
 function getRankPhrase(rank) {
@@ -96,7 +99,8 @@ function getRankPhrase(rank) {
 
   let index = Math.floor(Math.random() * pool.length);
   if (pool[index] === lastRankPhrase[rank]) {
-    index = (index + 1 + Math.floor(Math.random() * (pool.length - 1))) % pool.length;
+    index =
+      (index + 1 + Math.floor(Math.random() * (pool.length - 1))) % pool.length;
   }
   lastRankPhrase[rank] = pool[index];
   return pool[index];
@@ -132,13 +136,17 @@ export class UI {
     this.currentMode = "solo";
     this.currentSkill = "pulse";
     this.currentSkillP2 = "pulse";
-    this.mouseSensitivity = Number(localStorage.getItem("waveDodgeMouseSensitivity") || 100);
+    this.mouseSensitivity = Number(
+      localStorage.getItem("waveDodgeMouseSensitivity") || 100,
+    );
     this.mouseSensitivity = Math.max(25, Math.min(300, this.mouseSensitivity));
 
     this.buildSkillCards();
     this.bindMenu();
     this.applyMobileModeLock();
-    window.addEventListener("resize", () => this.applyMobileModeLock(), { passive: true });
+    window.addEventListener("resize", () => this.applyMobileModeLock(), {
+      passive: true,
+    });
     this.showModeScreen();
   }
 
@@ -152,7 +160,9 @@ export class UI {
     this.howToPlayScreen = document.getElementById("howToPlayScreen");
     this.settingsScreen = document.getElementById("settingsScreen");
     this.mouseSensitivityInput = document.getElementById("mouseSensitivity");
-    this.mouseSensitivityValueEl = document.getElementById("mouseSensitivityValue");
+    this.mouseSensitivityValueEl = document.getElementById(
+      "mouseSensitivityValue",
+    );
     this.skillScreen = document.getElementById("skillScreen");
     this.p2SkillPicker = document.getElementById("p2SkillPicker");
     this.selectedLoadout = document.getElementById("selectedLoadout");
@@ -218,24 +228,42 @@ export class UI {
         this.showSkillScreen();
       });
     });
-    document.getElementById("howToPlayBtn")?.addEventListener("click", () => this.showHowToPlayScreen());
-    document.getElementById("settingsBtn")?.addEventListener("click", () => this.showSettingsScreen());
-    document.getElementById("backSettingsBtn")?.addEventListener("click", () => this.showModeScreen());
+    document
+      .getElementById("howToPlayBtn")
+      ?.addEventListener("click", () => this.showHowToPlayScreen());
+    document
+      .getElementById("settingsBtn")
+      ?.addEventListener("click", () => this.showSettingsScreen());
+    document
+      .getElementById("backSettingsBtn")
+      ?.addEventListener("click", () => this.showModeScreen());
     this.mouseSensitivityInput?.addEventListener("input", () => {
       this.mouseSensitivity = Number(this.mouseSensitivityInput.value);
-      localStorage.setItem("waveDodgeMouseSensitivity", String(this.mouseSensitivity));
+      localStorage.setItem(
+        "waveDodgeMouseSensitivity",
+        String(this.mouseSensitivity),
+      );
       this.updateMouseSensitivityDisplay();
       this.onMouseSensitivityChange?.(this.mouseSensitivity);
     });
-    if (this.mouseSensitivityInput) this.mouseSensitivityInput.value = String(this.mouseSensitivity);
+    if (this.mouseSensitivityInput)
+      this.mouseSensitivityInput.value = String(this.mouseSensitivity);
     this.updateMouseSensitivityDisplay();
-    document.getElementById("backHowToPlayBtn")?.addEventListener("click", () => this.showModeScreen());
+    document
+      .getElementById("backHowToPlayBtn")
+      ?.addEventListener("click", () => this.showModeScreen());
 
     document.querySelectorAll(".howto-platform").forEach((button) => {
       button.addEventListener("click", () => {
         const platform = button.dataset.platform;
-        document.querySelectorAll(".howto-platform").forEach((b) => b.classList.toggle("active", b === button));
-        document.querySelectorAll("[data-platform-panel]").forEach((p) => p.classList.toggle("active", p.dataset.platformPanel === platform));
+        document
+          .querySelectorAll(".howto-platform")
+          .forEach((b) => b.classList.toggle("active", b === button));
+        document
+          .querySelectorAll("[data-platform-panel]")
+          .forEach((p) =>
+            p.classList.toggle("active", p.dataset.platformPanel === platform),
+          );
       });
     });
 
@@ -244,8 +272,17 @@ export class UI {
         const mode = button.dataset.howtoMode;
         const panel = button.closest("[data-platform-panel]");
         if (!panel) return;
-        panel.querySelectorAll("[data-howto-mode]").forEach((b) => b.classList.toggle("active", b === button));
-        panel.querySelectorAll("[data-howto-content]").forEach((c) => c.classList.toggle("active", c.dataset.howtoContent === `pc-${mode}`));
+        panel
+          .querySelectorAll("[data-howto-mode]")
+          .forEach((b) => b.classList.toggle("active", b === button));
+        panel
+          .querySelectorAll("[data-howto-content]")
+          .forEach((c) =>
+            c.classList.toggle(
+              "active",
+              c.dataset.howtoContent === `pc-${mode}`,
+            ),
+          );
       });
     });
 
@@ -588,7 +625,9 @@ export class UI {
     }
 
     this.scorePopupLayer.appendChild(popup);
-    popup.addEventListener("animationend", () => popup.remove(), { once: true });
+    popup.addEventListener("animationend", () => popup.remove(), {
+      once: true,
+    });
   }
 
   updateScores(s, players, mode) {
@@ -640,9 +679,10 @@ export class UI {
     this.el.p2ScoreChip?.classList.toggle("hidden", mode !== "coop");
     this.el.p2SkillChip.classList.toggle("hidden", mode !== "coop");
     if (players[1].down) {
-      this.el.p2Lives.textContent = players[1].reviveProgress > 0
-        ? `REVIVE ${Math.round((players[1].reviveProgress / 2) * 100)}%`
-        : "DOWN";
+      this.el.p2Lives.textContent =
+        players[1].reviveProgress > 0
+          ? `REVIVE ${Math.round((players[1].reviveProgress / 2) * 100)}%`
+          : "DOWN";
     } else {
       this.renderLives(this.el.p2Lives, players[1]);
     }
@@ -671,8 +711,10 @@ export class UI {
     const max = Math.max(1, CONFIG.lives.max);
     const lives = Math.max(0, Math.min(max, Number(player.lives) || 0));
     // Fixed slots prevent the mobile HUD from clipping/reflowing emoji hearts.
-    el.innerHTML = Array.from({ length: max }, (_, i) =>
-      `<span class="life-heart" aria-hidden="true">${i < lives ? "❤️" : "♡"}</span>`,
+    el.innerHTML = Array.from(
+      { length: max },
+      (_, i) =>
+        `<span class="life-heart" aria-hidden="true">${i < lives ? "❤️" : "♡"}</span>`,
     ).join("");
     el.setAttribute("aria-label", `${lives} / ${max} lives`);
   }
