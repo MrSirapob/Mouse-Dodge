@@ -212,38 +212,15 @@
     <div class="menu-screen hidden" id="resultScreen"></div>
   </section>
 
-  <section id="devPanel" class="hidden" aria-label="Developer Mode">
-    <div class="dev-title">
-      <div><span class="dev-dot"></span><b>DEV MODE</b><span id="devBulletCount">BULLETS 0/0</span></div>
-      <button class="dev-collapse" id="devCollapse" type="button" aria-label="ย่อ Dev Mode">−</button>
-    </div>
-    <div class="dev-body">
-      <div class="dev-group">
-        <span class="dev-group-label">PLAYER</span>
-        <div class="dev-row">
-          <button data-dev="life" title="เพิ่มหัวใจให้ผู้เล่น">+ LIFE</button>
-          <button data-dev="kill" title="ลดหัวใจผู้เล่น">− LIFE</button>
-          <button data-dev="ready" title="รีเซ็ต Cooldown สกิล">SKILL READY</button>
-        </div>
-      </div>
-      <div class="dev-group">
-        <span class="dev-group-label">GAME</span>
-        <div class="dev-row">
-          <button data-dev="wave" title="ข้ามไป Wave ถัดไป">NEXT WAVE</button>
-          <button data-dev="clear" title="ล้างกระสุนทั้งหมด">CLEAR</button>
-          <button data-dev="boss" title="เรียก Boss Wave">BOSS</button>
-        </div>
-      </div>
-      <div class="dev-group">
-        <span class="dev-group-label">CONTROL</span>
-        <div class="dev-row">
-          <button data-dev="god" title="เปิด/ปิดอมตะ">GOD: OFF</button>
-          <button data-dev="pause" title="หยุดหรือเล่นเกมต่อ">PAUSE</button>
-          <button data-dev="restart" class="dev-danger" title="เริ่มเกมใหม่">RESTART</button>
-        </div>
-      </div>
-    </div>
-  </section>
+  <!--
+    #devPanel is intentionally empty here.
+    Its entire contents (buttons, sections, IDs, data-dev actions) are generated
+    by DevMode.renderPanel() in js/systems/devMode.js and overwrite anything
+    placed here via innerHTML on every page load. If you need to change the
+    Dev Mode panel's layout, buttons, or actions, edit renderPanel() there —
+    editing this tag directly has no effect and will be silently discarded.
+  -->
+  <section id="devPanel" class="hidden" aria-label="Developer Mode"></section>
   <section id="pauseOverlay" class="hidden">
     <div class="big">⏸ หยุดชั่วคราว</div>
     <div class="small">กด SPACE เพื่อเล่นต่อ</div>

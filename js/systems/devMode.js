@@ -7,7 +7,13 @@ export class DevMode {
     this.grazeDebug = false;
     this.panel = document.getElementById('devPanel');
 
-    if (!this.panel) return;
+    if (!this.panel) {
+      // Fails silently on purpose only in the sense that the game keeps running —
+      // but this means F2 / dev tools are dead until reload. Warn loudly so it's
+      // never a silent mystery during development.
+      console.warn('[DevMode] #devPanel not found in the DOM — Dev Mode is disabled for this session.');
+      return;
+    }
 
     this.renderPanel();
 
