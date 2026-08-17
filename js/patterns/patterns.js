@@ -602,8 +602,12 @@ export class PatternLibrary {
   }
 
   movingSweep(start, count, interval, speed, color, vertical = false) {
-    const W = this.game.world?.width ?? this.game.canvas?.width ?? 1280;
-    const H = this.game.world?.height ?? this.game.canvas?.height ?? 720;
+    // Game never exposes `world`/`canvas` properties, so this always fell
+    // through to the 1280x720 literals anyway. Use the same WORLD constant
+    // already relied on elsewhere in this file (see sideSpawn/orbitBurst)
+    // instead of dead optional-chaining onto properties that don't exist.
+    const W = WORLD.width;
+    const H = WORLD.height;
     const playerRadius = this.game.activePlayers?.()[0]?.r ?? 10;
     const wallRadius = 6;
     // Slightly wider than the real collision diameter, but still a tight lane.

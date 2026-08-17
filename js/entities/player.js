@@ -14,6 +14,8 @@ export class Player {
     this.invulnerable = 0;
     this.hitFlash = 0;
     this.skillCooldown = 0;
+    this.skillBaseCooldown = 0;
+    this.grazeCooldownReduced = 0;
     this.shieldTimer = 0;
     this.down = false;
     this.reviveProgress = 0;

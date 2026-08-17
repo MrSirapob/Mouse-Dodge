@@ -14,6 +14,9 @@ export class SkillSystem {
   finish(player, cooldown) {
     player.skillBaseCooldown = cooldown;
     player.skillCooldown = cooldown;
+    // New activation cycle: reset how much of this cooldown has been
+    // refunded by grazing so GRAZE_REWARD.maxReduction applies per-cycle.
+    player.grazeCooldownReduced = 0;
     return true;
   }
   pulse(player) {

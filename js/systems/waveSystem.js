@@ -429,7 +429,7 @@ export class WaveSystem {
 
       // PHASE 4 — machine gun + moving sweep.
       this.p.machineGunTop(38.0, 52, 0.09, 5.2, 0.7, c1);
-      this.p.movingSweep(41.0, 2.8, 0.0, c2);
+      this.p.movingSweep(41.0, 2, 0.0, 2.8, c2);
       this.p.machineGunTop(44.0, 58, 0.075, 5.5, 0.8, c1);
       this.p.explodeNearPlayer(47.0, 8, 0.3, 72, 4.1, c3);
       this.p.bossRing(48.0, 58, 3.0, c2);

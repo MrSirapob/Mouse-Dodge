@@ -160,9 +160,13 @@ export class Game {
         nearest = Math.min(nearest, dist);
 
         // Predict the closest approach during the next ~1.2 seconds.
+        // b.vx/b.vy are tuned in "pixels per frame at 60fps" units (see the
+        // b.x += b.vx * dt * 60 movement step below), so the projection here
+        // must divide by 60 to get a value of `t` in real seconds before it
+        // is used again as `b.vx * t * 60`.
         const speedSq = b.vx * b.vx + b.vy * b.vy;
         if (speedSq > 0.12) {
-          const t = Math.max(0, Math.min(1.2, (dx * b.vx + dy * b.vy) / speedSq));
+          const t = Math.max(0, Math.min(1.2, (dx * b.vx + dy * b.vy) / (speedSq * 60)));
           const cx = b.x + b.vx * t * 60;
           const cy = b.y + b.vy * t * 60;
           const miss = Math.hypot(p.x - cx, p.y - cy);
@@ -796,7 +800,7 @@ export class Game {
         const speed = Math.hypot(b.vx, b.vy) * 0.9;
         const splitCount = b.splitCount ?? 6;
         for (let k = 0; k < splitCount; k++) {
-          const angle = base + (Math.PI * 2 * k) / 6;
+          const angle = base + (Math.PI * 2 * k) / splitCount;
           this.spawnBullet(b.x, b.y, Math.cos(angle) * speed, Math.sin(angle) * speed, 4, b.color);
         }
         this.particles.spawn(b.x, b.y, b.color, 10);
@@ -840,7 +844,12 @@ export class Game {
           if (p.skillCooldown > 0) {
             // Graze can ONLY subtract time from the current cooldown.
             // It can never increase or reset the cooldown.
-            p.skillCooldown = Math.max(0, p.skillCooldown - recovery);
+            // Total graze-driven reduction is capped per activation cycle
+            // at GRAZE_REWARD.maxReduction of the skill's original cooldown.
+            const budget = (p.skillBaseCooldown || 0) * GRAZE_REWARD.maxReduction;
+            const allowed = Math.max(0, Math.min(recovery, budget - p.grazeCooldownReduced));
+            p.skillCooldown = Math.max(0, p.skillCooldown - allowed);
+            p.grazeCooldownReduced += allowed;
           }
 
           const mult = 1 + Math.min(p.combo, 10) * 0.12;
