@@ -435,6 +435,7 @@ export class Game {
     if (this.isBossWave(n)) {
       this.boss.active = true;
       this.ui.setBossVisible(true);
+      this.ui.setBossName(this.boss.name);
     }
   }
 

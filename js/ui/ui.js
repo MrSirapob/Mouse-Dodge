@@ -147,12 +147,30 @@ export class UI {
     window.addEventListener("resize", () => this.applyMobileModeLock(), {
       passive: true,
     });
+
+    // Keep the boss HP bar pinned just below the WAVE/TIME/SCORE HUD row
+    // instead of a fixed top offset. The HUD row's height changes across
+    // breakpoints and whenever extra chips (BEST/GRAZE/COMBO) show or
+    // hide, so a hardcoded top would drift out of sync and overlap again;
+    // measuring it live keeps the two from ever colliding.
+    this.positionBossWrap();
+    window.addEventListener("resize", () => this.positionBossWrap(), {
+      passive: true,
+    });
+    if (this.hudCenter && typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(() => this.positionBossWrap()).observe(
+        this.hudCenter,
+      );
+    }
+
     this.showModeScreen();
   }
 
   cacheElements() {
     this.overlay = document.getElementById("overlay");
     this.hud = document.getElementById("hud");
+    this.hudCenter = document.getElementById("hudCenter");
+    this.gameRoot = document.getElementById("gameRoot");
     this.scorePopupLayer = document.getElementById("scorePopupLayer");
     this.pause = document.getElementById("pauseOverlay");
     this.bannerEl = document.getElementById("waveBanner");
@@ -176,6 +194,7 @@ export class UI {
       bestScore: document.getElementById("bestScore"),
       wave: document.getElementById("wave"),
       bossWrap: document.getElementById("bossWrap"),
+      bossLabel: document.getElementById("bossLabel"),
       bossBarFill: document.getElementById("bossBarFill"),
       waveTitle: document.getElementById("waveTitle"),
       waveSubtitle: document.getElementById("waveSubtitle"),
@@ -562,6 +581,24 @@ export class UI {
 
   setBossVisible(v) {
     this.el.bossWrap.classList.toggle("hidden", !v);
+    if (v) this.positionBossWrap();
+  }
+
+  setBossName(name) {
+    if (this.el.bossLabel && name) this.el.bossLabel.textContent = name;
+  }
+
+  /**
+   * Pins #bossWrap directly under the center HUD row (WAVE/TIME/SCORE),
+   * measured live, so it can never overlap it — see the ResizeObserver
+   * set up in the constructor for when this gets re-run automatically.
+   */
+  positionBossWrap() {
+    if (!this.el.bossWrap || !this.hudCenter || !this.gameRoot) return;
+    const gap = 10; // px breathing room between the HUD row and the boss bar
+    const hudBottom = this.hudCenter.getBoundingClientRect().bottom;
+    const rootTop = this.gameRoot.getBoundingClientRect().top;
+    this.el.bossWrap.style.top = `${hudBottom - rootTop + gap}px`;
   }
 
   setBossProgress(pct) {

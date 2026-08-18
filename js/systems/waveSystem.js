@@ -441,6 +441,9 @@ export class WaveSystem {
     this.game.boss.active = true;
     this.game.boss.x = 640;
     this.game.boss.y = -100;
+    // See CONFIG.bossNames (js/core/config.js) to change what shows above
+    // the boss HP bar — this is the only place that needs editing.
+    this.game.boss.name = CONFIG.bossNames[n] ?? CONFIG.bossNames.default;
 
     if (n === 5) {
       // No dead air: every phase overlaps the previous pressure.

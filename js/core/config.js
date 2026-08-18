@@ -125,4 +125,18 @@ export const CONFIG = {
     bestScore: "waveDodgeBestScore",
     bestGraze: "waveDodgeBestGraze",
   },
+
+  // Boss name shown in the small label above the boss HP bar (top of
+  // screen) while a boss wave is active. Edit these strings any time —
+  // no other code changes needed, and no restart/build step required
+  // beyond a page refresh.
+  // Key = wave number the boss appears on (5, 10, 15, ...). `default` is
+  // used for any boss wave that doesn't have its own entry here (e.g.
+  // W20+, or any future boss wave you add without naming it yet).
+  bossNames: {
+    default: "⚠ BOSS INCOMING",
+    5: "⚠ BOSS INCOMING",
+    10: "⚠ BOSS INCOMING",
+    15: "⚠ BOSS INCOMING",
+  },
 };
