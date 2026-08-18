@@ -85,13 +85,33 @@ export class Game {
   bulletCap() {
     const n = this.state.wave;
     let cap;
-    if (n <= 5) cap = CONFIG.bullets.capEarly;
+    // W1-4 ("Bullet Hell" tier) get the raised capEarly. W5 (boss) is
+    // deliberately split out to its own capW5 so it keeps its
+    // pre-Bullet-Hell value instead of inheriting capEarly's increase.
+    if (n >= 1 && n <= 4) cap = CONFIG.bullets.capEarly;
+    else if (n === 5) cap = CONFIG.bullets.capW5;
     else if (n <= 10) cap = CONFIG.bullets.capMid;
     else if (n <= 15) cap = CONFIG.bullets.capHigh;
     else if (n <= 20) cap = CONFIG.bullets.capLate;
     else cap = CONFIG.bullets.capEndless;
     if (this.isBossWave(n)) cap += CONFIG.bullets.capBossBonus;
     return cap;
+  }
+
+  /**
+   * True only for W1-4, the "Bullet Hell" tier. W5 is a boss wave (different
+   * pattern set entirely via buildBoss()) and must keep the default cleanup
+   * behavior, so it is deliberately excluded here. W5 also has its own
+   * capW5 in bulletCap() now, separate from W1-4's capEarly.
+   */
+  isBulletHellWave() {
+    const n = this.state.wave;
+    return n >= 1 && n <= 4;
+  }
+
+  /** Cleanup tuning to use for the current wave (see CONFIG.bullets.bulletHell). */
+  cleanupConfig() {
+    return this.isBulletHellWave() ? CONFIG.bullets.bulletHell : CONFIG.bullets;
   }
 
   /**
@@ -115,15 +135,16 @@ export class Game {
     const cap = this.bulletCap();
     const count = this.bullets.items.length;
     const density = count / Math.max(1, cap);
+    const cleanupCfg = this.cleanupConfig();
 
-    if (density >= CONFIG.bullets.cleanupStart) {
+    if (density >= cleanupCfg.cleanupStart) {
       const force = count >= cap;
       const canCleanup = force || this.bulletCleanupCooldown <= 0;
 
-      if (canCleanup && this.bulletCleanupUsedThisFrame < CONFIG.bullets.cleanupPerFrame) {
-        const removed = this.cleanupBulletsForCapacity(force ? 2 : 1);
+      if (canCleanup && this.bulletCleanupUsedThisFrame < cleanupCfg.cleanupPerFrame) {
+        const removed = this.cleanupBulletsForCapacity(force ? 2 : 1, cleanupCfg);
         if (removed > 0) {
-          this.bulletCleanupCooldown = CONFIG.bullets.cleanupCooldown;
+          this.bulletCleanupCooldown = cleanupCfg.cleanupCooldown;
         }
       }
     }
@@ -138,7 +159,7 @@ export class Game {
    * old/far/edge-bound bullets and heavily penalizes bullets that are young,
    * special, close to a player, or moving toward a player.
    */
-  cleanupBulletsForCapacity(maxRemove = 1) {
+  cleanupBulletsForCapacity(maxRemove = 1, cleanupCfg = CONFIG.bullets) {
     if (!this.bullets.items.length || maxRemove <= 0) return 0;
 
     const players = this.activePlayers().filter(p => p.isAlive());
@@ -209,12 +230,12 @@ export class Game {
 
     // Pick the best candidates first, then remove by descending array index so
     // deleting one bullet cannot shift the index of another selected bullet.
-    const selected = candidates.slice(0, Math.min(maxRemove, CONFIG.bullets.cleanupPerFrame));
+    const selected = candidates.slice(0, Math.min(maxRemove, cleanupCfg.cleanupPerFrame));
     selected.sort((a, b) => b.index - a.index);
 
     let removed = 0;
     for (const candidate of selected) {
-      if (this.bulletCleanupUsedThisFrame >= CONFIG.bullets.cleanupPerFrame) break;
+      if (this.bulletCleanupUsedThisFrame >= cleanupCfg.cleanupPerFrame) break;
 
       const bullet = this.bullets.items[candidate.index];
       if (!bullet) continue;

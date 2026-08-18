@@ -54,7 +54,12 @@ export class PatternLibrary {
   /** A ring of bullets exploding outward from (x, y), with a gap aimed at the player. */
   ring(start, x, y, count, speed, color) {
     const warnDuration = 0.95;
-    const gapWidth = 0.28;
+    // W1-4 ("Bullet Hell") only: the safe wedge is a persistent open cone
+    // from the center outward, so even a modest angular width reads as very
+    // forgiving at range. Trim it slightly for these waves; every other
+    // wave that calls ring() keeps the original 0.28 rad untouched, and the
+    // gap stays telegraphed/deterministic either way (never RNG).
+    const gapWidth = this.game.isBulletHellWave() ? 0.28 * 0.8 : 0.28;
     let gapAngle = 0;
 
     // Lock the gap angle at telegraph time so the warning always matches
@@ -114,15 +119,56 @@ export class PatternLibrary {
     }
   }
   wall(start, speed, color, vertical, gap = null) {
+    const segments = vertical ? 61 : 35;
+    const worldDim = vertical ? WORLD.width : WORLD.height;
+    const isBulletHell = this.game.isBulletHellWave();
+
+    // W1-4 ("Bullet Hell") only: pre-compute exactly how many *consecutive*
+    // segments to skip (see bulletHellGapSkip below). Every other wave that
+    // calls wall() (W5 boss included, W6+) is completely untouched and
+    // keeps the original float-threshold gap->segment conversion further
+    // down in this function, unchanged.
+    const bulletHellSkipCount = isBulletHell
+      ? this.bulletHellGapSkip(gap, worldDim, segments)
+      : null;
+
     this.game.queue(start, () => {
       const alive = this.game.activePlayers().filter(p => p.isAlive());
       const player = alive.length ? alive[0] : null;
       const playerT = player ? (vertical ? player.x / 1280 : player.y / 720) : 0.15 + Math.random() * 0.7;
       const gapPos = Math.max(0.08, Math.min(0.92, playerT));
+
+      if (isBulletHell) {
+        // Exact, index-based gap: pick the segment index nearest gapPos and
+        // skip a *fixed* window of `bulletHellSkipCount` consecutive
+        // segments centered on it. Unlike the float-threshold check below,
+        // the number of segments skipped never depends on where gapPos
+        // happens to fall relative to the segment grid, so the physical
+        // corridor between the two flanking (rendered) bullets always
+        // matches what bulletHellGapSkip() computed — i.e. what the player
+        // SEES between the bullets is exactly what they can collide-free
+        // fly through. See bulletHellGapSkip() for the pixel math.
+        const k = bulletHellSkipCount;
+        const segCount = segments - 1;
+        let startIdx = Math.round(gapPos * segCount) - Math.floor((k - 1) / 2);
+        let endIdx = startIdx + k - 1;
+        if (startIdx < 0) { endIdx += -startIdx; startIdx = 0; }
+        if (endIdx > segCount) { startIdx -= endIdx - segCount; endIdx = segCount; }
+        startIdx = Math.max(0, startIdx);
+
+        for (let i = 0; i < segments; i++) {
+          if (i >= startIdx && i <= endIdx) continue; // skip the gap
+          const t = i / segCount;
+          if (vertical) this.game.spawnBullet(t * 1280, -20, 0, speed, 6, color);
+          else this.game.spawnBullet(-20, t * 720, speed, 0, 6, color);
+        }
+        return;
+      }
+
+      // Original conversion — unchanged for every wave except W1-4 above.
       // The opening is intentionally only a little wider than the real player
       // collision. Dense segments make the corridor tight instead of creating
       // a large 'safe lane'.
-      const segments = vertical ? 61 : 35;
       // `gap` is a fraction of the wall span. Convert it to a segment count
       // so values such as 0.06 consistently create a real player-sized route.
       const gapSize = gap != null
@@ -136,6 +182,56 @@ export class PatternLibrary {
         else this.game.spawnBullet(-20, t * 720, speed, 0, 6, color);
       }
     });
+  }
+
+  /**
+   * W1-4 only (see wall() above). Returns the exact number of *consecutive*
+   * wall segments to skip so the real, physical corridor between the two
+   * bullets flanking the gap is guaranteed to be at least as wide as
+   * intended — fixing the previous bug where the float-threshold skip test
+   * in wall() could end up skipping only 1 segment (a ~42px rendered gap,
+   * but only ~11px a player's CENTER could actually fit through) regardless
+   * of the gap fraction requested, i.e. a gap that looked passable but
+   * wasn't ("ช่องหลอก").
+   *
+   * The math is derived directly from the real collision check
+   * (collision.js circleHit uses a.r + b.r):
+   *   TOUCH_R = PLAYER_R (10, CONFIG.player.radius)
+   *           + WALL_BULLET_R (6, the radius wall() spawns bullets with)
+   * If two flanking bullets are `corridorPx` apart (center-to-center), the
+   * player's center can only occupy the middle `corridorPx - 2*TOUCH_R` of
+   * that span without touching either one — that's the real, "can-you-
+   * actually-walk-through-it" gap.
+   *
+   * Skipping `k` consecutive segments (spaced `spacing` px apart) always
+   * leaves the two nearest surviving bullets exactly `(k+1) * spacing`
+   * apart, with no rounding/threshold ambiguity — so this picks the
+   * smallest k whose corridor clears the target, guaranteeing the visible
+   * gap and the passable gap are the same width every time.
+   */
+  bulletHellGapSkip(gap, worldDim, segments) {
+    const PLAYER_R = 10;       // matches CONFIG.player.radius
+    const WALL_BULLET_R = 6;   // matches the bullet radius spawned in wall()
+    const TOUCH_R = PLAYER_R + WALL_BULLET_R;
+
+    const spacing = worldDim / (segments - 1);
+    const originalCorridorPx = (gap ?? 0) * worldDim + spacing;
+
+    // Target real clearance for the player's CENTER (~30px — inside the
+    // ~34-42px goal range once rounded up to the nearest whole segment
+    // spacing below; the exact figure varies slightly with vertical vs.
+    // horizontal spacing, which is expected and not forced further).
+    // TIGHTEN_FACTOR keeps the corridor scaling down from each wave's
+    // original (much wider, pre-Bullet-Hell) design value instead of every
+    // gap value jumping straight to the same floor.
+    const TARGET_PASSABLE_PX = 30;
+    const MIN_CORRIDOR_PX = TARGET_PASSABLE_PX + 2 * TOUCH_R;
+    const TIGHTEN_FACTOR = 0.65;
+
+    const targetCorridorPx = Math.max(MIN_CORRIDOR_PX, originalCorridorPx * TIGHTEN_FACTOR);
+    // (k+1) segment spacings must cover the target corridor; never fully
+    // close the lane (k >= 1).
+    return Math.max(1, Math.ceil(targetCorridorPx / spacing) - 1);
   }
 
   /** Bullets fired diagonally in from the top and left edges. */

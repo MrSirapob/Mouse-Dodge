@@ -42,7 +42,21 @@ export const CONFIG = {
     bannerDisplayMs: 3000,
   },
   bullets: {
-    capEarly: 260,
+    // W1-4 ("Bullet Hell" tier) only. Raised from 260 -> 420 so the W1-4
+    // patterns (retuned to fire far more projectiles than the old cap could
+    // ever hold on screen at once) can actually reach their designed
+    // density instead of being silently truncated by spawnBullet().
+    // Verified via an offline simulation of the real W1-4 schedules
+    // (js/patterns + js/systems/waveSystem) that 420 lets every queued
+    // spawn actually land with zero drops, while 350/380/400 still dropped
+    // a handful of bullets during W3's spiral+ring overlap.
+    // Does NOT apply to W5 — see capW5 below and bulletCap() in game.js.
+    capEarly: 420,
+    // W5 (boss wave) only. This is W5's original cap from before the
+    // Bullet Hell update raised capEarly 260 -> 420 (W5 used to share
+    // capEarly with W1-4; it now has its own value so raising W1-4's
+    // density never changes W5/boss balance or performance).
+    capW5: 260,
     capMid: 340,
     capHigh: 420,
     capLate: 500,
@@ -52,9 +66,26 @@ export const CONFIG = {
     // Keep the arena dense, but prevent it from slowly becoming unwinnable.
     // Cleanup starts only when the arena is nearly full and removes a few
     // low-risk old bullets instead of randomly deleting threats.
+    // These are the DEFAULT values, used by every wave except the W1-4
+    // Bullet Hell tier below.
     cleanupStart: 0.95,
     cleanupPerFrame: 4,
     cleanupCooldown: 0.12,
+
+    // W1-4 only (see Game.cleanupConfig()). Bullet Hell now runs much closer
+    // to the raised capEarly ceiling than other waves ever did, so cleanup
+    // needs to (a) hold off longer before touching anything, preserving the
+    // designed overlap/pattern shape as long as possible, and (b) clear
+    // more headroom per pass once it does kick in, so a single dense burst
+    // (e.g. a 90-bullet ring on top of an active spiral) can't get throttled
+    // by the hard cap before cleanup has room to work. This does NOT apply
+    // to W5 (boss) or any later wave — those keep the defaults above
+    // untouched.
+    bulletHell: {
+      cleanupStart: 0.97,
+      cleanupPerFrame: 6,
+      cleanupCooldown: 0.08,
+    },
   },
   combo: { window: 1.1 },
   rank: {
