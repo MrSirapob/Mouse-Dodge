@@ -152,44 +152,105 @@ export class WaveSystem {
     // through each wave so the player must keep repositioning.
     switch (n) {
       case 1:
-        aimed(0.0, 36, 0.3, 2.15);
-        aimed(8.0, 30, 0.28, 2.2, c2);
-        ring(15.0, 640, 360, 26, 2.25);
-        aimed(22.0, 34, 0.27, 2.25, c1);
-        wall(27.0, 2.35, c2, true, 0.09);
+        // W1 — "Bullet Hell" opening, round 2 tuning. The first pass (aimed/
+        // ring/wall only, layers starting every 3-5s) still read as too calm.
+        // Now: overlap starts at t=0 (aimed+ring fire almost together), the
+        // gap between layers is cut to ~1.5-2s everywhere, cross/splitter are
+        // folded in early (previously W2/W3-only) to raise the ceiling, and
+        // intervals/counts are pushed further (0.16→0.09-0.11, 46→50-54).
+        aimed(0.0, 46, 0.11, 2.6, c1);
+        ring(0.6, 640, 360, 40, 2.6, c2);
+        aimed(2.5, 42, 0.11, 2.65, c2);
+        wall(4.5, 2.75, c1, true, 0.075);
+        ring(6.0, 300, 220, 42, 2.65, c1);
+        cross(7.5, 12, 2.7, c2);
+        aimed(9.0, 46, 0.1, 2.7, c1);
+        wall(11.0, 2.8, c2, false, 0.07);
+        ring(12.5, 980, 500, 44, 2.7, c2);
+        splitter(14.0, 8, 0.5, 2.15, c1);
+        aimed(15.5, 48, 0.1, 2.75, c2);
+        wall(17.5, 2.85, c1, true, 0.065);
+        ring(19.0, 640, 200, 44, 2.75, c1);
+        cross(20.5, 13, 2.8, c2);
+        aimed(22.0, 50, 0.09, 2.8, c1);
+        wall(24.0, 2.9, c2, false, 0.06);
+        ring(25.5, 340, 500, 46, 2.8, c2);
+        aimed(27.0, 50, 0.09, 2.85, c1);
         break;
       case 2:
-        aimed(0.0, 30, 0.28, 2.2);
-        ring(5.0, 640, 360, 28, 2.25);
-        aimed(10.0, 32, 0.27, 2.25, c2);
-        wall(15.5, 2.4, c1, false, 0.09);
-        ring(21.0, 640, 360, 30, 2.3, c2);
-        aimed(26.0, 34, 0.25, 2.3);
+        // W2 — Heavy Bullet Hell. Re-tuned to sit clearly above the new W1
+        // (which now also uses cross/splitter): every count/speed is a step
+        // higher and intervals a step lower than W1's equivalents, plus a
+        // splitter layer is added so W2 keeps escalating rather than tying.
+        aimed(0.0, 44, 0.12, 2.6, c1);
+        ring(0.6, 640, 360, 42, 2.62, c2);
+        aimed(2.5, 42, 0.11, 2.65, c2);
+        wall(4.5, 2.78, c1, false, 0.07);
+        ring(6.0, 340, 200, 44, 2.68, c1);
+        cross(7.5, 13, 2.7, c2);
+        aimed(9.0, 46, 0.11, 2.72, c1);
+        splitter(10.5, 8, 0.48, 2.2, c2);
+        wall(12.5, 2.82, c2, true, 0.065);
+        ring(14.0, 960, 520, 44, 2.72, c2);
+        aimed(15.5, 46, 0.1, 2.76, c1);
+        cross(17.5, 14, 2.78, c2);
+        wall(19.5, 2.85, c1, false, 0.06);
+        ring(21.0, 640, 200, 46, 2.78, c2);
+        aimed(22.5, 48, 0.1, 2.8, c1);
+        splitter(24.5, 9, 0.45, 2.25, c2);
+        wall(26.5, 2.9, c2, true, 0.055);
+        ring(28.0, 300, 500, 48, 2.82, c1);
         break;
       case 3:
-        aimed(0.0, 32, 0.27, 2.25);
-        ring(4.5, 640, 360, 30, 2.3);
-        wall(8.0, 2.45, c1, true, 0.085);
-        splitter(11.5, 6, 0.82, 1.95, c2);
-        aimed(15.0, 34, 0.25, 2.3, c2);
-        cross(18.5, 10, 2.45, c1);
-        spiral(22.0, 6.5, 3, 1.9, c2);
-        ring(25.5, 640, 360, 32, 2.35, c1);
-        aimed(28.0, 36, 0.24, 2.35, c2);
+        // W3 — Extreme Bullet Hell. Re-tuned one notch above the new W2 to
+        // preserve W1<W2<W3<W4 (every count/speed higher, interval/gap lower
+        // than W2's equivalents). Splitter/cross/spiral overlap directly.
+        aimed(0.0, 46, 0.11, 2.75, c1);
+        ring(1.0, 640, 360, 42, 2.75, c2);
+        wall(3.0, 2.9, c1, true, 0.062);
+        splitter(5.0, 10, 0.48, 2.3, c2);
+        aimed(7.0, 48, 0.1, 2.8, c2);
+        cross(9.5, 15, 2.85, c1);
+        ring(11.0, 300, 500, 46, 2.8, c1);
+        spiral(12.5, 6.5, 4, 2.3, c2);
+        aimed(15.0, 50, 0.1, 2.85, c2);
+        wall(17.0, 2.95, c2, false, 0.055);
+        splitter(18.5, 11, 0.42, 2.35, c1);
+        ring(20.0, 980, 220, 48, 2.85, c2);
+        cross(21.5, 16, 2.9, c1);
+        spiral(23.0, 7.0, 4, 2.35, c1);
+        aimed(25.0, 52, 0.09, 2.9, c2);
+        ring(27.0, 640, 360, 50, 2.9, c1);
+        wall(28.5, 3.0, c2, true, 0.05);
         break;
       case 4:
-        ring(0.8, 640, 360, 32, 2.35);
-        aimed(3.0, 34, 0.25, 2.35, c1);
-        wall(6.0, 2.5, c2, true, 0.08);
-        splitter(9.0, 7, 0.75, 1.95, c1);
-        spiral(12.0, 7.0, 3, 1.95, c2);
-        cross(16.0, 11, 2.5, c1);
-        ring(19.5, 640, 360, 34, 2.4, c2);
-        laser(22.0, 3, 0.95, c3);
-        wall(25.0, 2.55, c1, false, 0.075);
-        aimed(27.0, 36, 0.24, 2.4, c2);
-        spiral(29.0, 8.0, 4, 2.0, c1);
-        break;      case 6:
+        // W4 — Brutal Bullet Hell, the climax before the W5 boss. Re-tuned
+        // one notch above the new W3 for the same ordering reason. Every
+        // pattern in the W1-4 toolkit (including laser) is layered with
+        // almost no dead air; gaps stay above the historical minimums
+        // already proven safe on later waves (see W16-19/default below).
+        ring(0.0, 640, 360, 48, 2.9, c1);
+        aimed(0.8, 48, 0.09, 2.95, c2);
+        wall(2.5, 3.0, c2, true, 0.05);
+        splitter(4.0, 11, 0.42, 2.4, c1);
+        spiral(5.5, 6.5, 4, 2.4, c2);
+        cross(7.0, 16, 2.95, c1);
+        ring(8.5, 300, 220, 50, 2.9, c2);
+        laser(10.0, 5, 0.6, c3);
+        aimed(11.0, 50, 0.09, 3.0, c1);
+        wall(13.0, 3.05, c1, false, 0.045);
+        spiral(14.5, 7.0, 4, 2.45, c1);
+        splitter(16.0, 12, 0.4, 2.45, c2);
+        cross(17.5, 17, 3.0, c2);
+        ring(19.0, 980, 500, 52, 2.95, c1);
+        aimed(20.5, 52, 0.08, 3.05, c2);
+        laser(22.0, 6, 0.55, c3);
+        wall(23.5, 3.1, c2, true, 0.045);
+        spiral(25.0, 8.0, 5, 2.5, c1);
+        ring(26.5, 640, 360, 54, 3.0, c2);
+        aimed(28.0, 54, 0.08, 3.1, c1);
+        break;
+      case 6:
         // W6 — dense new gameplay set.
         // Machine Gun: speed 10, tightly packed with a small controlled spread.
         this.p.machineGunTop(0.30, 220, 0.045, 10.0, 40, c1);
