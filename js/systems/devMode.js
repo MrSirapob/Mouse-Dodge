@@ -1,3 +1,5 @@
+import { CONFIG } from '../core/config.js?v=20260814w10final&v=20260814w10b';
+
 export class DevMode {
   constructor(game) {
     this.game = game;
@@ -28,10 +30,23 @@ export class DevMode {
       if (!window.devModeUnlocked || !this.enabled) return;
       if (e.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
 
-      const key = e.key.toLowerCase();
-      // Dev Mode actions are button-only.
-      // F2 remains the only Dev Mode keyboard shortcut.
+      // Hotkeys for the actions actually used mid-test (per feedback: God,
+      // Boss, wave skip/back, Heal). Player 1 is mouse-only and clicking a
+      // panel button means dragging the cursor off wherever you're testing —
+      // these let you fire the same actions without moving the mouse at all.
+      // P2 uses WASD/Arrows/Space/Slash, so none of these keys can collide.
+      const HOTKEYS = {
+        g: 'god',
+        b: 'boss',
+        h: 'life',
+        '[': 'wavePrev',
+        ']': 'waveNext',
+      };
 
+      const action = HOTKEYS[e.key.toLowerCase()];
+      if (!action) return;
+      e.preventDefault();
+      this.action(action);
     });
   }
 
@@ -48,7 +63,7 @@ export class DevMode {
       <div class="dev-section">
         <div class="dev-section-label">PLAYER</div>
         <div class="dev-row">
-          <button data-dev="life">+ LIFE</button>
+          <button data-dev="life" title="Hotkey: H — revives if downed">+ LIFE (H)</button>
           <button data-dev="kill">− LIFE</button>
           <button data-dev="ready">SKILL READY</button>
         </div>
@@ -57,12 +72,12 @@ export class DevMode {
       <div class="dev-section">
         <div class="dev-section-label">WAVE</div>
         <div class="dev-wave-row">
-          <button data-dev="wavePrev" class="dev-wave-btn">◀</button>
+          <button data-dev="wavePrev" class="dev-wave-btn" title="Hotkey: [">◀</button>
           <div class="dev-wave-current">
             <span>WAVE</span>
             <strong id="devCurrentWave">1</strong>
           </div>
-          <button data-dev="waveNext" class="dev-wave-btn">▶</button>
+          <button data-dev="waveNext" class="dev-wave-btn" title="Hotkey: ]">▶</button>
         </div>
       </div>
 
@@ -70,7 +85,7 @@ export class DevMode {
         <div class="dev-section-label">GAME</div>
         <div class="dev-row">
           <button data-dev="clear" class="dev-main-action">CLEAR BULLETS</button>
-          <button data-dev="boss">BOSS</button>
+          <button data-dev="boss" title="Hotkey: B">BOSS (B)</button>
           <button data-dev="restart" class="dev-danger">RESTART</button>
         </div>
       </div>
@@ -78,7 +93,7 @@ export class DevMode {
       <div class="dev-section">
         <div class="dev-section-label">DEBUG</div>
         <div class="dev-row">
-          <button data-dev="god" id="devGod">GOD: OFF</button>
+          <button data-dev="god" id="devGod" title="Hotkey: G">GOD: OFF</button>
           <button data-dev="hitbox" id="devHitbox">HITBOX: OFF</button>
           <button data-dev="graze" id="devGraze">GRAZE: OFF</button>
         </div>
@@ -90,6 +105,8 @@ export class DevMode {
         <span>BULLETS <b id="devBulletCount">0/0</b></span>
         <span>•</span>
         <span>FPS <b id="devFps">60</b></span>
+        <span>•</span>
+        <span class="dev-hotkeys">G:GOD B:BOSS [ ]:WAVE H:HEAL</span>
       </div>
     `;
 
@@ -143,7 +160,26 @@ export class DevMode {
     const g = this.game;
 
     if (type === 'life') {
-      g.players.forEach(p => { if (!p.down) p.lives = Math.min(3, p.lives + 1); });
+      // Previously a no-op on a downed player (guarded by `if (!p.down)`),
+      // which is exactly the moment testers reach for Heal. Now it revives
+      // first, then tops up — but ONLY for players that actually take part
+      // in the current mode. In SOLO, `players[1].down` is permanently
+      // `true` by design (see Game.reset(): `players[1].down = mode ===
+      // SOLO`) to mark that slot as a non-participant, not as "downed
+      // mid-run". Reviving it unconditionally would silently flip that
+      // invariant and un-park a player that's never supposed to be alive
+      // in SOLO. Mirror the same mode check `activePlayers()`/
+      // `allPlayersDown()` already use elsewhere in game.js.
+      const targets = g.state.mode === 'coop' ? g.players : [g.players[0]];
+      targets.forEach(p => {
+        if (p.down) {
+          p.down = false;
+          p.lives = 0;
+          p.invulnerable = CONFIG.lives.respawnInvulnerability;
+          p.reviveProgress = 0;
+        }
+        p.lives = Math.min(CONFIG.lives.max, p.lives + 1);
+      });
     }
 
     if (type === 'kill') {
