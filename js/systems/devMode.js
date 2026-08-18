@@ -5,8 +5,6 @@ export class DevMode {
     this.game = game;
     this.enabled = false;
     this.god = false;
-    this.hitbox = false;
-    this.grazeDebug = false;
     this.panel = document.getElementById('devPanel');
 
     if (!this.panel) {
@@ -94,8 +92,6 @@ export class DevMode {
         <div class="dev-section-label">DEBUG</div>
         <div class="dev-row">
           <button data-dev="god" id="devGod" title="Hotkey: G">GOD: OFF</button>
-          <button data-dev="hitbox" id="devHitbox">HITBOX: OFF</button>
-          <button data-dev="graze" id="devGraze">GRAZE: OFF</button>
         </div>
       </div>
 
@@ -216,20 +212,6 @@ export class DevMode {
       g.players.forEach(p => p.devInvulnerable = this.god);
       const btn = this.panel?.querySelector('#devGod');
       if (btn) btn.textContent = `GOD: ${this.god ? 'ON' : 'OFF'}`;
-    }
-
-    if (type === 'hitbox') {
-      this.hitbox = !this.hitbox;
-      g.debugHitbox = this.hitbox;
-      const btn = this.panel?.querySelector('#devHitbox');
-      if (btn) btn.textContent = `HITBOX: ${this.hitbox ? 'ON' : 'OFF'}`;
-    }
-
-    if (type === 'graze') {
-      this.grazeDebug = !this.grazeDebug;
-      g.debugGraze = this.grazeDebug;
-      const btn = this.panel?.querySelector('#devGraze');
-      if (btn) btn.textContent = `GRAZE: ${this.grazeDebug ? 'ON' : 'OFF'}`;
     }
   }
 }
