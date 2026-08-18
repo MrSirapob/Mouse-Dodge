@@ -1,5 +1,46 @@
 # Changelog
 
+## AI-to-AI handoff log
+- **Added `HANDOFF_LOG.md`.** A short, newest-first log of AI sessions —
+  which tool (Claude, ChatGPT/Codex, ...), what it did, and what it flagged
+  for next time — separate from `CHANGELOG.md` (which stays the permanent,
+  curated history of actual gameplay/code changes). `AGENTS.md` now tells
+  every session to read the top entry first and add its own entry last,
+  specifically so switching between AI tools mid-project doesn't lose
+  context between sessions.
+
+## Multi-tool AI onboarding
+This project gets worked on from more than one AI tool (Claude Code,
+ChatGPT/Codex-style tools), and each looks for a different filename:
+
+- **Moved the AI-onboarding content from `CLAUDE.md` to `AGENTS.md`.**
+  `AGENTS.md` is the filename convention most agent tools pick up
+  automatically; `CLAUDE.md` is now a one-line pointer to it, kept only
+  because Claude Code specifically looks for that name. There's a single
+  canonical doc now — update `AGENTS.md`, not both.
+
+## AI-onboarding pass
+This pass didn't touch gameplay code — it made the project faster and safer
+to pick back up, specifically for an AI agent starting a fresh session with
+no memory of past conversations:
+
+- **Added `CLAUDE.md`.** A single entry-point doc that maps out the
+  architecture, points to `README.md`/`CHANGELOG.md`/`WAVE_DESIGN_NOTES.md`
+  for the details each already owns, and lists conventions that aren't
+  obvious from reading one file at a time (the `CONFIG`-first rule, the
+  cached-DOM-lookup pattern, the `SKILL_EFFECT_DRAWERS` table, LF-only line
+  endings, the lack of a test framework and the `scripts/verify-*.mjs`
+  convention that stands in for one).
+- **Added `scripts/check-versions.mjs` and `scripts/bump-version.mjs`
+  (`npm run check-versions` / `npm run bump-version`).** Every internal
+  import carries a hand-maintained `?v=<tag>` cache-busting query string,
+  and all of them have to match. That's an easy thing for anyone — AI or
+  human — to get half-right (bump some imports, miss others, or add a new
+  file without one). These scripts verify consistency in one command and
+  rewrite every occurrence atomically in one pass instead of relying on
+  manual find/replace. Also collapsed a few files' redundant duplicate
+  `&v=` query params down to one, which had no effect but added noise.
+
 ## Slow bugfix
 
 - **Fixed: Slow was slowing the player, not just bullets.** `updatePlayers()`

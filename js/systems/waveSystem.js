@@ -1,4 +1,4 @@
-import { CONFIG } from "../core/config.js?v=20260814w10final&v=20260814w10b";
+import { CONFIG } from "../core/config.js?v=20260814w10final";
 
 const WAVE_COLORS = ["#ff5c5c", "#ff9f43", "#c56cf0", "#ff5cc0", "#54a0ff"];
 

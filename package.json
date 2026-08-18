@@ -4,7 +4,9 @@
   "private": true,
   "description": "Wave Dodge - browser bullet-hell survival game (vanilla JS ES modules, no build step).",
   "scripts": {
-    "dev": "http-server . -p 8080 -c-1"
+    "dev": "http-server . -p 8080 -c-1",
+    "check-versions": "node scripts/check-versions.mjs",
+    "bump-version": "node scripts/bump-version.mjs"
   },
   "devDependencies": {
     "http-server": "^14.1.1"

@@ -4,6 +4,13 @@ Wave Survival prototype: dodge bullet patterns across escalating waves,
 survive as long as possible, and rack up score/graze/combo.
 
 For version history and past refactor notes, see [CHANGELOG.md](./CHANGELOG.md).
+Picking this project up cold (including as an AI agent — Claude Code,
+Codex CLI, or anything else)? Start with [AGENTS.md](./AGENTS.md) — it's
+the map that ties this file, the changelog, and the design notes together.
+(`CLAUDE.md` also exists and just points to `AGENTS.md`, since Claude Code
+looks for that filename specifically.) Then check
+[HANDOFF_LOG.md](./HANDOFF_LOG.md) for what the last AI session did —
+and add your own entry there when you're done.
 
 ## Current features
 - Wave Survival with the original bullet pattern library and Boss Waves
@@ -42,6 +49,15 @@ npm run dev   # serves on :8080
 ```
 
 No bundler/build step. The game ships as-is.
+
+Every internal import carries a matching `?v=<tag>` cache-busting query
+string (see [AGENTS.md](./AGENTS.md)). After changes you want the browser
+cache to pick up:
+
+```
+npm run check-versions   # verify every ?v= tag still matches
+npm run bump-version      # rewrite them all to a fresh tag
+```
 
 ## Structure
 
