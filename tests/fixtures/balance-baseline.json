@@ -1,12 +1,12 @@
 {
-  "generatedFrom": "tests/helpers/simulation.mjs simulateWave() + capturePatternPlan(), seed=1000+wave, fixed dt=1/60",
   "tolerance": 0.15,
+  "generatedFrom": "tests/helpers/simulation.mjs simulateWave() + capturePatternPlan(), seed=1000+wave, fixed dt=1/60",
   "waves": {
     "wave1": {
       "cap": 420,
-      "peakActive": 299,
-      "averageActive": 197.26,
-      "spawned": 1141,
+      "peakActive": 281,
+      "averageActive": 177.39,
+      "spawned": 1062,
       "patterns": [
         "aimed",
         "cross",
@@ -18,9 +18,9 @@
     },
     "wave2": {
       "cap": 420,
-      "peakActive": 305,
-      "averageActive": 197.42,
-      "spawned": 1191,
+      "peakActive": 271,
+      "averageActive": 176.43,
+      "spawned": 1120,
       "patterns": [
         "aimed",
         "cross",
@@ -33,8 +33,8 @@
     "wave3": {
       "cap": 420,
       "peakActive": 420,
-      "averageActive": 229.15,
-      "spawned": 1593,
+      "averageActive": 213.05,
+      "spawned": 1551,
       "patterns": [
         "aimed",
         "cross",
@@ -47,9 +47,9 @@
     },
     "wave4": {
       "cap": 420,
-      "peakActive": 420,
-      "averageActive": 258.89,
-      "spawned": 1888,
+      "peakActive": 414,
+      "averageActive": 248.49,
+      "spawned": 1849,
       "patterns": [
         "aimed",
         "cross",

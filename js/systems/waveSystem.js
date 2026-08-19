@@ -85,8 +85,21 @@ export class WaveSystem {
     const c3 = this.color(n, 4);
     const labels = new Set();
 
+    // Wave 1-4 tuning pass: AIM count down ~20% (within the requested
+    // 15-25% band), AIM speed up ~8% (within the requested 5-10% band).
+    // Only the AIMED pattern is touched; other patterns on W1-4 and every
+    // pattern on W5+ are unaffected.
+    const aimCountMult = n <= 4 ? 0.8 : 1.0;
+    const aimSpeedMult = n <= 4 ? 1.08 : 1.0;
+
     const aimed = (t, count, interval = 0.3, spd = 2.15, color = c1) => {
-      this.p.aimed(t, Math.ceil(count * 1.7), interval, spd * speedTier, color);
+      this.p.aimed(
+        t,
+        Math.ceil(count * 1.7 * aimCountMult),
+        interval,
+        spd * speedTier * aimSpeedMult,
+        color,
+      );
       labels.add("คำพิพากษาแห่งผู้ไร้ทางรอด");
     };
 

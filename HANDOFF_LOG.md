@@ -37,6 +37,34 @@ knowing before continuing — or "Nothing pending." if the task is fully done.
 
 ---
 
+## 2026-08-19 — Claude (Sonnet 5, claude.ai) [balance pass]
+**Did:** Intentional W1-4 AIM (`AIMED` pattern) tuning, per request: AIM
+projectile count down ~20% and AIM speed up ~8% on waves 1-4 only (both
+within the requested 15-25% / 5-10% bands). Implemented in
+`js/systems/waveSystem.js` `build(n)` by adding `aimCountMult` (0.8 when
+`n<=4`) and `aimSpeedMult` (1.08 when `n<=4`), applied only inside the
+local `aimed(...)` closure — so only the AIMED pattern is affected, only
+on W1-4; RING/WALL/SPIRAL/CROSS/LASER/HOMING/SPLITTER/BOUNCER and all W5+
+patterns (including the boss `bossAimed`) are untouched.
+
+Old vs new baseline (`tests/fixtures/balance-baseline.json`, regenerated
+per `tests/README.md` "Updating the baseline"):
+- W1: peakActive 299→281, spawned 1141→1062
+- W2: peakActive 305→271, spawned 1191→1120
+- W3: peakActive 420→420 (still capped), spawned 1593→1551
+- W4: peakActive 420→420 (still capped), spawned 1888→1849
+
+All drops fall inside the suite's own ±15% tolerance, so `npm test` is
+green (174 PASS / 0 FAIL / 1 WARN — the pre-existing W6 label WARN from
+the previous entry, unrelated to this change).
+
+**Files:** `js/systems/waveSystem.js`, `tests/fixtures/balance-baseline.json`.
+**For the next session:** Nothing pending on this change. The pre-existing
+W6 empty-banner-label WARN (see previous entry below) is still unresolved
+and unrelated.
+
+---
+
 ## 2026-08-19 — Claude (Sonnet 5, claude.ai)
 **Did:** Built the automated AI-development test suite (`npm test`) —
 previously the only regression check was the one-off
