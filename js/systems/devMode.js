@@ -1,10 +1,24 @@
 import { CONFIG } from '../core/config.js?v=20260814w10final';
 
 export class DevMode {
+  // Selectable game-speed levels for the SPEED panel (spec: "เร่งความเร็ว
+  // แต่ละระดับเลือกได้" — a discrete, pick-one multiplier, not a slider).
+  // Applied as a straight multiplier on the frame's raw dt in Game.loop(),
+  // so it speeds up/slows down everything uniformly (movement, spawns,
+  // timers, animation) — separate from the slow-mo skill's `slowScale`.
+  static SPEED_LEVELS = {
+    speedSlow: 0.5,
+    speedNormal: 1,
+    speedFast: 1.5,
+    speedFaster: 2,
+    speedFastest: 3,
+  };
+
   constructor(game) {
     this.game = game;
     this.enabled = false;
     this.god = false;
+    this.timeScale = 1;
     this.panel = document.getElementById('devPanel');
 
     if (!this.panel) {
@@ -29,16 +43,22 @@ export class DevMode {
       if (e.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
 
       // Hotkeys for the actions actually used mid-test (per feedback: God,
-      // Boss, wave skip/back, Heal). Player 1 is mouse-only and clicking a
-      // panel button means dragging the cursor off wherever you're testing —
-      // these let you fire the same actions without moving the mouse at all.
-      // P2 uses WASD/Arrows/Space/Slash, so none of these keys can collide.
+      // Boss, wave skip/back, Heal, Speed). Player 1 is mouse-only and
+      // clicking a panel button means dragging the cursor off wherever
+      // you're testing — these let you fire the same actions without
+      // moving the mouse at all. P2 uses WASD/Arrows/Space/Slash, so none
+      // of these keys (including the number row) can collide.
       const HOTKEYS = {
         g: 'god',
         b: 'boss',
         h: 'life',
         '[': 'wavePrev',
         ']': 'waveNext',
+        '1': 'speedSlow',
+        '2': 'speedNormal',
+        '3': 'speedFast',
+        '4': 'speedFaster',
+        '5': 'speedFastest',
       };
 
       const action = HOTKEYS[e.key.toLowerCase()];
@@ -80,6 +100,17 @@ export class DevMode {
       </div>
 
       <div class="dev-section">
+        <div class="dev-section-label">SPEED</div>
+        <div class="dev-row" id="devSpeedRow">
+          <button data-dev="speedSlow" class="dev-speed-btn" title="Hotkey: 1">0.5×</button>
+          <button data-dev="speedNormal" class="dev-speed-btn" title="Hotkey: 2">1×</button>
+          <button data-dev="speedFast" class="dev-speed-btn" title="Hotkey: 3">1.5×</button>
+          <button data-dev="speedFaster" class="dev-speed-btn" title="Hotkey: 4">2×</button>
+          <button data-dev="speedFastest" class="dev-speed-btn" title="Hotkey: 5">3×</button>
+        </div>
+      </div>
+
+      <div class="dev-section">
         <div class="dev-section-label">GAME</div>
         <div class="dev-row">
           <button data-dev="clear" class="dev-main-action">CLEAR BULLETS</button>
@@ -100,9 +131,11 @@ export class DevMode {
         <span>•</span>
         <span>BULLETS <b id="devBulletCount">0/0</b></span>
         <span>•</span>
+        <span>SPEED <b id="devSpeedValue">1×</b></span>
+        <span>•</span>
         <span>FPS <b id="devFps">60</b></span>
         <span>•</span>
-        <span class="dev-hotkeys">G:GOD B:BOSS [ ]:WAVE H:HEAL</span>
+        <span class="dev-hotkeys">G:GOD B:BOSS [ ]:WAVE H:HEAL 1-5:SPEED</span>
       </div>
     `;
 
@@ -111,6 +144,7 @@ export class DevMode {
     });
 
     this.panel.querySelector('#devClose')?.addEventListener('click', () => this.toggle(false));
+    this.updateSpeedButtons();
   }
 
   toggle(force) {
@@ -119,6 +153,19 @@ export class DevMode {
 
     const badge = document.getElementById('secret-dev-badge');
     if (badge) badge.style.display = this.enabled ? 'none' : 'block';
+  }
+
+  /** Highlights whichever SPEED button matches the current this.timeScale, and refreshes the status-bar readout. */
+  updateSpeedButtons() {
+    this.panel?.querySelectorAll('.dev-speed-btn').forEach(btn => {
+      const level = DevMode.SPEED_LEVELS[btn.dataset.dev];
+      btn.classList.toggle('active', level === this.timeScale);
+    });
+    const readout = document.getElementById('devSpeedValue');
+    if (readout) {
+      // 1.5 -> "1.5×", 2 -> "2×" (no trailing .0)
+      readout.textContent = `${this.timeScale % 1 === 0 ? this.timeScale : this.timeScale.toFixed(1)}×`;
+    }
   }
 
   update() {
@@ -212,6 +259,35 @@ export class DevMode {
       g.players.forEach(p => p.devInvulnerable = this.god);
       const btn = this.panel?.querySelector('#devGod');
       if (btn) btn.textContent = `GOD: ${this.god ? 'ON' : 'OFF'}`;
+    }
+
+    // Each SPEED level gets its own `if (type === '...')` branch (rather
+    // than a loop over DevMode.SPEED_LEVELS) so the dead-button static
+    // check in tests/unit/devmode-docs.test.mjs can see every data-dev
+    // value has a real handler.
+    if (type === 'speedSlow') {
+      this.timeScale = DevMode.SPEED_LEVELS.speedSlow;
+      this.updateSpeedButtons();
+    }
+
+    if (type === 'speedNormal') {
+      this.timeScale = DevMode.SPEED_LEVELS.speedNormal;
+      this.updateSpeedButtons();
+    }
+
+    if (type === 'speedFast') {
+      this.timeScale = DevMode.SPEED_LEVELS.speedFast;
+      this.updateSpeedButtons();
+    }
+
+    if (type === 'speedFaster') {
+      this.timeScale = DevMode.SPEED_LEVELS.speedFaster;
+      this.updateSpeedButtons();
+    }
+
+    if (type === 'speedFastest') {
+      this.timeScale = DevMode.SPEED_LEVELS.speedFastest;
+      this.updateSpeedButtons();
     }
   }
 }

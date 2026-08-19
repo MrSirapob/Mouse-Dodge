@@ -904,7 +904,7 @@ export class Game {
   }
 
   loop(now) {
-    const raw = Math.min((now - this.lastTime) / 1000, 0.05);
+    const raw = Math.min((now - this.lastTime) / 1000, 0.05) * (this.devMode?.timeScale ?? 1);
     this.lastTime = now;
     if (this.state.state === GAME_STATES.PLAYING) this.update(raw);
     this.draw();

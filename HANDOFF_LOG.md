@@ -86,13 +86,48 @@ faster) in session 2, unchanged since. **Files:** `js/systems/waveSystem.js`
 (`aimCountMult`/`aimSpeedMult` in `build(n)`), `tests/fixtures/balance-baseline.json`
 (regenerated both times per `tests/README.md`'s "Updating the baseline").
 
+**Session 4 — Dev Mode game-speed control:** Added a selectable-level
+speed multiplier to Dev Mode (previously WAVE only had skip/back, no
+speed control). New SPEED panel section with 5 discrete levels — 0.5×,
+1×, 1.5×, 2×, 3× — buttons + hotkeys `1`-`5`, highlighting the active
+level and showing it in the status bar. Implemented as
+`DevMode.timeScale` (default 1), applied as a straight multiplier on the
+frame's raw dt in `Game.loop()` — `raw = ... * (this.devMode?.timeScale
+?? 1)` — so it scales movement/spawns/timers/animation uniformly.
+Deliberately separate from the slow-mo skill's `s.slowScale` (that's a
+gameplay mechanic; this is a practice-only dev tool and isn't persisted
+or reachable without the existing F2 unlock). **Files:**
+`js/systems/devMode.js` (SPEED_LEVELS, panel markup, hotkeys 1-5,
+`updateSpeedButtons()`, action handlers), `js/systems/game.js` (`loop()`
+one-line dt multiply), `css/main.css` (`.dev-speed-btn.active`).
+
+**Landmine found, not fixed (flagging only):** `npm run bump-version`
+rewrites `?v=` tags in `index.html`/`js/**` only — it does not touch
+`tests/**`, which hard-code `?v=20260814w10final` in their imports.
+Bumping the version therefore makes Node's ESM loader treat
+`js/core/config.js?v=<old>` (imported by tests) and
+`?v=<new>` (imported by the bumped source) as two *different* module
+instances, so any test using `assertEqual` (reference `!==`, not deep
+equal) on a `CONFIG`-derived object starts failing for reasons that have
+nothing to do with the actual code change (hit this firsthand: 2 FAILs
+in `bullet.test.mjs`/`bullethell-simulation.test.mjs` after a routine
+bump, gone after reverting the tag). Ran `bump-version` back to
+`20260814w10final` this session rather than fix the script — a real fix
+(e.g. bump `tests/**` too, or drop the query string from test imports)
+is a deliberate call for whoever owns the cache-busting workflow, not a
+side effect of a Dev Mode feature. **File:** `scripts/bump-version.mjs`.
+
 **End-of-day test result:** `npm test` → 174 PASS / 0 FAIL / 1 WARN (the
-W6 label WARN above; unrelated to the AIM changes).
-**For the next session:** Nothing pending. `aimCountMult`/`aimSpeedMult`
-in `waveSystem.js` `build(n)` are the single knobs for further AIM
+W6 label WARN above; unrelated to any of today's changes). Version tag
+is back at `20260814w10final` (unbumped) — see the landmine note above
+before running `bump-version` again.
+**For the next session:** Nothing pending on Dev Mode speed or AIM
+tuning. Two things worth knowing: (1) `aimCountMult`/`aimSpeedMult` in
+`waveSystem.js` `build(n)` are still the single knobs for further AIM
 tuning — regenerate the baseline fixture after any change, per
-`tests/README.md`. The W6 empty-banner-label WARN is still an open,
-low-risk cleanup.
+`tests/README.md`. (2) Don't run `npm run bump-version` without reading
+the landmine note above first, or `npm test` will show false FAILs. The
+W6 empty-banner-label WARN is still an open, low-risk cleanup.
 
 ---
 
