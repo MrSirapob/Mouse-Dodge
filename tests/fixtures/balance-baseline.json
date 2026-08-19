@@ -1,0 +1,65 @@
+{
+  "generatedFrom": "tests/helpers/simulation.mjs simulateWave() + capturePatternPlan(), seed=1000+wave, fixed dt=1/60",
+  "tolerance": 0.15,
+  "waves": {
+    "wave1": {
+      "cap": 420,
+      "peakActive": 299,
+      "averageActive": 197.26,
+      "spawned": 1141,
+      "patterns": [
+        "aimed",
+        "cross",
+        "ring",
+        "splitter",
+        "wall"
+      ],
+      "maxConcurrentPatterns": 3
+    },
+    "wave2": {
+      "cap": 420,
+      "peakActive": 305,
+      "averageActive": 197.42,
+      "spawned": 1191,
+      "patterns": [
+        "aimed",
+        "cross",
+        "ring",
+        "splitter",
+        "wall"
+      ],
+      "maxConcurrentPatterns": 3
+    },
+    "wave3": {
+      "cap": 420,
+      "peakActive": 420,
+      "averageActive": 229.15,
+      "spawned": 1593,
+      "patterns": [
+        "aimed",
+        "cross",
+        "ring",
+        "spiral",
+        "splitter",
+        "wall"
+      ],
+      "maxConcurrentPatterns": 4
+    },
+    "wave4": {
+      "cap": 420,
+      "peakActive": 420,
+      "averageActive": 258.89,
+      "spawned": 1888,
+      "patterns": [
+        "aimed",
+        "cross",
+        "laserBarrage",
+        "ring",
+        "spiral",
+        "splitter",
+        "wall"
+      ],
+      "maxConcurrentPatterns": 5
+    }
+  }
+}

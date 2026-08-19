@@ -18,12 +18,53 @@ not a duplicate in `CLAUDE.md`.
 
 ## First thing to do, every session
 
-Read **[HANDOFF_LOG.md](./HANDOFF_LOG.md)** before touching anything —
-it's a short, newest-first log of what the last AI session (Claude,
-ChatGPT, or otherwise) did and what it flagged for next time. **Last thing
-to do, every session: add a new entry there**, even for a small change or
-an unfinished task — that's how the next AI (possibly a different tool)
-knows where things stand instead of re-discovering it from scratch.
+1. Read **[HANDOFF_LOG.md](./HANDOFF_LOG.md)** before touching anything —
+   it's a short, newest-first log of what the last AI session (Claude,
+   ChatGPT, or otherwise) did and what it flagged for next time.
+2. Run **`npm test`** to see the current baseline (should be all PASS with
+   0 FAIL on a clean checkout — see "Automated tests" below). If it isn't,
+   that's either something the previous session left broken, or your local
+   checkout is off; don't assume your *upcoming* change caused it.
+
+**Last thing to do, every session:**
+1. Run `npm test` again. Fix every FAIL your change introduced before
+   handing off — see "Automated tests" below for how to read a failure and
+   the policy on balance-related FAILs.
+2. Add a new entry to `HANDOFF_LOG.md`, even for a small change or an
+   unfinished task — that's how the next AI (possibly a different tool)
+   knows where things stand instead of re-discovering it from scratch.
+   Include what you changed, which files, and the actual `npm test`
+   result (never report PASS if anything failed or didn't run).
+
+## Automated tests (`npm test`)
+
+This is a **development guardrail for AI editors**, not a player-facing
+feature. It exists so any AI (or human) touching this codebase can verify
+in one command that gameplay, waves, Bullet Hell, skills, score, graze,
+items, and the rest still work — before and after a change.
+
+```bash
+npm test              # everything
+npm run test:unit         # fast structural/logic checks only
+npm run test:simulation   # deterministic wave/bullet-density simulations
+npm run test:integration  # full-flow checks (wave transitions, skill use, game over)
+npm run test:balance      # just the baseline density regression check
+```
+
+- The suite imports and exercises the **real** game modules under
+  `js/**` — it does not reimplement or mock gameplay logic. A FAIL means
+  the shipped code actually behaves differently than expected, not that a
+  mock is out of sync.
+- Every FAIL prints WHAT FAILED / EXPECTED / ACTUAL and, where inferable,
+  a LIKELY AREA pointing at the file/function to look at.
+- Full details, how the suite is structured, what "baseline" and
+  "tolerance" mean, and how to update them intentionally: see
+  **[tests/README.md](./tests/README.md)**.
+- **Do not edit `tests/fixtures/balance-baseline.json` just to make a FAIL
+  go away.** If a balance-regression FAIL reflects an intentional design
+  change, regenerate the baseline deliberately and document the old/new
+  values and why in `HANDOFF_LOG.md` — see tests/README.md's "Balance
+  Baseline Policy".
 
 ## What this project is
 
@@ -105,21 +146,26 @@ else is delegated to a system (`WaveSystem`, `SkillSystem`, `LifeSystem`,
 - **LF line endings only.** Enforced by `.editorconfig` / `.gitattributes`
   (`eol=lf`) after a past CRLF/LF mix caused noisy diffs — see CHANGELOG
   "Project hygiene pass". Don't reintroduce CRLF.
-- **No test framework.** There's no Jest/Vitest/etc. The one existing test,
-  `scripts/verify-bullethell-fix.mjs`, is a plain Node script that imports
-  the *real* game modules (not a reimplementation) and asserts against
-  their actual behavior — see its header comment for the pattern (`node
-  scripts/verify-bullethell-fix.mjs`). If you fix a subtle bug and want a
-  regression check, a small standalone script in `scripts/` in that same
-  style is the established way to do it; it's fine to delete it once
-  you're confident the fix is trusted, the way that file's own header
-  invites.
+- **No third-party test framework, by design.** `npm test` (see
+  "Automated tests" above) is a dependency-free harness in `tests/` built
+  on the same philosophy as `scripts/verify-bullethell-fix.mjs` (still
+  present, safe to delete once you're confident its one-off fix is
+  trusted): plain Node scripts that import the *real* game modules and
+  assert against their actual behavior, never a reimplementation or a
+  mock. If you're adding a permanent regression check, add a test under
+  `tests/unit/`, `tests/simulation/`, or `tests/integration/` (see
+  `tests/README.md`) rather than a new one-off script in `scripts/` —
+  that's for quick, disposable verification only.
 
 ## Before you finish a change
 
+- **Run `npm test`** and fix every FAIL you introduced (see "Automated
+  tests" above). Never report a change as done, or say tests pass, while
+  `npm test` still shows a FAIL or you haven't run it.
 - **Add an entry to [HANDOFF_LOG.md](./HANDOFF_LOG.md)** — this is the one
   step that's easy to skip and breaks the handoff for the next session.
-  Do it even if the task isn't fully finished.
+  Do it even if the task isn't fully finished. Include the real `npm test`
+  result.
 - If you touched any `import`/`<script src>` line or added a new module:
   run `npm run check-versions`, then `npm run bump-version` if the change
   should invalidate caches.

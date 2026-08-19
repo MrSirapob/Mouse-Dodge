@@ -1,5 +1,49 @@
 # Changelog
 
+## Automated AI-development test suite
+- **Added `npm test` (`tests/**`).** A dependency-free regression suite
+  purpose-built as a development guardrail for AI agents editing this
+  codebase — not a player-facing feature. Before this, the only automated
+  check was the one-off `scripts/verify-bullethell-fix.mjs`.
+  - Imports and exercises the **real** `js/**` modules (`Game`,
+    `WaveSystem`, `PatternLibrary`, `Player`, `BulletManager`,
+    `SkillSystem`, `ItemSystem`, `LifeSystem`) — nothing is mocked or
+    reimplemented, so a FAIL reflects an actual behavior change in the
+    shipped code.
+  - Runs fully headless (no browser) via `tests/helpers/gameFactory.mjs`,
+    which constructs a real `Game` with the same `renderer`/`input`/`ui`
+    dependency-injection seam `js/main.js` already uses, plus minimal
+    inert DOM/`localStorage`/`performance` shims so Node doesn't choke on
+    `js/systems/devMode.js`'s module-level DOM touches.
+  - Deterministic: anything touching `Math.random()` runs under a seeded
+    PRNG (`tests/helpers/seededRandom.mjs`), so results don't vary run to
+    run.
+  - Covers: `CONFIG`/`GRAZE_REWARD` structure; the full wave/pattern
+    registry (W1-20 + boss waves); bullet spawn/cap/cleanup, including the
+    W1-4-only Bullet-Hell cap/cleanup tuning and the `wall`-bullet cap
+    bypass; `Player` movement/clamping/invulnerability; all 8 skills; all
+    4 item types; graze/combo/score math (including the graze-driven
+    skill-cooldown recovery cap); the full game-state lifecycle (reset,
+    life loss, COOP revive, Game Over, restart, pause); dev-panel
+    button/hotkey coverage (no dead references); presence of the required
+    AI-context docs; deterministic W1-4 density simulation with a
+    baseline-vs-±15%-tolerance regression check
+    (`tests/fixtures/balance-baseline.json`, generated from a real
+    simulation run, not hand-typed); wall/ring safe-gap geometry, pattern
+    overlap density, and boss-wave isolation from W1-4 tuning; and
+    end-to-end integration flows (wave transition, skill activation
+    through the real input wiring, a multi-bullet graze/combo sequence,
+    and the full game-over/revive/restart path).
+  - `npm test` / `npm run test:unit` / `npm run test:simulation` /
+    `npm run test:integration` / `npm run test:balance`. See
+    `tests/README.md` for the full structure, the Balance Baseline Policy,
+    and how to add a new test.
+  - Current status: 174 PASS / 0 FAIL / 1 WARN. The one WARN
+    (`WaveSystem.build(6)` producing an empty banner-subtitle label) is a
+    pre-existing, low-risk finding surfaced by the new coverage — not
+    something this pass changed — left as a flagged WARN rather than
+    "fixed" since it may be intentional; see `HANDOFF_LOG.md`.
+
 ## AI-to-AI handoff log
 - **Added `HANDOFF_LOG.md`.** A short, newest-first log of AI sessions —
   which tool (Claude, ChatGPT/Codex, ...), what it did, and what it flagged
