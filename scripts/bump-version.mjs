@@ -1,6 +1,18 @@
-// Rewrites every `?v=...` cache-busting query string in index.html and
-// js/**/*.js to a single new value, in one pass, so they can never drift out
-// of sync (see check-versions.mjs for why that matters).
+// Rewrites every `?v=...` cache-busting query string in index.html,
+// js/**/*.js, AND tests/**/*.mjs to a single new value, in one pass, so they
+// can never drift out of sync (see check-versions.mjs for why that matters).
+//
+// tests/**/*.mjs is included deliberately: those files import js/**/*.js
+// with the same `?v=` tag hard-coded (e.g.
+// `import { CONFIG } from '../../js/core/config.js?v=...'`). Node's ESM
+// loader treats a differently-tagged import specifier as a *different*
+// module instance, so if this script only bumped index.html/js/** and left
+// tests/** on the old tag, `CONFIG` (and anything else) imported by tests
+// would no longer be reference-equal to the `CONFIG` used by the bumped
+// source, breaking any test that does a reference/identity comparison —
+// a false FAIL that has nothing to do with the actual code change. (Hit for
+// real, see HANDOFF_LOG.md "Landmine found, not fixed" — this script is the
+// fix.)
 //
 // Usage:
 //   node scripts/bump-version.mjs              # auto-generates a value like 20260818a
@@ -8,7 +20,8 @@
 //   npm run bump-version -- mytag123
 //
 // After running, `npm run check-versions` should report a single consistent
-// version string.
+// version string, and `npm test` should still be all-PASS (no reference-
+// equality FAILs from a stale tag in tests/**).
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,12 +29,12 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
-function listJsFiles(dir) {
+function listFiles(dir, extensions) {
   const out = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...listJsFiles(full));
-    else if (entry.name.endsWith('.js')) out.push(full);
+    if (entry.isDirectory()) out.push(...listFiles(full, extensions));
+    else if (extensions.some((ext) => entry.name.endsWith(ext))) out.push(full);
   }
   return out;
 }
@@ -39,7 +52,11 @@ if (!/^[A-Za-z0-9_.-]+$/.test(newVersion)) {
   process.exit(1);
 }
 
-const files = [path.join(root, 'index.html'), ...listJsFiles(path.join(root, 'js'))];
+const files = [
+  path.join(root, 'index.html'),
+  ...listFiles(path.join(root, 'js'), ['.js']),
+  ...listFiles(path.join(root, 'tests'), ['.mjs']),
+];
 const versionRe = /\?v=[A-Za-z0-9_.-]+(&v=[A-Za-z0-9_.-]+)*/g;
 
 let changedFiles = 0;

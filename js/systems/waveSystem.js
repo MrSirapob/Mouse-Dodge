@@ -266,6 +266,15 @@ export class WaveSystem {
         break;
       case 6:
         // W6 — dense new gameplay set.
+        // Every pattern here is called directly on `this.p` (machineGunTop,
+        // crossfire, delayedBurst, movingSweep, ricochetField) instead of
+        // going through the wrapped closures above (aimed/ring/wall/...),
+        // so none of the usual labels.add(...) calls happen — that left the
+        // wave banner subtitle blank for W6 (flagged as a WARN by
+        // tests/unit/wave.test.mjs). Fixed by giving this pattern set its
+        // own banner label, consistent with every other wave tier.
+        labels.add("สายฝนเหล็กไร้ความปรานี");
+
         // Machine Gun: speed 10, tightly packed with a small controlled spread.
         this.p.machineGunTop(0.30, 220, 0.045, 10.0, 40, c1);
 

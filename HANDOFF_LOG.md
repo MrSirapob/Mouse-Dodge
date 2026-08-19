@@ -58,6 +58,44 @@ what changed, why, key numbers if any.
 ---
 
 ## 2026-08-19 — Claude (Sonnet 5, claude.ai)
+
+**Session 1 — closed out the 4 gaps flagged in the 2026-08-19 entry:**
+
+1. **Backfilled `CHANGELOG.md`.** The AIM tuning and Dev Mode SPEED work
+   from 2026-08-19 (sessions 2-4) were only in `HANDOFF_LOG.md`, which is
+   disposable — added proper permanent entries for both, plus entries for
+   the two fixes below, following the existing style.
+2. **Fixed the `bump-version` landmine** (flagged 2026-08-19, not fixed
+   then). `scripts/bump-version.mjs` and `scripts/check-versions.mjs` now
+   also walk `tests/**/*.mjs`, not just `index.html`/`js/**`, so a version
+   bump can no longer leave test imports on a stale `?v=` tag and cause
+   false reference-equality FAILs. Verified end-to-end: bumped to a test
+   tag, ran `check-versions` (single consistent tag) and `npm test` (0
+   FAIL), then bumped back to `20260814w10final`.
+3. **Fixed the W6 empty-banner-label WARN.** It was a bug, not intentional:
+   `case 6` in `WaveSystem.build(n)` called `this.p.xxx` directly for its
+   whole new pattern set instead of the wrapped closures that add banner
+   labels. Added a dedicated label for W6. `npm test` now shows 0 WARN.
+4. **Fixed the SPEED-row mobile wrap (cosmetic).** Added a
+   `#devSpeedRow`-specific flex-basis in the `max-width:600px`/`500px`
+   media queries in `css/main.css` so the 5 buttons stay on one row instead
+   of wrapping 2/2/1.
+
+**Files:** `CHANGELOG.md`, `scripts/bump-version.mjs`,
+`scripts/check-versions.mjs`, `js/systems/waveSystem.js`, `css/main.css`.
+
+**End-of-day test result:** `npm test` → **175 PASS / 0 FAIL / 0 WARN**
+(previously 174/0/1 — the W6 WARN is gone). `npm run check-versions` →
+PASS, single consistent tag `20260814w10final` across 48 occurrences /
+26 files (now including `tests/**`).
+
+**For the next session:** Nothing pending from this list. All 4 items from
+the 2026-08-19 handoff are closed. No open landmines or WARNs known at
+this time.
+
+---
+
+## 2026-08-19 — Claude (Sonnet 5, claude.ai)
 *(3 sessions this day, consolidated — see git history / prior log
 versions for the full blow-by-blow if ever needed.)*
 

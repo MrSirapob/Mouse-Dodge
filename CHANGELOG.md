@@ -1,5 +1,87 @@
 # Changelog
 
+## W1-4 AIM balance tuning
+- **Reduced AIM (`AIMED` pattern) density and raised its speed, W1-4 only.**
+  Per user feedback that the AIMED pattern felt too dense on the early
+  waves, added `aimCountMult`/`aimSpeedMult` knobs to `WaveSystem.build(n)`
+  (`js/systems/waveSystem.js`), applied only when `n <= 4`. Two tuning
+  passes: `aimCountMult` 1.0 → 0.8, then 0.8 → 0.64 after a follow-up
+  report that it was still too dense — a net ~36% fewer AIM projectiles on
+  W1-4. `aimSpeedMult` set to 1.08 (~8% faster) to keep the reduced
+  projectile count from feeling too easy.
+  - Every other pattern on W1-4, and every pattern (including `AIMED`) on
+    W5+ and boss waves (`bossAimed`), is untouched — the multipliers are
+    gated to `n <= 4` and only wrap the `aimed` closure.
+  - `tests/fixtures/balance-baseline.json` (the W1-4 density regression
+    baseline) was regenerated after each pass per `tests/README.md`'s
+    "Updating the baseline" — the old/new baseline numbers reflect the
+    intentional density change, not a regression.
+
+## Dev Mode game-speed control
+- **Added a selectable game-speed multiplier to Dev Mode.** Previously Dev
+  Mode's WAVE section only had skip-forward/back; there was no way to
+  practice at other than 1× speed. Added a SPEED panel section with 5
+  discrete levels — 0.5×, 1×, 1.5×, 2×, 3× — as buttons plus hotkeys `1`-`5`,
+  with the active level highlighted and mirrored in the status bar
+  (`devSpeedValue`).
+  - Implemented as `DevMode.timeScale` (default `1`), applied as a single
+    multiplier on the frame's raw `dt` in `Game.loop()` (`raw = ... *
+    (this.devMode?.timeScale ?? 1)`), so it uniformly scales movement,
+    spawns, timers, and animation.
+  - Deliberately kept separate from the Slow skill's `s.slowScale` — that's
+    a gameplay mechanic players earn; this is a practice-only dev tool,
+    isn't persisted, and isn't reachable without the existing F2 unlock.
+  - **Files:** `js/systems/devMode.js` (`SPEED_LEVELS`, panel markup,
+    hotkeys 1-5, `updateSpeedButtons()`, action handlers), `js/systems/
+    game.js` (`loop()` dt multiply), `css/main.css` (`.dev-speed-btn.active`,
+    plus a later fix — see "Dev Mode SPEED row mobile wrap" below — for the
+    5-button row on narrow screens).
+
+## `bump-version` / test-import version-tag mismatch (landmine fix)
+- **Fixed: `npm run bump-version` only rewrote `?v=` tags in `index.html`
+  and `js/**`, not `tests/**`.** `tests/**/*.mjs` hard-code the same `?v=`
+  tag in their own imports of `js/**` modules (e.g. `import { CONFIG } from
+  '../../js/core/config.js?v=...'`). Since Node's ESM loader treats
+  differently-tagged import specifiers as different module instances, a
+  routine version bump left tests importing a stale-tagged `js/core/
+  config.js` against source now on a new tag — any test using reference
+  equality on a `CONFIG`-derived object (`assertEqual`, not deep-equal)
+  started failing for reasons unrelated to the actual change (surfaced as 2
+  false FAILs in `bullet.test.mjs`/`bullethell-simulation.test.mjs` during
+  the session that found it; see `HANDOFF_LOG.md`'s 2026-08-19 entry for
+  the original repro).
+  - `scripts/bump-version.mjs` and `scripts/check-versions.mjs` now walk
+    `tests/**/*.mjs` in addition to `index.html`/`js/**/*.js`, so all three
+    stay in sync in one pass and `check-versions` will catch it if they
+    ever don't.
+  - Verified: bumping the version, running `npm run check-versions`, and
+    running `npm test` after the bump all report a single consistent tag
+    and 0 FAIL — no more false FAILs from a stale test-import tag.
+
+## W6 empty banner-subtitle fix
+- **Fixed: `WaveSystem.build(6)` produced an empty wave-banner subtitle.**
+  Flagged as a WARN (not FAIL) by `tests/unit/wave.test.mjs` since the test
+  suite was added, and left open pending a decision on whether it was
+  intentional. It wasn't: every W6 pattern call in that `case` block goes
+  directly through `this.p.xxx` (its own new pattern set — `machineGunTop`,
+  `crossfire`, `delayedBurst`, `movingSweep`, `ricochetField`) instead of
+  the wrapped local closures (`aimed`/`ring`/`wall`/...) that call
+  `labels.add(...)` — so no Thai lore label was ever added to the banner
+  for that wave, unlike every other tier. Added a dedicated label for W6's
+  pattern set (`labels.add("สายฝนเหล็กไร้ความปรานี")`) so the banner
+  subtitle is no longer blank. `npm test` now reports 0 WARN (previously
+  174 PASS / 0 FAIL / 1 WARN).
+
+## Dev Mode SPEED row mobile wrap (cosmetic)
+- **Fixed: the 5 SPEED buttons wrapped 2/2/1 on narrow mobile widths.** The
+  generic `#devPanel .dev-row button` mobile rule sizes every dev-panel
+  button to ~50% width (fine for the 2-3-button rows elsewhere), which left
+  the 5-button SPEED row wrapping unevenly. Added a `#devSpeedRow`-specific
+  rule (`@media (max-width:600px)`, tightened further at
+  `@media (max-width:500px)`) sizing those 5 buttons to ~20% width with
+  smaller padding/font, so they stay on one row. Purely cosmetic — the row
+  was already fully functional before this. **File:** `css/main.css`.
+
 ## Automated AI-development test suite
 - **Added `npm test` (`tests/**`).** A dependency-free regression suite
   purpose-built as a development guardrail for AI agents editing this

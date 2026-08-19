@@ -278,6 +278,9 @@
   #devPanel {bottom: 7px;width: calc(100vw - 12px);padding: 10px}
   #devPanel .dev-row button {min-width: 0;flex: 1 1 calc(50% - 6px)}
   #devPanel .dev-wave-btn {flex: 0 0 46px !important}
+  /* The 5 SPEED buttons wrap 2/2/1 under the generic 50%-basis rule above;
+     give #devSpeedRow its own ~20% basis so all 5 stay on one row. */
+  #devPanel #devSpeedRow button {flex: 1 1 calc(20% - 5px);min-width: 0;padding: 6px 3px;font-size: 9px}
   #hud {left: 3px !important;right: 3px !important;grid-template-columns: minmax(0,1fr) minmax(72px,82px) minmax(0,1fr) !important;gap: 9px !important}
   #hud .hud-p1 {gap: 6px !important}
   #hud .hud-p2 {gap: 6px !important}
@@ -308,6 +311,7 @@
   #devPanel {right: 6px;bottom: 6px;width: min(340px,calc(100vw - 12px))}
   #devPanel .dev-row {gap: 4px}
   #devPanel button {font-size: 7px;min-height: 28px;padding: 4px}
+  #devPanel #devSpeedRow button {padding: 4px 1px;font-size: 8px}
 }
 
 /* Responsive: @media (max-width:360px) */
