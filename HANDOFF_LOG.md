@@ -15,11 +15,20 @@ so you know what the last session was mid-way through or flagged for you.
 - **When you start a session:** read the newest entry (and any it points
   back to) before touching code.
 - **When you finish a session** (or hand off/run out of context — don't
-  wait until the whole task is "done"): add a new entry at the top with
-  today's date, using the template below. Always add one, even for small
-  fixes — a missing entry is exactly what breaks this for the next AI.
+  wait until the whole task is "done"): record what you did. Always add
+  one, even for small fixes — a missing entry is exactly what breaks this
+  for the next AI.
+- **Same-day entries:** if the newest entry is already dated today
+  (regardless of which AI/tool wrote it), do **not** create a new dated
+  header — append your session as an additional `**Session N — <short
+  label>:**` block inside that entry instead (bump N from whatever the
+  last block used), using the per-session template below. Otherwise,
+  start a new dated entry at the top using the full template below.
 - **Keep entries short.** Deep detail belongs in a `CHANGELOG.md` entry or
-  in code comments; link to those instead of repeating them here.
+  in code comments; link to those instead of repeating them here. When
+  adding a session block to an existing day, also fold its outcome into
+  that entry's shared "test result" / "for the next session" lines rather
+  than repeating a full set per session.
 - **Housekeeping:** once this file has ~15-20 entries, the oldest ones can
   be deleted (their useful content should already be in `CHANGELOG.md` by
   then) — this file is meant to stay short enough to read in one pass, not
@@ -27,115 +36,63 @@ so you know what the last session was mid-way through or flagged for you.
 
 ## Template
 
+New day (first session of the day):
 ```
 ## YYYY-MM-DD — <AI/tool name, e.g. "Claude (Sonnet 5, claude.ai)" or "ChatGPT (Codex CLI)">
-**Did:** one or two lines on what changed.
+
+**Session 1 — <short label>:** what changed, why, key numbers if any.
 **Files:** the main files touched.
+**End-of-day test result:** e.g. `npm test` output, if applicable.
 **For the next session:** anything unresolved, half-finished, or worth
-knowing before continuing — or "Nothing pending." if the task is fully done.
+knowing before continuing — or "Nothing pending." if fully done.
 ```
 
----
-
-## 2026-08-19 — Claude (Sonnet 5, claude.ai) [balance pass, part 2]
-**Did:** Follow-up to the AIM tuning pass below — user felt W1-4 AIM was
-still too dense, asked for another 20% cut. Changed `aimCountMult` in
-`js/systems/waveSystem.js` `build(n)` from `0.8` to `0.64` (0.8 × 0.8,
-i.e. another ~20% off the already-reduced count, ~36% off the original
-pre-tuning count). `aimSpeedMult` (1.08) unchanged. Still scoped to the
-AIMED pattern only, W1-4 only — same as before.
-
-Old vs new baseline (regenerated again, same procedure):
-- W1: peakActive 281→262, spawned 1062→1000
-- W2: peakActive 271→260, spawned 1120→1059
-- W3: spawned 1551→1515 (peakActive still capped at 420)
-- W4: peakActive 414→396, spawned 1849→1809
-
-`npm test`: 174 PASS / 0 FAIL / 1 WARN (same pre-existing, unrelated WARN).
-
-**Files:** `js/systems/waveSystem.js`, `tests/fixtures/balance-baseline.json`.
-**For the next session:** Nothing pending. If asked to cut AIM count yet
-again, just move `aimCountMult` further down — it's the single knob.
-
----
-
-## 2026-08-19 — Claude (Sonnet 5, claude.ai) [balance pass]
-**Did:** Intentional W1-4 AIM (`AIMED` pattern) tuning, per request: AIM
-projectile count down ~20% and AIM speed up ~8% on waves 1-4 only (both
-within the requested 15-25% / 5-10% bands). Implemented in
-`js/systems/waveSystem.js` `build(n)` by adding `aimCountMult` (0.8 when
-`n<=4`) and `aimSpeedMult` (1.08 when `n<=4`), applied only inside the
-local `aimed(...)` closure — so only the AIMED pattern is affected, only
-on W1-4; RING/WALL/SPIRAL/CROSS/LASER/HOMING/SPLITTER/BOUNCER and all W5+
-patterns (including the boss `bossAimed`) are untouched.
-
-Old vs new baseline (`tests/fixtures/balance-baseline.json`, regenerated
-per `tests/README.md` "Updating the baseline"):
-- W1: peakActive 299→281, spawned 1141→1062
-- W2: peakActive 305→271, spawned 1191→1120
-- W3: peakActive 420→420 (still capped), spawned 1593→1551
-- W4: peakActive 420→420 (still capped), spawned 1888→1849
-
-All drops fall inside the suite's own ±15% tolerance, so `npm test` is
-green (174 PASS / 0 FAIL / 1 WARN — the pre-existing W6 label WARN from
-the previous entry, unrelated to this change).
-
-**Files:** `js/systems/waveSystem.js`, `tests/fixtures/balance-baseline.json`.
-**For the next session:** Nothing pending on this change. The pre-existing
-W6 empty-banner-label WARN (see previous entry below) is still unresolved
-and unrelated.
+Same day, later session — insert inside the existing entry, right after
+its last `**Session N**` block, and update the shared "test result" /
+"for the next session" lines to reflect the latest state:
+```
+**Session N — <short label>, <AI/tool name if different from the entry's>:**
+what changed, why, key numbers if any.
+```
 
 ---
 
 ## 2026-08-19 — Claude (Sonnet 5, claude.ai)
-**Did:** Built the automated AI-development test suite (`npm test`) —
-previously the only regression check was the one-off
-`scripts/verify-bullethell-fix.mjs`. New suite covers unit-level checks
-(config shape, wave/pattern registry, bullet spawn/cap/cleanup, player
-movement/clamping, all 8 skills, all 4 item types, score/graze/combo math,
-game-state lifecycle, dev-mode command coverage, AI-doc presence),
-deterministic simulation (W1-4 density/progression, wall/ring safe-gap
-math, pattern overlap, boss isolation, baseline regression with ±15%
-tolerance), and integration flows (full wave transition, skill use
-end-to-end, graze→combo→score over real bullet motion, game-over/revive/
-restart). All tests import and exercise the real `js/**` modules — no
-mocks/reimplementations. `tests/helpers/gameFactory.mjs` builds a real
-`Game` headlessly via minimal DOM/localStorage/performance shims.
-`tests/fixtures/balance-baseline.json` was generated from an actual seeded
-simulation run, not hand-typed. Current result: **174 PASS / 0 FAIL / 1
-WARN** (see below), ~1.1s runtime.
+*(3 sessions this day, consolidated — see git history / prior log
+versions for the full blow-by-blow if ever needed.)*
 
-Two real (minor) findings surfaced along the way, left as-is per the "no
-gameplay changes in this pass" scope — flagged here instead:
-- W6's `WaveSystem.build(6)` returns an empty banner-subtitle label (its
-  case block calls `this.p.xxx(...)` pattern methods directly instead of
-  the wrapped local closures that populate the `labels` Set) — currently
-  a WARN in `tests/unit/wave.test.mjs`, not a FAIL, since it may be
-  intentional. Worth a deliberate decision in a future session.
-- No other dead references / structural issues found (dev-panel buttons,
-  hotkeys, and AI docs all check out clean).
+**Session 1 — built the test suite:** Added `npm test` (previously the
+only check was `scripts/verify-bullethell-fix.mjs`). Covers unit-level
+checks (config, wave/pattern registry, bullets, player, all 8 skills, all
+4 items, score/graze/combo, life/death/restart, dev-mode, AI-doc
+presence), deterministic simulation (W1-4 density, wall/ring safe-gap
+math, pattern overlap, boss isolation, ±15%-tolerance balance regression
+against a freshly-seeded `tests/fixtures/balance-baseline.json`), and
+integration flows (wave transition, skill use, graze→combo→score,
+game-over/revive/restart). All tests exercise the real `js/**` modules,
+no mocks. **Files:** `tests/**` (new), `package.json` (test scripts),
+`AGENTS.md` (new "Automated tests" section). One minor finding left
+as-is and flagged: W6's `build(6)` returns an empty banner label because
+it calls pattern methods directly instead of the wrapped closures — WARN,
+not FAIL, in `tests/unit/wave.test.mjs`.
 
-**Files:** `tests/**` (all new — see `tests/README.md` for the full
-layout), `package.json` (added `test`/`test:unit`/`test:simulation`/
-`test:integration`/`test:balance` scripts), `AGENTS.md` (updated: new
-"Automated tests" section, before/after-change workflow now includes
-`npm test`, replaced the outdated "No test framework" bullet).
-**Test result as of this entry:** `npm test` → **174 PASS, 0 FAIL, 1
-WARN** across STRUCTURE (Config, Wave & Pattern Registry), BULLET SYSTEM,
-LOGIC (Player), SKILLS, ITEMS, COMBAT (Score/Graze/Combo), LIFE/DEATH/
-RESTART/WAVE STATE, DEV MODE & AI DOCUMENTATION, BULLET HELL simulation
-(W1-4 + wall/ring safety), REGRESSION vs baseline, and all 4 INTEGRATION
-suites. `npm run check-versions` also still passes (test files carry the
-same `?v=` tag for consistency but are outside that script's scanned
-paths, by design).
-**For the next session:** Nothing pending on the test suite itself. If you
-touch `js/systems/waveSystem.js`, `js/patterns/patterns.js`,
-`js/systems/game.js`, `js/systems/skillSystem.js`,
-`js/systems/itemSystem.js`, or `js/entities/*` — run `npm test` before and
-after, per `AGENTS.md`. If a balance-regression FAIL shows up and it's an
-intentional design change, see `tests/README.md`'s "Balance Baseline
-Policy" before touching `tests/fixtures/balance-baseline.json`. The W6
-empty-label WARN above is a small, low-risk cleanup someone could pick up.
+**Sessions 2-3 — W1-4 AIM balance tuning:** Per user request, reduced
+AIM (`AIMED` pattern) projectile count and raised AIM speed on waves 1-4
+only — nothing else touched (other patterns, W5+, boss `bossAimed` all
+unaffected). Two passes: `aimCountMult` 1.0→0.8 (session 2), then
+0.8→0.64 after the user said it was still too dense (session 3) — net
+~36% fewer AIM projectiles on W1-4. `aimSpeedMult` set to 1.08 (~8%
+faster) in session 2, unchanged since. **Files:** `js/systems/waveSystem.js`
+(`aimCountMult`/`aimSpeedMult` in `build(n)`), `tests/fixtures/balance-baseline.json`
+(regenerated both times per `tests/README.md`'s "Updating the baseline").
+
+**End-of-day test result:** `npm test` → 174 PASS / 0 FAIL / 1 WARN (the
+W6 label WARN above; unrelated to the AIM changes).
+**For the next session:** Nothing pending. `aimCountMult`/`aimSpeedMult`
+in `waveSystem.js` `build(n)` are the single knobs for further AIM
+tuning — regenerate the baseline fixture after any change, per
+`tests/README.md`. The W6 empty-banner-label WARN is still an open,
+low-risk cleanup.
 
 ---
 
