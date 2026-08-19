@@ -1,5 +1,25 @@
 # Changelog
 
+## Doc/code mismatch: `AGENTS.md`'s "already clean" file list
+- **Fixed: `js/core/collision.js`, `js/entities/boss.js`, and
+  `js/rendering/particles.js` were still dense, single-line, semicolon-
+  chained code (short vars, no line breaks) — the exact style the
+  "Maintainability pass" (see below) reformatted everywhere else — but
+  `AGENTS.md` listed all three under files "already clean and
+  single-purpose" alongside `config.js`/`gameState.js`/`player.js`/etc.
+  That's a doc/code mismatch that could make a future session skip
+  reformatting them on the mistaken assumption they'd already been done.
+  Reformatted all three to the same multi-line, named-variable style as
+  the rest of the codebase; `AGENTS.md`'s file list is now accurate again.
+  - **Behavior is byte-for-byte unchanged** — verified by diffing the
+    whitespace-normalized token stream of each file against the original
+    before committing (only whitespace/comments/a trailing comma differ).
+  - `npm test` (175 PASS / 0 FAIL / 0 WARN), `npm run check-versions`, and
+    `node scripts/verify-bullethell-fix.mjs` all still pass after the
+    reformat.
+  - **Files:** `js/core/collision.js`, `js/entities/boss.js`,
+    `js/rendering/particles.js`.
+
 ## W1-4 AIM balance tuning
 - **Reduced AIM (`AIMED` pattern) density and raised its speed, W1-4 only.**
   Per user feedback that the AIMED pattern felt too dense on the early

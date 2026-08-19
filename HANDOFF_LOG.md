@@ -57,7 +57,7 @@ what changed, why, key numbers if any.
 
 ---
 
-## 2026-08-19 — Claude (Sonnet 5, claude.ai)
+## 2026-08-20 — Claude (Sonnet 5, claude.ai)
 
 **Session 1 — closed out the 4 gaps flagged in the 2026-08-19 entry:**
 
@@ -89,9 +89,44 @@ what changed, why, key numbers if any.
 PASS, single consistent tag `20260814w10final` across 48 occurrences /
 26 files (now including `tests/**`).
 
-**For the next session:** Nothing pending from this list. All 4 items from
-the 2026-08-19 handoff are closed. No open landmines or WARNs known at
-this time.
+**For the next session:** All 4 items from the 2026-08-19 handoff are
+closed. See Session 2 below for what the follow-up code review found.
+
+**Session 2 — code review + fixed the AGENTS.md doc/code mismatch it
+found:** Did a full code review of the project (all of `js/**`, plus the
+Session 1 changes). Found: (a) `js/core/collision.js`, `js/entities/
+boss.js`, `js/rendering/particles.js` were still dense single-line code,
+despite `AGENTS.md` listing them as "already clean" alongside `config.js`/
+`player.js`/etc — fixed this session, see CHANGELOG; (b) a minor indentation
+glitch in `js/systems/lifeSystem.js`'s `hit()` — cosmetic only, not fixed
+yet; (c) **Dev Mode SPEED (added 2026-08-19 Session 4) can cause bullet
+tunneling at 3× — flagged, not yet fixed, see below.**
+
+Reformatted the 3 mismatched files to the project's normal multi-line,
+named-variable style. Verified byte-for-byte behavior equivalence by
+diffing whitespace/comment-normalized tokens against the originals before
+applying, then confirmed with `npm test` / `check-versions` / the one-off
+`verify-bullethell-fix.mjs`. **Files:** `js/core/collision.js`,
+`js/entities/boss.js`, `js/rendering/particles.js`, `CHANGELOG.md`.
+
+**End-of-day test result:** `npm test` → 175 PASS / 0 FAIL / 0 WARN.
+`npm run check-versions` → PASS.
+
+**For the next session:** Two things from the review still open:
+1. **Bullet tunneling at high Dev Mode SPEED (3×).** `Game.loop()` clamps
+   raw frame dt to 0.05s *before* multiplying by `devMode.timeScale`, so at
+   3× the effective dt used for `updateBullets()`'s per-frame position
+   update (`b.x += b.vx * dt * 60`) can reach ~0.15s — fast bullets can move
+   further than the combined player+bullet collision radius in one frame
+   and skip the `circleHit()` check entirely (no swept/continuous
+   collision anywhere in the codebase). Dev-only, doesn't affect normal
+   gameplay (dt is never scaled above the 0.05s clamp there), but it means
+   testing balance at SPEED 3× isn't fully trustworthy — bullets can look
+   safer than they'd be at real speed. Not fixed yet; options discussed:
+   cap `timeScale` lower, or clamp/substep dt *after* applying timeScale
+   instead of before.
+2. `lifeSystem.js`'s `hit()` has a stray extra indent on one line
+   (cosmetic only, no behavior impact) — low priority cleanup.
 
 ---
 
