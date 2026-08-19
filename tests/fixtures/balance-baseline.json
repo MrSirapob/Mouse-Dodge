@@ -4,9 +4,9 @@
   "waves": {
     "wave1": {
       "cap": 420,
-      "peakActive": 281,
-      "averageActive": 177.39,
-      "spawned": 1062,
+      "peakActive": 262,
+      "averageActive": 163.76,
+      "spawned": 1000,
       "patterns": [
         "aimed",
         "cross",
@@ -18,9 +18,9 @@
     },
     "wave2": {
       "cap": 420,
-      "peakActive": 271,
-      "averageActive": 176.43,
-      "spawned": 1120,
+      "peakActive": 260,
+      "averageActive": 164.65,
+      "spawned": 1059,
       "patterns": [
         "aimed",
         "cross",
@@ -33,8 +33,8 @@
     "wave3": {
       "cap": 420,
       "peakActive": 420,
-      "averageActive": 213.05,
-      "spawned": 1551,
+      "averageActive": 204.72,
+      "spawned": 1515,
       "patterns": [
         "aimed",
         "cross",
@@ -47,9 +47,9 @@
     },
     "wave4": {
       "cap": 420,
-      "peakActive": 414,
-      "averageActive": 248.49,
-      "spawned": 1849,
+      "peakActive": 396,
+      "averageActive": 241.35,
+      "spawned": 1809,
       "patterns": [
         "aimed",
         "cross",

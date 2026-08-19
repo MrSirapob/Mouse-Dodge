@@ -85,11 +85,12 @@ export class WaveSystem {
     const c3 = this.color(n, 4);
     const labels = new Set();
 
-    // Wave 1-4 tuning pass: AIM count down ~20% (within the requested
-    // 15-25% band), AIM speed up ~8% (within the requested 5-10% band).
+    // Wave 1-4 tuning pass: AIM count down further (0.8 -> 0.64, i.e. an
+    // additional ~20% cut on top of the earlier ~20% cut, ~36% total off
+    // the original), AIM speed up ~8% (within the requested 5-10% band).
     // Only the AIMED pattern is touched; other patterns on W1-4 and every
     // pattern on W5+ are unaffected.
-    const aimCountMult = n <= 4 ? 0.8 : 1.0;
+    const aimCountMult = n <= 4 ? 0.64 : 1.0;
     const aimSpeedMult = n <= 4 ? 1.08 : 1.0;
 
     const aimed = (t, count, interval = 0.3, spd = 2.15, color = c1) => {

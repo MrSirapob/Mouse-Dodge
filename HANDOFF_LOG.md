@@ -37,6 +37,28 @@ knowing before continuing — or "Nothing pending." if the task is fully done.
 
 ---
 
+## 2026-08-19 — Claude (Sonnet 5, claude.ai) [balance pass, part 2]
+**Did:** Follow-up to the AIM tuning pass below — user felt W1-4 AIM was
+still too dense, asked for another 20% cut. Changed `aimCountMult` in
+`js/systems/waveSystem.js` `build(n)` from `0.8` to `0.64` (0.8 × 0.8,
+i.e. another ~20% off the already-reduced count, ~36% off the original
+pre-tuning count). `aimSpeedMult` (1.08) unchanged. Still scoped to the
+AIMED pattern only, W1-4 only — same as before.
+
+Old vs new baseline (regenerated again, same procedure):
+- W1: peakActive 281→262, spawned 1062→1000
+- W2: peakActive 271→260, spawned 1120→1059
+- W3: spawned 1551→1515 (peakActive still capped at 420)
+- W4: peakActive 414→396, spawned 1849→1809
+
+`npm test`: 174 PASS / 0 FAIL / 1 WARN (same pre-existing, unrelated WARN).
+
+**Files:** `js/systems/waveSystem.js`, `tests/fixtures/balance-baseline.json`.
+**For the next session:** Nothing pending. If asked to cut AIM count yet
+again, just move `aimCountMult` further down — it's the single knob.
+
+---
+
 ## 2026-08-19 — Claude (Sonnet 5, claude.ai) [balance pass]
 **Did:** Intentional W1-4 AIM (`AIMED` pattern) tuning, per request: AIM
 projectile count down ~20% and AIM speed up ~8% on waves 1-4 only (both
