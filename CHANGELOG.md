@@ -1,5 +1,41 @@
 # Changelog
 
+## Dev Mode SPEED bullet-tunneling fix (clamp-vs-scale ordering)
+- **Fixed: `Game.loop()` could produce a physics-unsafe dt at high Dev Mode
+  SPEED.** Flagged by code review (see "Doc/code mismatch" entry above,
+  same review pass) but not fixed at the time. The frame-time formula was
+  `Math.min(frameDt, 0.05) * timeScale` — clamping to the collision
+  model's 0.05s safety ceiling *before* applying Dev Mode's `timeScale`
+  multiplier. `updateBullets()` moves bullets with a single
+  `b.x += b.vx * dt * 60` position update per frame and checks collision
+  with a plain `circleHit()` (no swept/continuous collision anywhere in
+  the codebase), so that 0.05s ceiling is the effective contract the whole
+  collision model assumes. On a slow/stuttering frame (frameDt already
+  near 0.05s) combined with SPEED 3×, the old formula could produce an
+  effective dt up to 0.15s — enough for a fast bullet (or a
+  keyboard-controlled player) to skip clean past a collision radius in a
+  single step: real bullet tunneling. At a steady frame rate this rarely
+  showed up (3× × ~0.0167s ≈ the same 0.05s ceiling either way), which is
+  why it went unnoticed until reviewed deliberately.
+  - **Fix:** swap the order — `Math.min(frameDt * timeScale, 0.05)`, i.e.
+    scale first, then clamp. This is a no-op at any steady frame rate
+    (verified numerically: identical output to the old formula at 60fps
+    for timeScale 1 and 3) but now caps the effective dt to 0.05s
+    unconditionally, regardless of timeScale, eliminating the spike case.
+    Deliberately not a substep/multi-update refactor — the existing 0.05s
+    ceiling was already the game's established safety contract; this just
+    stops Dev Mode from being able to bypass it.
+  - **New regression test:** `tests/unit/game-loop-timescale.test.mjs`
+    drives the real `Game.loop()` with controlled `now`/`lastTime` and a
+    stubbed `update()` (to stay synchronous, no dangling
+    `requestAnimationFrame` recursion), covering steady-framerate and
+    stutter-frame cases at timeScale 1 and 3. Verified this test correctly
+    FAILs against the pre-fix formula (temporarily reverted, confirmed the
+    stutter+timeScale=3 case reports `dt: 0.15000000000000002` exceeding
+    the 0.05 ceiling) before restoring the fix. Registered in
+    `tests/run-all.mjs`'s `unit` category.
+  - **File:** `js/systems/game.js` (`loop()`).
+
 ## Doc/code mismatch: `AGENTS.md`'s "already clean" file list
 - **Fixed: `js/core/collision.js`, `js/entities/boss.js`, and
   `js/rendering/particles.js` were still dense, single-line, semicolon-

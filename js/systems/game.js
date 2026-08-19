@@ -904,7 +904,22 @@ export class Game {
   }
 
   loop(now) {
-    const raw = Math.min((now - this.lastTime) / 1000, 0.05) * (this.devMode?.timeScale ?? 1);
+    // The 0.05s ceiling below is the physics-safety cap the whole collision
+    // model is built around (see updateBullets(): b.x += b.vx * dt * 60,
+    // checked with a simple circleHit() — no swept/continuous collision).
+    // Dev Mode SPEED (this.devMode.timeScale) must be applied BEFORE that
+    // cap, not after: multiplying an already-capped dt by e.g. 3x lets the
+    // effective step reach 0.15s on a slow/stuttering frame, which is large
+    // enough for a fast bullet (or a keyboard-controlled player) to skip
+    // past a collision radius in a single step — real, if narrow, bullet
+    // tunneling. Scaling first means the final dt is clamped to the same
+    // 0.05s ceiling the rest of the game already assumes is safe,
+    // regardless of timeScale. At a steady frame rate this is a no-op (at
+    // 60fps, 3x timeScale already lands almost exactly on 0.05s either
+    // way) — it only changes behavior during a stutter/lag spike, which is
+    // exactly when the old ordering could exceed the safe ceiling.
+    const frameDt = (now - this.lastTime) / 1000;
+    const raw = Math.min(frameDt * (this.devMode?.timeScale ?? 1), 0.05);
     this.lastTime = now;
     if (this.state.state === GAME_STATES.PLAYING) this.update(raw);
     this.draw();

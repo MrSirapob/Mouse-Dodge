@@ -128,6 +128,30 @@ applying, then confirmed with `npm test` / `check-versions` / the one-off
 2. `lifeSystem.js`'s `hit()` has a stray extra indent on one line
    (cosmetic only, no behavior impact) — low priority cleanup.
 
+**Session 3 — fixed item 1 above (bullet tunneling at high Dev Mode SPEED):**
+Swapped the clamp/scale order in `Game.loop()` — `Math.min(frameDt *
+timeScale, 0.05)` instead of `Math.min(frameDt, 0.05) * timeScale` — so the
+effective dt can never exceed the collision model's existing 0.05s safety
+ceiling, regardless of `devMode.timeScale`. Confirmed numerically this is a
+no-op at any steady frame rate (identical output to the old formula at
+60fps for timeScale 1 and 3) and only changes behavior on a
+stutter/lag-spike frame, which is exactly the case that used to spike dt up
+to 0.15s. Added `tests/unit/game-loop-timescale.test.mjs` as a proper
+regression test — drives the real `Game.loop()` (not a reimplementation of
+its dt math), verified it correctly FAILs against the pre-fix formula
+(temporarily reverted to confirm, then restored) before considering this
+closed. Registered in `tests/run-all.mjs`. See CHANGELOG.md for full
+detail. **File:** `js/systems/game.js`, plus the new test file.
+
+**End-of-day test result (Session 3):** `npm test` → **179 PASS / 0 FAIL /
+0 WARN** (was 175/0/0 after Session 2 — +4 new tests, all passing).
+`npm run check-versions` → PASS, single consistent tag across 49
+occurrences / 27 files.
+
+**For the next session:** Only item 2 above (the cosmetic `lifeSystem.js`
+indentation glitch) is still open. No known landmines, WARNs, or
+correctness gaps at this time.
+
 ---
 
 ## 2026-08-19 — Claude (Sonnet 5, claude.ai)
