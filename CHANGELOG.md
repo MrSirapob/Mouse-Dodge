@@ -182,6 +182,20 @@
   - **Files:** `js/core/collision.js`, `js/entities/boss.js`,
     `js/rendering/particles.js`.
 
+## W3-4 AIM balance tuning (follow-up to the W1-4 pass below)
+- **Extra 20% AIM count cut, scoped to W3-4 only.** Per user feedback that
+  AIM still felt too dense specifically on W3-4 (W1-2 were fine as-is),
+  `aimCountMult` in `WaveSystem.build(n)` (`js/systems/waveSystem.js`)
+  is now `0.64` for `n <= 2` (unchanged) and `0.64 * 0.8 = 0.512` for
+  `n <= 4` (i.e. W3-4), a further ~20% cut on top of the existing W1-4
+  reduction — ~49% fewer AIM projectiles than the original count on W3-4
+  specifically. `aimSpeedMult` (1.08) is untouched and still applies to
+  all of W1-4.
+  - `tests/fixtures/balance-baseline.json` regenerated: wave3
+    `spawned` 1515 → 1481, `averageActive` 204.72 → 196.93; wave4
+    `spawned` 1809 → 1776, `peakActive` 396 → 385, `averageActive`
+    241.35 → 235.69. Wave1/wave2 numbers unchanged (they still use 0.64).
+
 ## W1-4 AIM balance tuning
 - **Reduced AIM (`AIMED` pattern) density and raised its speed, W1-4 only.**
   Per user feedback that the AIMED pattern felt too dense on the early

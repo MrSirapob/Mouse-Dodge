@@ -1,4 +1,4 @@
-import { CONFIG, actForWave } from "../core/config.js?v=20260820-ahyy";
+import { CONFIG, actForWave } from "../core/config.js?v=20260820-5vbq";
 
 /**
  * ========================= PATTERN GUIDE FOR AI =========================
@@ -94,7 +94,11 @@ export class WaveSystem {
     // the original), AIM speed up ~8% (within the requested 5-10% band).
     // Only the AIMED pattern is touched; other patterns on W1-4 and every
     // pattern on W5+ are unaffected.
-    const aimCountMult = n <= 4 ? 0.64 : 1.0;
+    // Follow-up (2026-08-20): W3-4 specifically felt like they still had
+    // too much AIM, so they get one more 20% cut on top of the shared
+    // W1-4 0.64 multiplier (0.64 * 0.8 = 0.512, ~49% off the original
+    // count). W1-2 stay at the existing 0.64.
+    const aimCountMult = n <= 2 ? 0.64 : n <= 4 ? 0.64 * 0.8 : 1.0;
     const aimSpeedMult = n <= 4 ? 1.08 : 1.0;
 
     // Per-wave bullet-count scaling (2026-08-20): W1 fires 30% fewer

@@ -59,6 +59,28 @@ what changed, why, key numbers if any.
 
 ## 2026-08-20 — Claude (Sonnet 5, claude.ai)
 
+**Session 10 — W3-4 AIM balance follow-up (user-requested):** User said
+AIM still felt too dense specifically on W3-4 (not W1-2). Added a second
+tier to `aimCountMult` in `WaveSystem.build(n)`: stays `0.64` for `n <= 2`,
+now `0.64 * 0.8 = 0.512` for `n <= 4` (W3-4 only) — a further ~20% cut,
+~49% off the original AIM count on W3-4. `aimSpeedMult` untouched.
+Regenerated `tests/fixtures/balance-baseline.json` (see CHANGELOG.md for
+exact before/after numbers) — wave1/wave2 entries unchanged since they
+still use 0.64. Ran `npm run bump-version` after (new tag
+`20260820-5vbq`), confirmed with `check-versions`. `npm test` → **179
+PASS / 0 FAIL / 0 WARN**.
+**Files:** `js/systems/waveSystem.js`, `tests/fixtures/balance-baseline.json`,
+`CHANGELOG.md`.
+**For the next session:** Nothing pending. Note the act-timing fix (boss
+wave keeps the previous act's theme; the flash/theme change now lands on
+the wave right after the boss, not on the boss wave's start —
+`actForWave` uses `floor((n-1)/5)`, and `Game.startWave()`'s flash trigger
+checks `actForWave(n) !== actForWave(n-1)`) is already live in the
+codebase but wasn't logged here or in CHANGELOG.md by whichever session
+made it — if you're touching that area, the code is the source of truth,
+not the Session 9 entry below (which still describes the older
+boss-start-triggered version).
+
 **Session 9 — Chapter-transition flash/shake (user-requested follow-up):**
 Added a one-off "the world just changed" cue on every boss wave (chapter
 banner moment). `Game.startWave()` now sets `state.actFlashAlpha = 1` +
