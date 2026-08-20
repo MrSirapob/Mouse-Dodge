@@ -23,14 +23,18 @@ export const CONFIG = {
   },
   lives: { max: 3, hitInvulnerability: 3.0, respawnInvulnerability: 1.0 },
   skills: {
-    pulse: { cooldown: 5, radius: 115 },
-    shield: { cooldown: 7, duration: 2.2 },
-    slow: { cooldown: 8, duration: 2.5, scale: 0.28 },
-    nova: { cooldown: 8, radius: 185, invulnerability: 0.35 },
-    timestop: { cooldown: 10, duration: 2.0 },
-    heal: { cooldown: 12 },
-    repulse: { cooldown: 8, radius: 190, force: 14.0, minPush: 8.0 },
-    phase: { cooldown: 9, duration: 2.0 },
+    // Buff pass (2026-08-20): cooldowns lowered and radii/durations raised
+    // across all 8 skills so they're useful against W1-4 Bullet Hell density
+    // and remain relevant through W7-10+. W1 already fires 50+ bullets in the
+    // first 2s, so skills need to feel impactful from the opening seconds.
+    pulse: { cooldown: 4, radius: 140 },
+    shield: { cooldown: 6, duration: 3.0 },
+    slow: { cooldown: 7, duration: 2.5, scale: 0.28 },
+    nova: { cooldown: 7, radius: 210, invulnerability: 0.55 },
+    timestop: { cooldown: 8, duration: 2.8 },
+    heal: { cooldown: 10 },
+    repulse: { cooldown: 7, radius: 190, force: 14.0, minPush: 8.0 },
+    phase: { cooldown: 7, duration: 2.5 },
   },
   revive: { duration: 2.0, radius: 46 },
   wave: {

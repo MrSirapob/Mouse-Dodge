@@ -92,6 +92,21 @@ PASS, single consistent tag `20260814w10final` across 48 occurrences /
 **For the next session:** All 4 items from the 2026-08-19 handoff are
 closed. See Session 2 below for what the follow-up code review found.
 
+**Session 5 — skill balance buff (user-requested):** Buffed all 8 skills in
+`CONFIG.skills` so they're useful against W1-4 Bullet Hell density and
+remain impactful into W7-10+. W1 now fires 50+ bullets in the first 2s;
+old values were too weak to matter. Changes (all in `js/core/config.js`):
+`pulse` cooldown 5→4, radius 115→140; `shield` cooldown 7→6, duration
+2.2→3.0; `slow` cooldown 8→7 (duration unchanged); `nova` cooldown 8→7,
+radius 185→210, invuln 0.35→0.55; `timestop` cooldown 10→8, duration
+2.0→2.8; `heal` cooldown 12→10; `repulse` cooldown 8→7 (radius/force
+unchanged); `phase` cooldown 9→7, duration 2.0→2.5. No behavior changes —
+numbers only. All tests still PASS (skill tests read from CONFIG directly
+so no hardcoded values to update).
+**Files:** `js/core/config.js`.
+**End-of-session test result:** `npm test` → **179 PASS / 0 FAIL / 0 WARN**
+(unchanged count — no new tests added, no existing ones broken).
+
 **Session 2 — code review + fixed the AGENTS.md doc/code mismatch it
 found:** Did a full code review of the project (all of `js/**`, plus the
 Session 1 changes). Found: (a) `js/core/collision.js`, `js/entities/
