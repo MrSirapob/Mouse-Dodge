@@ -59,6 +59,9 @@ what changed, why, key numbers if any.
 
 ## 2026-08-20 — Claude (Sonnet 5, claude.ai)
 
+**Session 4 — edgeSplitter pattern (user-requested fairness fix):** Replaced `explodeNearPlayer` everywhere in `waveSystem.js` (W7, W8, W9, W10 boss ×2) with a new `edgeSplitter()` in `patterns.js`. The old pattern spawned splitter bullets directly beside the player (radius 65-78px away) with no warning — effectively undodgeable. The new method spawns the same splitter-type bullet from a random screen edge aimed at the player (with ±0.18 rad spread), giving the player a clear read and time to react. Bullet radius bumped 6→9 so it's more visible; splitCount 6→8. `explodeNearPlayer` is kept in the library (marked LEGACY) so nothing silently breaks. `npm test` → **179 PASS / 0 FAIL / 0 WARN**.
+**Files:** `js/patterns/patterns.js`, `js/systems/waveSystem.js`.
+
 **Session 3 — W5 boss canvas-stack bug fix (Antigravity/Claude):** Fixed the root cause of W5 boss bullets appearing to come from the wrong position / not originating from the boss. The `drawBoss()` W5 branch in `js/rendering/renderer.js` had an orphaned `c.restore()` at the end (no matching `c.save()`) which popped the viewport transform set by `begin()` off the canvas state stack. This meant every drawing call *after* the boss (bullets, players, particles) was rendered without the world-space scale/translate, causing them to appear at incorrect screen positions. Fix: wrapped the "core glow + main core + inner ring + eye" block in a matching `c.save()` / `c.restore()` pair. The three earlier rotate/translate blocks already had correct pairs; only this last un-transformed section was missing its save. `npm test` → **179 PASS / 0 FAIL / 0 WARN** (unchanged from before).
 **Files:** `js/rendering/renderer.js`.
 

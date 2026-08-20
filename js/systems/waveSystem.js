@@ -305,7 +305,7 @@ export class WaveSystem {
         wall(7.0, 11.0, c1, false, 0.07);
         wall(8.8, 10.0, c2, true, 0.08);
         this.p.curvingSplit(10.0, 14, 0.45, 4.3, c2);
-        this.p.explodeNearPlayer(13.0, 7, 0.35, 70, 4.0, c3);
+        this.p.edgeSplitter(13.0, 7, 0.35, 4.0, c3);
         bouncer(14.0, 16, 0.42, 4.4, c1);
         this.p.stopAndGo(18.0, 20, 0.22, 5.4, 1.8, 0.55, c2, true);
         spiral(23.0, 8.5, 4, 4.4, c1);
@@ -326,7 +326,7 @@ export class WaveSystem {
         this.p.sineRain(22.0, 28, 0.14, 2.35, 145, 0.85, c2, false);
         bouncer(26.0, 16, 0.38, 2.3, c1);
         this.p.curvingSplit(30.0, 16, 0.38, 2.25, c3);
-        this.p.explodeNearPlayer(33.0, 8, 0.3, 65, 4.2, c2);
+        this.p.edgeSplitter(33.0, 8, 0.3, 4.2, c2);
         aimed(34.0, 54, 0.14, 2.9, c1);
         laser(37.0, 7, 0.5, c3);
         break;
@@ -340,7 +340,7 @@ export class WaveSystem {
         wall(12.6, 5.2, c1, true, 0.07);
         this.p.reverseRain(12.0, 26, 0.17, 5.2, 1.35, c2, false);
         this.p.orbitBurst(16.0, 22, 0.16, 120, 2.2, 1.8, c1);
-        this.p.explodeNearPlayer(19.0, 9, 0.28, 75, 4.5, c3);
+        this.p.edgeSplitter(19.0, 9, 0.28, 4.5, c3);
         splitter(20.0, 12, 0.42, 4.4, c2);
         ring(23.0, 640, 360, 50, 5.6, c2);
         this.p.accelerateRain(27.0, 26, 0.14, 1.6, 2.2, c3, true);
@@ -510,7 +510,7 @@ export class WaveSystem {
 
       // PHASE 2
       this.p.bossRing(13.0, 62, 2.9, c2);
-      this.p.explodeNearPlayer(15.0, 10, 0.32, 78, 3.8, c3);
+      this.p.edgeSplitter(15.0, 10, 0.32, 3.8, c3);
 
       // PHASE 2 SIGNATURE: perimeter formation only.
       this.p.bossPerimeterCrossfire(17.0, 5.0, 12, 0.48, 2.3, c1);
@@ -527,7 +527,7 @@ export class WaveSystem {
       this.p.machineGunTop(38.0, 52, 0.09, 5.2, 0.7, c1);
       this.p.movingSweep(41.0, 2, 0.0, 2.8, c2);
       this.p.machineGunTop(44.0, 58, 0.075, 5.5, 0.8, c1);
-      this.p.explodeNearPlayer(47.0, 8, 0.3, 72, 4.1, c3);
+      this.p.edgeSplitter(47.0, 8, 0.3, 4.1, c3);
       this.p.bossRing(48.0, 58, 3.0, c2);
 
       // PHASE 5 — final perimeter formation, again SOLO.

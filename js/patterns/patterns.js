@@ -396,6 +396,11 @@ export class PatternLibrary {
   }
 
 
+  /**
+   * LEGACY — spawns splitter bullets directly beside the player, which is
+   * unreadable and hard to dodge. Replaced by edgeSplitter() everywhere.
+   * Kept here so old call sites don't silently break if referenced elsewhere.
+   */
   explodeNearPlayer(start, count, interval, radius, speed, color) {
     for (let i = 0; i < count; i++) {
       this.game.queue(start + i * interval, () => {
@@ -413,6 +418,43 @@ export class PatternLibrary {
           { splitter: true, splitDelay: 0.65, splitCount: 6 }
         );
       });
+    }
+  }
+
+  /**
+   * Fires splitter projectiles from a random screen edge aimed at the nearest
+   * player (with a small random spread). Each bullet is large and visible, then
+   * splits into a 8-way burst after a short travel time. Unlike explodeNearPlayer,
+   * the player always has time to see the bullet coming from the edge and dodge.
+   *
+   * Parameters match the signature of aimed()/homing() for easy substitution:
+   *   start    — wave time (s) to fire the first shot
+   *   count    — total number of projectiles
+   *   interval — seconds between each shot
+   *   speed    — travel speed (world units/s / 60)
+   *   color    — bullet color
+   */
+  edgeSplitter(start, count, interval, speed, color) {
+    for (let i = 0; i < count; i++) {
+      const fire = () => {
+        if (this.game.dangerAssistDelay()) {
+          this.game.queue(this.game.state.waveTime + 0.10, fire);
+          return;
+        }
+        const [x, y] = this.sideSpawn();
+        const target = this.targetPlayer(x, y);
+        // Small random spread so consecutive shots aren't perfectly stacked.
+        const spread = -0.18 + Math.random() * 0.36;
+        const angle = Math.atan2(target.y - y, target.x - x) + spread;
+        this.game.spawnBullet(
+          x, y,
+          Math.cos(angle) * speed,
+          Math.sin(angle) * speed,
+          9, color,
+          { splitter: true, splitDelay: 0.75, splitCount: 8 }
+        );
+      };
+      this.game.queue(start + i * interval, fire);
     }
   }
 
