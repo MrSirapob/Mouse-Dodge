@@ -449,12 +449,19 @@ export class Game {
       this.boss.active = true;
       this.ui.setBossVisible(true);
       this.ui.setBossName(this.boss.name);
+    }
 
-      // Chapter-transition cue (user-requested follow-up to the act
-      // theming): a brief full-screen flash tinted to the new act's
-      // accent color, plus a shake burst, so a new story chapter reads as
-      // "the world just changed" rather than only new banner text. Decays
-      // the same way the existing damage flash/shake do — see draw().
+    // Chapter-transition cue (user-requested follow-up to the act
+    // theming): a brief full-screen flash tinted to the new act's
+    // accent color, plus a shake burst, so a new story chapter reads as
+    // "the world just changed" rather than only new banner text. Decays
+    // the same way the existing damage flash/shake do — see draw().
+    // Fires when the act actually changes — i.e. the wave right after a
+    // boss is defeated (actForWave shifted the boundary there, see
+    // config.js) — not when the boss wave itself starts. `n > 1` guards
+    // the very first wave, where there's no previous act to transition
+    // from.
+    if (n > 1 && actForWave(n) !== actForWave(n - 1)) {
       this.state.actFlashColor = hexToRgb(CONFIG.actThemes[actForWave(n)].accent);
       this.state.actFlashAlpha = 1;
       this.state.shakeMag = Math.max(this.state.shakeMag, 14);

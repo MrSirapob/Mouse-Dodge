@@ -207,11 +207,13 @@ export const CONFIG = {
 
 /**
  * Maps a wave number to its narrative act index (0-4) — see
- * `CONFIG.actThemes` above. Act boundaries line up exactly with boss waves
- * (5/10/15/20) so the palette/background shift lands on the same wave the
- * chapter banner does. Capped at 4 so every endless wave past 20 stays in
- * the final "void" act.
+ * `CONFIG.actThemes` above. The boss wave itself (5/10/15/20) still plays
+ * out in the PREVIOUS act's theme; the palette/background only shifts once
+ * that boss is cleared and the next wave (6/11/16/21) begins, so the world
+ * visually changes right after the boss falls rather than the moment it
+ * appears. Capped at 4 so every endless wave past 20 stays in the final
+ * "void" act.
  */
 export function actForWave(n) {
-  return Math.min(4, Math.floor(n / 5));
+  return Math.min(4, Math.floor((n - 1) / 5));
 }
