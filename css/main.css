@@ -42,6 +42,9 @@
   .player-score {padding: 5px 7px}
   .player-score b {font-size: 11px}
   #downBanner {top: 16%;padding: 10px 16px}
+  #noHitBanner {width: min(92vw,620px);padding: 15px 18px}
+  #noHitTitle {font-size: clamp(28px,8vw,42px)}
+  #noHitSubtitle {font-size: 12px;margin-top: 5px}
   .score-results b {font-size: 16px}
   .team-result b {font-size: 20px}
   .chip.lives {flex-basis: 104px;min-width: 104px;width: 104px}
@@ -351,6 +354,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   #waveBanner.wave-show {animation: none;opacity: 1}
+  #noHitBanner.no-hit-show {animation: none;opacity: 1}
 }
 
 /* BASE / RESET */
@@ -765,3 +769,13 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 #waveTitle {font-size: clamp(38px,7vw,60px);line-height: 1;font-weight: 800;letter-spacing: 4px}
 #waveTitle.boss-title {color: var(--danger) !important}
 #waveSubtitle {font-size: clamp(14px,2vw,18px);color: var(--gold);margin-top: 10px}
+
+/* "No Hit" wave-clear bonus banner — same size/position/fade as
+   #waveBanner so it reads as a matching pair. game.js sequences the two:
+   this shows first (see CONFIG.noHit.displayMs), then it's replaced by the
+   next wave's #waveBanner once this one is fully gone — see
+   beginWaveTransition()'s extraDelay in game.js. */
+#noHitBanner {--no-hit-ms: 1600ms;position: absolute;z-index: 20;top: 50%;left: 50%;transform: translate(-50%,-50%);width: min(88vw,760px);padding: 18px 28px;border: 1px solid rgba(255,217,61,.34);border-radius: 16px;background: rgba(5,7,14,.72);backdrop-filter: blur(7px);box-shadow: 0 12px 40px rgba(0,0,0,.35);text-align: center;color: #fff;text-shadow: 0 0 24px rgba(255,217,61,.45),2px 2px 4px #000;opacity: 0;visibility: hidden;pointer-events: none}
+#noHitBanner.no-hit-show {visibility: visible;animation: waveBannerFade var(--no-hit-ms) ease-in-out both}
+#noHitTitle {font-size: clamp(38px,7vw,60px);line-height: 1;font-weight: 800;letter-spacing: 4px;color: var(--gold)}
+#noHitSubtitle {font-size: clamp(14px,2vw,18px);color: #fff;margin-top: 10px;font-weight: 700}

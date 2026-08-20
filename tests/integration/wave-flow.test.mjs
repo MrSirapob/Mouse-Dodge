@@ -64,7 +64,13 @@ export async function run() {
     tick(game, 1); // draining -> transition
     assertEqual(game.state.wavePhase, 'transition', 'precondition: transition');
 
-    const ticksForTransition = Math.ceil((CONFIG.wave.transition + 0.1) * 60);
+    // Wave 1 is cleared without taking a hit, so the "No Hit" banner adds
+    // CONFIG.noHit.displayMs on top of the normal wave.transition gap
+    // (see beginWaveTransition()'s extraDelay in game.js) before the next
+    // wave starts.
+    const ticksForTransition = Math.ceil(
+      (CONFIG.wave.transition + CONFIG.noHit.displayMs / 1000 + 0.1) * 60,
+    );
     tick(game, ticksForTransition);
 
     assertEqual(game.state.wave, 2, 'the game should have advanced to wave 2 once the transition timer elapsed', {
@@ -80,7 +86,7 @@ export async function run() {
     tick(game, 1);
     game.bullets.clear();
     tick(game, 1);
-    tick(game, Math.ceil((CONFIG.wave.transition + 0.1) * 60));
+    tick(game, Math.ceil((CONFIG.wave.transition + CONFIG.noHit.displayMs / 1000 + 0.1) * 60)); // includes the "No Hit" banner delay — see wave-flow test above
 
     assertEqual(game.state.wave, 2, 'precondition: reached wave 2');
     assert(game.state.waveTime < 0, "wave 2 should start with a negative waveTime (the banner delay), not carry over W1's elapsed waveTime", {
@@ -101,7 +107,7 @@ export async function run() {
     tick(game, 1);
     game.bullets.clear();
     tick(game, 1);
-    tick(game, Math.ceil((CONFIG.wave.transition + 0.1) * 60));
+    tick(game, Math.ceil((CONFIG.wave.transition + CONFIG.noHit.displayMs / 1000 + 0.1) * 60)); // includes the "No Hit" banner delay — see wave-flow test above
 
     assertEqual(game.state.wave, 2, 'precondition: reached wave 2');
     assertEqual(player.lives, 2, 'player lives must be unaffected by a wave transition');

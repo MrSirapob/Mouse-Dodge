@@ -113,6 +113,7 @@ export function makeFakeUI() {
     showPause: record('showPause'),
     returnToMenu: record('returnToMenu'),
     showGameOver: record('showGameOver'),
+    showNoHitBanner: record('showNoHitBanner'),
     flashSkill: record('flashSkill'),
     resultScreen: null,
   };

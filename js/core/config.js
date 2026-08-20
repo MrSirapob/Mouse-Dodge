@@ -88,6 +88,18 @@ export const CONFIG = {
     },
   },
   combo: { window: 1.1 },
+  // "No Hit" wave-clear bonus: awarded per-player (coop counts each player
+  // independently) when that player takes zero damage during a wave.
+  // Scales up on later waves: bonus(n) = base + perWaveAfterFirst * (n - 1).
+  noHit: {
+    base: 500,
+    perWaveAfterFirst: 40,
+    // How long the big "NO HIT" banner stays on screen before the next
+    // wave's #waveBanner is allowed to appear (see beginWaveTransition in
+    // game.js — it adds this on top of the normal wave.transition gap so
+    // the two banners show one after another, never overlapping).
+    displayMs: 1600,
+  },
   rank: {
     // Score thresholds for the end-of-run rank.
     thresholds: [

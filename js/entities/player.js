@@ -20,6 +20,10 @@ export class Player {
     this.down = false;
     this.reviveProgress = 0;
     this.score = 0;
+    // Cleared at the start of every wave (see Game.startWave); set true the
+    // moment this player takes a hit, so wave-clear can check it for the
+    // "No Hit" bonus. Independent per player — coop tracks each separately.
+    this.tookHitThisWave = false;
     this.grazeCount = 0;
     this.combo = 0;
     this.comboTimer = 0;

@@ -410,6 +410,11 @@ export class Game {
     this.state.wave = n;
     this.state.waveTime = 0;
 
+    // Fresh "No Hit" tracking for this wave — both players, regardless of
+    // mode, so a solo P2 slot or a revived coop player never carries a
+    // stale flag into the new wave.
+    this.players.forEach((p) => { p.tookHitThisWave = false; });
+
     this.ringWarnings = [];
     this.lasers = [];
     this.actionQueue = [];
@@ -439,10 +444,10 @@ export class Game {
     }
   }
 
-  beginWaveTransition(n) {
+  beginWaveTransition(n, extraDelay = 0) {
     // Called only after the previous wave has fully drained.
     this.state.wavePhase = 'transition';
-    this.state.waveTransition = CONFIG.wave.transition;
+    this.state.waveTransition = CONFIG.wave.transition + extraDelay;
     this.state.transitionWave = n;
 }
 
@@ -469,7 +474,40 @@ export class Game {
 
   hitPlayer(player) {
     if (player.devInvulnerable) return false;
-    return this.lifeSystem.hit(player);
+    const hit = this.lifeSystem.hit(player);
+    if (hit) player.tookHitThisWave = true;
+    return hit;
+  }
+
+  /** Score bonus for clearing wave `n` without taking a hit — grows with wave number. */
+  noHitBonus(n) {
+    return Math.round(
+      CONFIG.noHit.base + CONFIG.noHit.perWaveAfterFirst * Math.max(0, n - 1),
+    );
+  }
+
+  /**
+   * Checked once per wave, right as it clears (before advancing to the next
+   * wave / game over). Awards each player who took zero damage this wave
+   * its own "No Hit" bonus — independent per player in coop — and shows a
+   * banner if anyone qualified. Returns true if the banner was shown, so
+   * the caller can hold off on the next wave's banner until it's done.
+   */
+  awardNoHitBonuses(waveNumber) {
+    const bonus = this.noHitBonus(waveNumber);
+    const eligible = (
+      this.state.mode === GAME_MODES.SOLO ? [this.players[0]] : this.players
+    ).filter((p) => p.isAlive() && !p.tookHitThisWave);
+    if (eligible.length === 0) return false;
+
+    for (const p of eligible) p.score += bonus;
+
+    const labels =
+      this.state.mode === GAME_MODES.COOP
+        ? eligible.map((p) => (p === this.players[0] ? "P1" : "P2"))
+        : [];
+    this.ui.showNoHitBanner?.(labels, bonus);
+    return true;
   }
 
   resetBestStats() {
@@ -584,11 +622,18 @@ export class Game {
     // Do not start the next wave until every object from this wave has
     // naturally left/finished.
     if (s.wavePhase === 'draining' && this.isWaveClear()) {
+      const showedNoHit = this.awardNoHitBonuses(s.wave);
       if (s.wave >= 20) {
         this.gameOver();
         return;
       }
-      this.beginWaveTransition(s.wave + 1);
+      // If the No Hit banner is showing, hold the next wave's banner back
+      // until it's fully done (see CONFIG.noHit.displayMs) so the two never
+      // overlap — No Hit first, then WAVE X.
+      this.beginWaveTransition(
+        s.wave + 1,
+        showedNoHit ? CONFIG.noHit.displayMs / 1000 : 0,
+      );
       return;
     }
 

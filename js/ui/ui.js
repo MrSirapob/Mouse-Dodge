@@ -215,6 +215,9 @@ export class UI {
       p2SkillChip: document.getElementById("p2SkillChip"),
       p2Lives: document.getElementById("p2Lives"),
       downBanner: document.getElementById("downBanner"),
+      noHitBanner: document.getElementById("noHitBanner"),
+      noHitTitle: document.getElementById("noHitTitle"),
+      noHitSubtitle: document.getElementById("noHitSubtitle"),
       comboChip: document.getElementById("comboChip"),
       comboVal: document.getElementById("comboVal"),
     };
@@ -648,6 +651,40 @@ export class UI {
       () => this.bannerEl.classList.remove("wave-show"),
       displayMs,
     );
+  }
+
+  /**
+   * Shows the big "No Hit" wave-clear bonus banner — same size/position/fade
+   * as banner()'s #waveBanner, just a separate element so game.js can time
+   * the two to appear one after another (No Hit first, then WAVE X) instead
+   * of overlapping. `labels` is empty in solo ("NO HIT"), or a list like
+   * ["P1"] / ["P1","P2"] in coop when one or both players independently
+   * cleared the wave without taking a hit.
+   */
+  showNoHitBanner(labels, bonus) {
+    if (!this.el.noHitBanner || !this.el.noHitTitle) return;
+
+    this.el.noHitTitle.textContent = labels.length
+      ? `${labels.join(" & ")} NO HIT`
+      : "NO HIT";
+    if (this.el.noHitSubtitle)
+      this.el.noHitSubtitle.textContent = `+${Math.round(bonus).toLocaleString()} SCORE`;
+
+    const displayMs = CONFIG.noHit.displayMs;
+    clearTimeout(this.noHitBannerTimer);
+    this.el.noHitBanner.classList.remove("hidden");
+    this.el.noHitBanner.classList.remove("no-hit-show");
+    this.el.noHitBanner.style.setProperty("--no-hit-ms", `${displayMs}ms`);
+    // Force a fresh animation frame so back-to-back No Hit waves each replay
+    // the fade instead of the browser coalescing the class toggle away.
+    void this.el.noHitBanner.offsetWidth;
+    requestAnimationFrame(() =>
+      this.el.noHitBanner.classList.add("no-hit-show"),
+    );
+    this.noHitBannerTimer = setTimeout(() => {
+      this.el.noHitBanner.classList.remove("no-hit-show");
+      this.el.noHitBanner.classList.add("hidden");
+    }, displayMs);
   }
 
   // --- Per-frame HUD update -------------------------------------------------
