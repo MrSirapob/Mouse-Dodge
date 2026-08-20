@@ -6,6 +6,7 @@ export class Boss {
     this.r = 34;
     this.hue = 0;
     this.name = '';
+    this.wave = 0;
   }
   reset() {
     this.active = false;
@@ -13,5 +14,6 @@ export class Boss {
     this.y = 0;
     this.hue = 0;
     this.name = '';
+    this.wave = 0;
   }
 }

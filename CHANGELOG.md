@@ -451,3 +451,15 @@ between old and new files).
 - Split this changelog out of `README.md` so the README stays focused on
   current architecture and "how to extend" guidance rather than growing
   indefinitely with version notes.
+
+### 2026-08-20 — W5 boss visual alignment
+- Kept the W5 boss core radius exactly tied to `Boss.r` so the visible core matches the existing collision and bullet spawn origin.
+- Reduced/anchored the surrounding seal and rune geometry to visual-only offsets around that core.
+- Added code comments documenting that the visual pulse must not change the gameplay-facing core size.
+
+## 2026-08-20 — W5 boss firing origin alignment
+- Added a shared `spawnBossBullet()` helper in `js/patterns/patterns.js`.
+- W5 boss ring/spiral/aimed/homing projectiles now begin just outside the boss core along their firing direction.
+- Kept `Boss.x`, `Boss.y`, `Boss.r`, hitbox behavior, and attack angles unchanged.
+- Documented the change in `HANDOFF_LOG.md` for the next AI/editor handoff.
+- Verification: `npm test` => 179 PASS, 0 FAIL, 0 WARN.

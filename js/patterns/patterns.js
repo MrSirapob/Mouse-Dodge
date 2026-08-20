@@ -25,6 +25,29 @@ export class PatternLibrary {
     );
   }
 
+  /**
+   * Spawns a boss projectile from the visible core edge instead of the boss
+   * center. The boss position remains the single source of truth, while the
+   * projectile starts just outside the core along its travel direction.
+   * This keeps the firing point visually aligned with the W5 boss artwork
+   * and prevents bullets from appearing to originate inside/off-center.
+   */
+  spawnBossBullet(angle, speed, radius, color, opts = {}) {
+    const boss = this.game.boss;
+    const offset = boss.r + radius + 2;
+    const x = boss.x + Math.cos(angle) * offset;
+    const y = boss.y + Math.sin(angle) * offset;
+    this.game.spawnBullet(
+      x,
+      y,
+      Math.cos(angle) * speed,
+      Math.sin(angle) * speed,
+      radius,
+      color,
+      opts
+    );
+  }
+
   /** Picks a random point just outside one of the four arena edges. */
   sideSpawn() {
     const side = Math.floor(Math.random() * 4);
@@ -525,7 +548,7 @@ export class PatternLibrary {
         const angle = (Math.PI * 2 * i) / count;
         const delta = Math.atan2(Math.sin(angle - gapAngle), Math.cos(angle - gapAngle));
         if (Math.abs(delta) < gapWidth) continue;
-        this.game.spawnBullet(this.game.boss.x, this.game.boss.y, Math.cos(angle) * speed, Math.sin(angle) * speed, 5, color);
+        this.spawnBossBullet(angle, speed, 5, color);
       }
     });
   }
@@ -552,14 +575,7 @@ export class PatternLibrary {
         const baseAngle = i * 0.3;
         for (let a = 0; a < arms; a++) {
           const angle = baseAngle + (Math.PI * 2 * a) / arms;
-          this.game.spawnBullet(
-            this.game.boss.x,
-            this.game.boss.y,
-            Math.cos(angle) * speed,
-            Math.sin(angle) * speed,
-            5,
-            color
-          );
+          this.spawnBossBullet(angle, speed, 5, color);
         }
       });
     }
@@ -569,7 +585,7 @@ export class PatternLibrary {
       this.game.queue(start + i * interval, () => {
         const target = this.targetPlayer(this.game.boss.x, this.game.boss.y);
         const angle = Math.atan2(target.y - this.game.boss.y, target.x - this.game.boss.x) + (-0.15 + Math.random() * 0.3);
-        this.game.spawnBullet(this.game.boss.x, this.game.boss.y, Math.cos(angle) * speed, Math.sin(angle) * speed, 7, color);
+        this.spawnBossBullet(angle, speed, 7, color);
       });
     }
   }
@@ -580,7 +596,7 @@ export class PatternLibrary {
       this.game.queue(start + i * interval, () => {
         const target = this.targetPlayer(this.game.boss.x, this.game.boss.y);
         const angle = Math.atan2(target.y - this.game.boss.y, target.x - this.game.boss.x);
-        this.game.spawnBullet(this.game.boss.x, this.game.boss.y, Math.cos(angle) * speed, Math.sin(angle) * speed, 7, color, { homing: true, homingStrength: 0.018 });
+        this.spawnBossBullet(angle, speed, 7, color, { homing: true, homingStrength: 0.018 });
       });
     }
   }

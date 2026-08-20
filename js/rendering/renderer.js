@@ -623,9 +623,138 @@ export class Renderer {
 
   drawBoss(b) {
     const c = this.ctx;
+    const now = performance.now();
+
+    // W5 — "ผู้ตื่นขึ้นจากวงกลมต้องห้าม"
+    // Keep the core circular for the existing boss hitbox, but build the
+    // visual identity around it with rotating seals, runes and glow.
+    if (b.wave === 5) {
+      const t = now / 1000;
+      // Keep every gameplay-facing reference anchored to b.r.
+      // The pulse is visual-only so the visible core never drifts away
+      // from the boss collision / bullet origin.
+      const pulse = 1 + Math.sin(t * 3) * 0.045;
+      const coreR = b.r;
+      const outerR = b.r + 14;
+      const runeDistance = b.r + 18;
+
+      // Outer forbidden seal.
+      c.save();
+      c.translate(b.x, b.y);
+      c.rotate(t * 0.35);
+      c.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const angle = (Math.PI * 2 / 8) * i;
+        const r = outerR;
+        const x = Math.cos(angle) * r;
+        const y = Math.sin(angle) * r;
+        if (i === 0) c.moveTo(x, y);
+        else c.lineTo(x, y);
+      }
+      c.closePath();
+      c.strokeStyle = `hsla(${b.hue},80%,65%,0.55)`;
+      c.lineWidth = 2;
+      c.shadowColor = `hsl(${b.hue},80%,60%)`;
+      c.shadowBlur = 12;
+      c.stroke();
+      c.restore();
+
+      // Four rotating rune fragments.
+      c.save();
+      c.translate(b.x, b.y);
+      c.rotate(-t * 0.8);
+      for (let i = 0; i < 4; i++) {
+        const angle = (Math.PI * 2 / 4) * i;
+        const distance = runeDistance;
+        const x = Math.cos(angle) * distance;
+        const y = Math.sin(angle) * distance;
+
+        c.save();
+        c.translate(x, y);
+        c.rotate(t * 1.2 + i);
+
+        c.beginPath();
+        c.moveTo(0, -6);
+        c.lineTo(5, 0);
+        c.lineTo(0, 6);
+        c.lineTo(-5, 0);
+        c.closePath();
+        c.fillStyle = `hsla(${(b.hue + 35) % 360},85%,65%,0.85)`;
+        c.shadowColor = c.fillStyle;
+        c.shadowBlur = 10;
+        c.fill();
+
+        c.beginPath();
+        c.moveTo(-2, 0);
+        c.lineTo(2, 0);
+        c.moveTo(0, -2);
+        c.lineTo(0, 2);
+        c.strokeStyle = `hsla(${b.hue},100%,85%,0.9)`;
+        c.lineWidth = 1.5;
+        c.stroke();
+        c.restore();
+      }
+      c.restore();
+
+      // Inner rotating ring.
+      c.save();
+      c.translate(b.x, b.y);
+      c.rotate(t * 0.55);
+      c.beginPath();
+      c.arc(0, 0, outerR, 0, Math.PI * 2);
+      c.strokeStyle = `hsla(${(b.hue + 20) % 360},90%,70%,0.8)`;
+      c.lineWidth = 3;
+      c.setLineDash([12, 8]);
+      c.shadowColor = `hsl(${b.hue},90%,60%)`;
+      c.shadowBlur = 14;
+      c.stroke();
+      c.setLineDash([]);
+      c.restore();
+
+      // Core glow + main core + inner ring + eye — no translate needed here,
+      // all draw directly in world-space using b.x/b.y. Wrap in save/restore
+      // to reset shadow state and keep the canvas stack balanced.
+      c.save();
+
+      // Core glow.
+      c.beginPath();
+      c.arc(b.x, b.y, b.r + 5, 0, Math.PI * 2);
+      c.fillStyle = `hsla(${b.hue},90%,60%,0.18)`;
+      c.shadowColor = `hsl(${b.hue},90%,60%)`;
+      c.shadowBlur = 35;
+      c.fill();
+
+      // Main core.
+      c.beginPath();
+      c.arc(b.x, b.y, coreR, 0, Math.PI * 2);
+      c.fillStyle = `hsl(${b.hue % 360},70%,48%)`;
+      c.shadowColor = `hsl(${b.hue % 360},90%,60%)`;
+      c.shadowBlur = 24;
+      c.fill();
+
+      // Inner ring.
+      c.beginPath();
+      c.arc(b.x, b.y, b.r * 0.58 + Math.sin(t * 4) * 1.5, 0, Math.PI * 2);
+      c.strokeStyle = `hsla(${(b.hue + 45) % 360},100%,85%,0.8)`;
+      c.lineWidth = 2;
+      c.stroke();
+
+      // Bright central core / eye.
+      c.beginPath();
+      c.arc(b.x, b.y, b.r * 0.22, 0, Math.PI * 2);
+      c.fillStyle = '#ffffff';
+      c.shadowColor = '#ffffff';
+      c.shadowBlur = 12;
+      c.fill();
+
+      c.restore();
+      return;
+    }
+
+    // Existing visual for bosses other than W5.
     for (let k = 0; k < 3; k++) {
       c.beginPath();
-      c.arc(b.x, b.y, b.r + k * 10 + Math.sin(performance.now() / 200 + k) * 4, 0, Math.PI * 2);
+      c.arc(b.x, b.y, b.r + k * 10 + Math.sin(now / 200 + k) * 4, 0, Math.PI * 2);
       c.strokeStyle = `hsla(${(b.hue + k * 40) % 360},80%,60%,${0.5 - k * 0.12})`;
       c.lineWidth = 3;
       c.stroke();

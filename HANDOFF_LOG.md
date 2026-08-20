@@ -59,6 +59,12 @@ what changed, why, key numbers if any.
 
 ## 2026-08-20 — Claude (Sonnet 5, claude.ai)
 
+**Session 3 — W5 boss canvas-stack bug fix (Antigravity/Claude):** Fixed the root cause of W5 boss bullets appearing to come from the wrong position / not originating from the boss. The `drawBoss()` W5 branch in `js/rendering/renderer.js` had an orphaned `c.restore()` at the end (no matching `c.save()`) which popped the viewport transform set by `begin()` off the canvas state stack. This meant every drawing call *after* the boss (bullets, players, particles) was rendered without the world-space scale/translate, causing them to appear at incorrect screen positions. Fix: wrapped the "core glow + main core + inner ring + eye" block in a matching `c.save()` / `c.restore()` pair. The three earlier rotate/translate blocks already had correct pairs; only this last un-transformed section was missing its save. `npm test` → **179 PASS / 0 FAIL / 0 WARN** (unchanged from before).
+**Files:** `js/rendering/renderer.js`.
+
+**Session 2 — W5 boss visual alignment (ChatGPT):** adjusted the W5 boss rendering so the gameplay core stays exactly anchored to `b.r`; outer seals/runes remain visual-only and no longer make the boss look offset from its bullet origin/hitbox. Added inline renderer comments explaining the constraint.
+**Files:** `js/rendering/renderer.js`, `HANDOFF_LOG.md`.
+
 **Session 1 — closed out the 4 gaps flagged in the 2026-08-19 entry:**
 
 1. **Backfilled `CHANGELOG.md`.** The AIM tuning and Dev Mode SPEED work
@@ -309,3 +315,5 @@ specifically for handing off between different AI tools mid-project.
 **For the next session:** Nothing pending — no gameplay code was touched.
 `npm run check-versions` and `node scripts/verify-bullethell-fix.mjs` both
 pass as of this entry.
+
+**Session 3 — W5 boss firing-origin alignment (ChatGPT):** fixed the remaining visual mismatch where boss projectiles appeared to originate from inside the boss core. Added `PatternLibrary.spawnBossBullet()` in `js/patterns/patterns.js`; boss ring, spiral, aimed, and homing shots now spawn just outside `Boss.r` along their travel angle. The boss center remains the single source of truth, while the projectile origin is offset by `boss.r + bulletRadius + 2` so the shot visually emerges from the visible core edge without changing the boss hitbox or attack angles.

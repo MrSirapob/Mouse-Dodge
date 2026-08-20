@@ -470,6 +470,7 @@ export class WaveSystem {
     const c3 = this.color(n, 4);
 
     this.game.boss.active = true;
+    this.game.boss.wave = n;
     this.game.boss.x = 640;
     this.game.boss.y = -100;
     // See CONFIG.bossNames (js/core/config.js) to change what shows above
