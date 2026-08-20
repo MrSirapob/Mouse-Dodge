@@ -133,6 +133,11 @@ export class UI {
     this.onStart = null;
     this.onMenu = null;
     this.onResetBest = null;
+    // Tracks the best score as it stood *before* the most recent setBest()
+    // call, so showGameOver() can tell whether this run just beat it.
+    // (setBest() runs once on load with the saved value, then once per
+    // game-over with the possibly-updated value — see setBest() below.)
+    this.priorBestScore = 0;
     this.currentMode = "solo";
     this.currentSkill = "pulse";
     this.currentSkillP2 = "pulse";
@@ -505,6 +510,22 @@ export class UI {
     const rank = getScoreRank(finalScore);
     const rankPhrase = getRankPhrase(rank);
 
+    // A "New Best!" only counts if this run's score actually beat the
+    // score that was on record before this run (see setBest() above) —
+    // matches the strict `finalScore > this.bestScore` check in
+    // game.js's gameOver(), just evaluated from data already in the UI.
+    const isNewBestScore =
+      Math.round(finalScore) > 0 &&
+      Math.round(finalScore) > this.priorBestScore;
+
+    const newBestBadge = isNewBestScore
+      ? `<style>
+           .new-best-badge{display:inline-flex;align-items:center;gap:6px;margin:0 0 14px;padding:6px 14px;border-radius:999px;background:rgba(255,217,61,.12);border:1px solid rgba(255,217,61,.4);color:var(--gold);font-size:12px;font-weight:900;letter-spacing:.5px;animation:new-best-pop .45s cubic-bezier(.2,.8,.2,1) both}
+           @keyframes new-best-pop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+         </style>
+         <div class="new-best-badge">🏆 New Best!</div>`
+      : "";
+
     this.showResultScreen(`
       <div class="panel">
         <div class="logo">RUN COMPLETE</div>
@@ -517,6 +538,7 @@ export class UI {
           <div class="rank-phrase">${rankPhrase}</div>
         </div>
 
+        ${newBestBadge}
         <div class="run-comparison">
           <div class="run-comparison-header">
             <div></div>
@@ -569,6 +591,11 @@ export class UI {
   // --- HUD setters -------------------------------------------------
 
   setBest(time, wave, score = 0) {
+    // Remember what the best score was *before* this update, so a later
+    // showGameOver() call can detect "New Best!" without touching game.js.
+    this.priorBestScore = this.lastBestScore ?? 0;
+    this.lastBestScore = Math.round(score) || 0;
+
     if (this.el.best) this.el.best.textContent = Number(time).toFixed(1);
     if (this.el.bestWave) this.el.bestWave.textContent = wave;
     if (this.el.bestScore)
