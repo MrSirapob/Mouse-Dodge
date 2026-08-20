@@ -901,6 +901,7 @@ export class Game {
     this.renderer.end();
     this.renderer.flash(this.state.flashAlpha);
     this.state.flashAlpha *= 0.9;
+    this.renderer.drawLowLifeVignette(this.activePlayers());
   }
 
   loop(now) {

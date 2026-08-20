@@ -831,4 +831,40 @@ export class Renderer {
     c.fillRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
     c.restore();
   }
+
+  /**
+   * Screen-edge red vignette that beats like a heartbeat while any active
+   * player is down to their last life. Purely visual — reads player state,
+   * never touches it. Screen-space overlay, same pattern as flash().
+   */
+  drawLowLifeVignette(players) {
+    const critical = players.some((p) => p.isAlive() && p.lives === 1);
+    if (!critical) return;
+
+    const c = this.ctx;
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+
+    // Two-beat heartbeat cadence ("ba-bump ... pause") repeating every 1.1s,
+    // built from two narrow gaussian pulses rather than a plain sine so it
+    // reads as a heartbeat instead of a smooth breathing glow.
+    const t = (performance.now() / 1000) % 1.1;
+    const beat = Math.max(
+      Math.exp(-((t - 0.0) ** 2) / 0.0025),
+      Math.exp(-((t - 0.18) ** 2) / 0.0025)
+    );
+    const alpha = 0.10 + beat * 0.30;
+
+    c.save();
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    const grad = c.createRadialGradient(
+      w / 2, h / 2, Math.min(w, h) * 0.32,
+      w / 2, h / 2, Math.max(w, h) * 0.72
+    );
+    grad.addColorStop(0, 'rgba(200,0,0,0)');
+    grad.addColorStop(1, `rgba(200,0,0,${alpha})`);
+    c.fillStyle = grad;
+    c.fillRect(0, 0, w, h);
+    c.restore();
+  }
 }
