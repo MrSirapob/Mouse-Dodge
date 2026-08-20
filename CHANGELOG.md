@@ -1,5 +1,34 @@
 # Changelog
 
+## Narrative "act" theming: background + bullet palette shift per boss chapter (user-requested)
+- **Added `CONFIG.actThemes` and `actForWave(n)` to `js/core/config.js`.**
+  The story was already implicit in `CONFIG.bossNames` and the chapter
+  subtitles `WaveSystem.buildBoss()` returns (seal awakens W5 → heaven/stars
+  devoured W10 → world ritually unmade W15 → only the formless void remains
+  W20+) but had no visual to match it. `actThemes` is a 5-entry array (one
+  per act, index = `actForWave(n)`) giving each chapter its own `bg` (canvas
+  background) and `colors` (5-color bullet palette, same cycle length as
+  the old fixed `WAVE_COLORS`). Act boundaries land exactly on boss waves
+  (5/10/15/20) so the palette shift lands on the same wave the chapter
+  banner does. `actForWave` caps at act 4 so every endless wave past 20
+  stays in the final void palette.
+- **`WaveSystem.color(n, offset)`** now reads `CONFIG.actThemes[actForWave(n)].colors`
+  instead of the old module-level `WAVE_COLORS` constant (removed). Every
+  existing call site (`aimed`/`ring`/`wall`/etc. closures in `build()`, and
+  the `c1`/`c2`/`c3` boss colors in `buildBoss()`) is unchanged — they just
+  now resolve to a different palette depending on the wave's act.
+- **`Renderer.begin(shake, wave)`** takes a new `wave` param, resolves
+  `CONFIG.actThemes[actForWave(wave)].bg`, and stores it on `this.bg` so
+  `drawGrid()` (called later the same frame via `drawWorld()`) repaints the
+  world-space background with the same color instead of the old hardcoded
+  `#07070c`. `Game.draw()` now calls `this.renderer.begin(shake, this.state.wave)`.
+- **Palettes:** Act 0 W1-4 "โลกยามค่ำ" (unchanged, original colors/bg) → Act 1
+  W5-9 "รอยร้าวแรกของผนึก" (violet/indigo) → Act 2 W10-14 "ท้องฟ้าที่ไร้ดวงดาว"
+  (cold blue/cyan) → Act 3 W15-19 "พิธีกรรมแห่งการล้าง" (blood red/ash) →
+  Act 4 W20+ "ความว่างเปล่าไร้จุดจบ" (monochrome + one red accent).
+- **Files:** `js/core/config.js`, `js/systems/waveSystem.js`,
+  `js/rendering/renderer.js`, `js/systems/game.js`.
+
 ## Pause screen: separate "Resume" from Restart/Menu, plus an always-visible Space-bar hint
 - **Added a dedicated "เล่นต่อ" (Resume) button to the Pause screen.**
   Previously Pause only offered "เล่นใหม่" (Restart) and "กลับเมนู" (Menu) —

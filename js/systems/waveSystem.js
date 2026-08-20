@@ -1,6 +1,4 @@
-import { CONFIG } from "../core/config.js?v=20260814w10final";
-
-const WAVE_COLORS = ["#ff5c5c", "#ff9f43", "#c56cf0", "#ff5cc0", "#54a0ff"];
+import { CONFIG, actForWave } from "../core/config.js?v=20260820-xx1g";
 
 /**
  * ========================= PATTERN GUIDE FOR AI =========================
@@ -72,8 +70,14 @@ export class WaveSystem {
     return 60;
   }
 
+  // Bullet colors come from the wave's narrative act (see CONFIG.actThemes
+  // / actForWave in config.js) — W1-4 mortal-world colors, then a new
+  // palette every boss wave (5/10/15/20) as the story escalates. Same
+  // 5-color cycling as before, just sourced per-act instead of one fixed
+  // list, so every existing `color(n, offset)` call site is unaffected.
   color(n, offset = 0) {
-    return WAVE_COLORS[(n + offset) % WAVE_COLORS.length];
+    const palette = CONFIG.actThemes[actForWave(n)].colors;
+    return palette[(n + offset) % palette.length];
   }
 
   build(n) {

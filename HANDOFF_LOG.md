@@ -59,6 +59,20 @@ what changed, why, key numbers if any.
 
 ## 2026-08-20 — Claude (Sonnet 5, claude.ai)
 
+**Session 7 — Narrative act theming (user-requested):** Added
+`CONFIG.actThemes` + `actForWave(n)` (`js/core/config.js`) giving each
+story chapter (mortal world W1-4 → seal breaks W5-9 → stars devoured
+W10-14 → world unmade W15-19 → the void W20+, matching the existing
+`bossNames`/chapter-banner lore) its own background color + 5-color bullet
+palette. `WaveSystem.color()` now sources from the active act instead of
+the old fixed `WAVE_COLORS`; `Renderer.begin()` takes a `wave` param and
+repaints the canvas background per-act (`drawGrid()` reuses the same
+stored color). Ran `npm run bump-version` after (new tag
+`20260820-xx1g`), confirmed with `check-versions`. See CHANGELOG.md for
+full details/palette values. `npm test` → **179 PASS / 0 FAIL / 0 WARN**.
+**Files:** `js/core/config.js`, `js/systems/waveSystem.js`,
+`js/rendering/renderer.js`, `js/systems/game.js`, `CHANGELOG.md`.
+
 **Session 5 — W10 formation attack rework (user-requested):** Rewrote `bossPerimeterCrossfire` so bullets now fly out from the boss one by one and slot into the rectangle formation before firing simultaneously. Old behaviour: 48 bullets appeared at perimeter positions instantly, then released randomly one-by-one. New behaviour: (1) Telegraph: rectangle outline appears ~1s before. (2) Boss fires `count` bullets in rapid succession (0.045s apart); each flies at 780px/s to its rectangle slot and snaps in place. (3) After all bullets arrive + hold time, **all fire at once** toward the player. Added `flyToX/Y/Speed/Arrived` fields to `bullet.js` and a "fly-to-position" update block in `game.js updateBullets()` (before the existing perimeterHold block). Existing `perimeterHold` path is unchanged and correctly skips bullets still in flight. `npm test` → **179 PASS / 0 FAIL / 0 WARN**.
 **Files:** `js/entities/bullet.js`, `js/systems/game.js`, `js/patterns/patterns.js`.
 

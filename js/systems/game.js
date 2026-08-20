@@ -1,16 +1,16 @@
-import { CONFIG, GRAZE_REWARD } from '../core/config.js?v=20260814w10final';
-import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260814w10final';
-import { circleHit, circleNear } from '../core/collision.js?v=20260814w10final';
-import { Player } from '../entities/player.js?v=20260814w10final';
-import { BulletManager } from '../entities/bullet.js?v=20260814w10final';
-import { Boss } from '../entities/boss.js?v=20260814w10final';
-import { ParticleSystem } from '../rendering/particles.js?v=20260814w10final';
-import { PatternLibrary } from '../patterns/patterns.js?v=20260814w10final';
-import { WaveSystem } from './waveSystem.js?v=20260814w10final';
-import { SkillSystem } from './skillSystem.js?v=20260814w10final';
-import { LifeSystem } from './lifeSystem.js?v=20260814w10final';
-import { DevMode } from './devMode.js?v=20260814w10final';
-import { ItemSystem } from './itemSystem.js?v=20260814w10final';
+import { CONFIG, GRAZE_REWARD } from '../core/config.js?v=20260820-xx1g';
+import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260820-xx1g';
+import { circleHit, circleNear } from '../core/collision.js?v=20260820-xx1g';
+import { Player } from '../entities/player.js?v=20260820-xx1g';
+import { BulletManager } from '../entities/bullet.js?v=20260820-xx1g';
+import { Boss } from '../entities/boss.js?v=20260820-xx1g';
+import { ParticleSystem } from '../rendering/particles.js?v=20260820-xx1g';
+import { PatternLibrary } from '../patterns/patterns.js?v=20260820-xx1g';
+import { WaveSystem } from './waveSystem.js?v=20260820-xx1g';
+import { SkillSystem } from './skillSystem.js?v=20260820-xx1g';
+import { LifeSystem } from './lifeSystem.js?v=20260820-xx1g';
+import { DevMode } from './devMode.js?v=20260820-xx1g';
+import { ItemSystem } from './itemSystem.js?v=20260820-xx1g';
 
 /**
  * Game is the top-level orchestrator: it owns all entities/systems and runs
@@ -970,7 +970,7 @@ export class Game {
 
   draw() {
     const damageKick = this.state.damageShake > 0 ? 10 * (this.state.damageShake / 0.22) : 0;
-    this.renderer.begin(Math.max(this.state.shakeMag, damageKick));
+    this.renderer.begin(Math.max(this.state.shakeMag, damageKick), this.state.wave);
     this.renderer.drawWorld(this);
     this.renderer.end();
     this.renderer.flash(this.state.flashAlpha);

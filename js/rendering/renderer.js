@@ -1,4 +1,5 @@
-import { ITEM_COLORS } from '../systems/itemSystem.js?v=20260814w10final';
+import { ITEM_COLORS } from '../systems/itemSystem.js?v=20260820-xx1g';
+import { CONFIG, actForWave } from '../core/config.js?v=20260820-xx1g';
 
 /**
  * One draw function per item type, keyed by `item.type` (mirrors the
@@ -439,12 +440,20 @@ export class Renderer {
     };
   }
 
-  /** Starts a frame: clears the canvas and applies the viewport transform (plus camera shake). */
-  begin(shake = 0) {
+  /**
+   * Starts a frame: clears the canvas and applies the viewport transform
+   * (plus camera shake). `wave` picks the background color for the
+   * current narrative act (CONFIG.actThemes via actForWave) — stored on
+   * `this.bg` so drawGrid() (called later this same frame from
+   * drawWorld()) repaints the world-space background with the same color
+   * instead of the old hardcoded one.
+   */
+  begin(shake = 0, wave = 0) {
     const c = this.ctx, v = this.viewport;
+    this.bg = CONFIG.actThemes[actForWave(wave)].bg;
     c.setTransform(1, 0, 0, 1, 0, 0);
     c.clearRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
-    c.fillStyle = '#07070c';
+    c.fillStyle = this.bg;
     c.fillRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
     c.save();
 
@@ -461,7 +470,7 @@ export class Renderer {
 
   drawGrid() {
     const c = this.ctx;
-    c.fillStyle = '#07070c';
+    c.fillStyle = this.bg || CONFIG.actThemes[0].bg;
     c.fillRect(0, 0, WORLD.width, WORLD.height);
     c.strokeStyle = 'rgba(255,255,255,.03)';
     c.lineWidth = 1;

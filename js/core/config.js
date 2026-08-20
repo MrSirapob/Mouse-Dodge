@@ -156,4 +156,55 @@ export const CONFIG = {
     15: "ผู้เฝ้ารอ ณ จุดจบ",
     20: "ผู้ที่อยู่เบื้องหลังเจ้า",
   },
+
+  // Narrative "act" theming (user-requested, 2026-08-20). The story was
+  // already implicit in bossNames above and the chapter subtitles returned
+  // by WaveSystem.buildBoss(): a seal awakens (W5) -> heaven/stars are
+  // devoured (W10) -> the world is ritually unmade (W15) -> only the
+  // formless void remains (W20+). actThemes gives each chapter its own
+  // background + bullet-color palette so the shift reads visually the
+  // instant a boss wave's banner appears, not just in the text.
+  // Index = act number from actForWave(n) below (0-4). `bg` recolors the
+  // canvas background (Renderer.begin()/drawGrid()); `colors` replaces
+  // WaveSystem's WAVE_COLORS for that stretch of waves (same 5-color
+  // cycle length, so the existing `color(n, offset)` indexing keeps working
+  // unchanged).
+  actThemes: [
+    { // Act 0 — W1-4: "โลกยามค่ำ" (the mortal world, still whole)
+      label: "โลกยามค่ำ",
+      bg: "#07070c",
+      colors: ["#ff5c5c", "#ff9f43", "#c56cf0", "#ff5cc0", "#54a0ff"],
+    },
+    { // Act 1 — W5-9: "รอยร้าวแรกของผนึก" (the seal breaks)
+      label: "รอยร้าวแรกของผนึก",
+      bg: "#120a24",
+      colors: ["#7c3aed", "#c56cf0", "#ff5cc0", "#a29bfe", "#6c5ce7"],
+    },
+    { // Act 2 — W10-14: "ท้องฟ้าที่ไร้ดวงดาว" (the stars are devoured)
+      label: "ท้องฟ้าที่ไร้ดวงดาว",
+      bg: "#03040a",
+      colors: ["#54a0ff", "#00d2d3", "#74b9ff", "#a4b0be", "#dfe6e9"],
+    },
+    { // Act 3 — W15-19: "พิธีกรรมแห่งการล้าง" (the world is ritually unmade)
+      label: "พิธีกรรมแห่งการล้าง",
+      bg: "#180505",
+      colors: ["#ff4757", "#e17055", "#d63031", "#ff7675", "#2d3436"],
+    },
+    { // Act 4 — W20+: "ความว่างเปล่าไร้จุดจบ" (only the formless void remains)
+      label: "ความว่างเปล่าไร้จุดจบ",
+      bg: "#000000",
+      colors: ["#f5f6fa", "#dfe6e9", "#636e72", "#2d3436", "#ff0037"],
+    },
+  ],
 };
+
+/**
+ * Maps a wave number to its narrative act index (0-4) — see
+ * `CONFIG.actThemes` above. Act boundaries line up exactly with boss waves
+ * (5/10/15/20) so the palette/background shift lands on the same wave the
+ * chapter banner does. Capped at 4 so every endless wave past 20 stays in
+ * the final "void" act.
+ */
+export function actForWave(n) {
+  return Math.min(4, Math.floor(n / 5));
+}
