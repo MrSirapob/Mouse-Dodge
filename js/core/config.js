@@ -180,7 +180,7 @@ export const CONFIG = {
     },
     { // Act 1 — W5-9: "รอยร้าวแรกของผนึก" (the seal breaks)
       label: "รอยร้าวแรกของผนึก",
-      bg: "#120a24",
+      bg: "#000000",
       colors: ["#7c3aed", "#c56cf0", "#ff5cc0", "#a29bfe", "#6c5ce7"],
       accent: "#a29bfe",
     },
@@ -199,7 +199,7 @@ export const CONFIG = {
     { // Act 4 — W20+: "ความว่างเปล่าไร้จุดจบ" (only the formless void remains)
       label: "ความว่างเปล่าไร้จุดจบ",
       bg: "#000000",
-      colors: ["#f5f6fa", "#dfe6e9", "#636e72", "#2d3436", "#ff0037"],
+      colors: ["#f5f6fa", "#dfe6e9", "#b2bec3", "#ff6b81", "#ff0037"],
       accent: "#ff0037",
     },
   ],
