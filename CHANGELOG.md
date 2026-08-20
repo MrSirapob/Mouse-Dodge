@@ -463,3 +463,9 @@ between old and new files).
 - Kept `Boss.x`, `Boss.y`, `Boss.r`, hitbox behavior, and attack angles unchanged.
 - Documented the change in `HANDOFF_LOG.md` for the next AI/editor handoff.
 - Verification: `npm test` => 179 PASS, 0 FAIL, 0 WARN.
+
+
+## 2026-08-20 — Boss Story / W10 Visual
+- W10 boss visual added as a gravitational/dark-core design with orbital rings and star fragments.
+- Boss names updated for W10/W15/W20 story progression.
+- W20 name added to `CONFIG.bossNames`.

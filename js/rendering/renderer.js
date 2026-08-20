@@ -624,30 +624,27 @@ export class Renderer {
   drawBoss(b) {
     const c = this.ctx;
     const now = performance.now();
+    const t = now / 1000;
 
-    // W5 — "ผู้ตื่นขึ้นจากวงกลมต้องห้าม"
-    // Keep the core circular for the existing boss hitbox, but build the
-    // visual identity around it with rotating seals, runes and glow.
+    // W5 — "ผู้ตื่นจากผนึก"
+    // W10 — "ผู้กลืนกินดวงดาร"
+    // Both keep the gameplay core anchored to b.r. The extra geometry is
+    // visual-only and never changes the boss hitbox or bullet origin.
+
     if (b.wave === 5) {
-      const t = now / 1000;
-      // Keep every gameplay-facing reference anchored to b.r.
-      // The pulse is visual-only so the visible core never drifts away
-      // from the boss collision / bullet origin.
-      const pulse = 1 + Math.sin(t * 3) * 0.045;
       const coreR = b.r;
       const outerR = b.r + 14;
       const runeDistance = b.r + 18;
 
-      // Outer forbidden seal.
+      // Forbidden seal.
       c.save();
       c.translate(b.x, b.y);
       c.rotate(t * 0.35);
       c.beginPath();
       for (let i = 0; i < 8; i++) {
-        const angle = (Math.PI * 2 / 8) * i;
-        const r = outerR;
-        const x = Math.cos(angle) * r;
-        const y = Math.sin(angle) * r;
+        const a = (Math.PI * 2 / 8) * i;
+        const x = Math.cos(a) * outerR;
+        const y = Math.sin(a) * outerR;
         if (i === 0) c.moveTo(x, y);
         else c.lineTo(x, y);
       }
@@ -659,20 +656,17 @@ export class Renderer {
       c.stroke();
       c.restore();
 
-      // Four rotating rune fragments.
+      // Four rune fragments.
       c.save();
       c.translate(b.x, b.y);
       c.rotate(-t * 0.8);
       for (let i = 0; i < 4; i++) {
-        const angle = (Math.PI * 2 / 4) * i;
-        const distance = runeDistance;
-        const x = Math.cos(angle) * distance;
-        const y = Math.sin(angle) * distance;
-
+        const a = (Math.PI * 2 / 4) * i;
+        const x = Math.cos(a) * runeDistance;
+        const y = Math.sin(a) * runeDistance;
         c.save();
         c.translate(x, y);
         c.rotate(t * 1.2 + i);
-
         c.beginPath();
         c.moveTo(0, -6);
         c.lineTo(5, 0);
@@ -683,7 +677,6 @@ export class Renderer {
         c.shadowColor = c.fillStyle;
         c.shadowBlur = 10;
         c.fill();
-
         c.beginPath();
         c.moveTo(-2, 0);
         c.lineTo(2, 0);
@@ -696,7 +689,7 @@ export class Renderer {
       }
       c.restore();
 
-      // Inner rotating ring.
+      // Rotating ring.
       c.save();
       c.translate(b.x, b.y);
       c.rotate(t * 0.55);
@@ -708,23 +701,17 @@ export class Renderer {
       c.shadowColor = `hsl(${b.hue},90%,60%)`;
       c.shadowBlur = 14;
       c.stroke();
-      c.setLineDash([]);
       c.restore();
 
-      // Core glow + main core + inner ring + eye — no translate needed here,
-      // all draw directly in world-space using b.x/b.y. Wrap in save/restore
-      // to reset shadow state and keep the canvas stack balanced.
+      // Core remains exactly b.r so collision and visual center agree.
       c.save();
-
-      // Core glow.
       c.beginPath();
-      c.arc(b.x, b.y, b.r + 5, 0, Math.PI * 2);
+      c.arc(b.x, b.y, coreR + 5, 0, Math.PI * 2);
       c.fillStyle = `hsla(${b.hue},90%,60%,0.18)`;
       c.shadowColor = `hsl(${b.hue},90%,60%)`;
       c.shadowBlur = 35;
       c.fill();
 
-      // Main core.
       c.beginPath();
       c.arc(b.x, b.y, coreR, 0, Math.PI * 2);
       c.fillStyle = `hsl(${b.hue % 360},70%,48%)`;
@@ -732,29 +719,133 @@ export class Renderer {
       c.shadowBlur = 24;
       c.fill();
 
-      // Inner ring.
       c.beginPath();
-      c.arc(b.x, b.y, b.r * 0.58 + Math.sin(t * 4) * 1.5, 0, Math.PI * 2);
+      c.arc(b.x, b.y, b.r * 0.58, 0, Math.PI * 2);
       c.strokeStyle = `hsla(${(b.hue + 45) % 360},100%,85%,0.8)`;
       c.lineWidth = 2;
       c.stroke();
 
-      // Bright central core / eye.
       c.beginPath();
       c.arc(b.x, b.y, b.r * 0.22, 0, Math.PI * 2);
       c.fillStyle = '#ffffff';
       c.shadowColor = '#ffffff';
       c.shadowBlur = 12;
       c.fill();
-
       c.restore();
       return;
     }
 
-    // Existing visual for bosses other than W5.
+    if (b.wave === 10) {
+      // W10 — "ผู้กลืนกินดวงดาร"
+      // A dark core with two counter-rotating orbital rings. The rings are
+      // intentionally compact so the gameplay core remains visually clear.
+      const coreR = b.r;
+      const ringA = b.r + 10;
+      const ringB = b.r + 17;
+      const pulse = 1 + Math.sin(t * 2.4) * 0.035;
+
+      // Faint gravitational aura.
+      c.save();
+      c.beginPath();
+      c.arc(b.x, b.y, coreR + 9 + Math.sin(t * 2) * 2, 0, Math.PI * 2);
+      c.fillStyle = `hsla(${b.hue},75%,45%,0.10)`;
+      c.shadowColor = `hsl(${b.hue},85%,55%)`;
+      c.shadowBlur = 28;
+      c.fill();
+      c.restore();
+
+      // Orbiting ring A.
+      c.save();
+      c.translate(b.x, b.y);
+      c.rotate(t * 0.75);
+      c.scale(1, 0.42);
+      c.beginPath();
+      c.arc(0, 0, ringA, 0, Math.PI * 2);
+      c.strokeStyle = `hsla(${b.hue},90%,70%,0.85)`;
+      c.lineWidth = 3;
+      c.shadowColor = `hsl(${b.hue},90%,60%)`;
+      c.shadowBlur = 12;
+      c.stroke();
+      c.restore();
+
+      // Orbiting ring B, opposite direction, with broken segments.
+      c.save();
+      c.translate(b.x, b.y);
+      c.rotate(-t * 0.48);
+      c.scale(1, 0.28);
+      c.beginPath();
+      for (let i = 0; i < 3; i++) {
+        const a0 = i * (Math.PI * 2 / 3) + 0.12;
+        const a1 = a0 + 0.95;
+        c.arc(0, 0, ringB, a0, a1);
+      }
+      c.strokeStyle = `hsla(${(b.hue + 45) % 360},95%,75%,0.9)`;
+      c.lineWidth = 4;
+      c.shadowColor = `hsl(${(b.hue + 45) % 360},90%,65%)`;
+      c.shadowBlur = 14;
+      c.stroke();
+      c.restore();
+
+      // Small "stars" orbiting the core.
+      c.save();
+      c.translate(b.x, b.y);
+      c.rotate(t * 0.32);
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI * 2 / 6) * i;
+        const d = b.r + 25 + Math.sin(t * 1.7 + i) * 3;
+        const x = Math.cos(a) * d;
+        const y = Math.sin(a) * d;
+        c.beginPath();
+        c.arc(x, y, 2.2, 0, Math.PI * 2);
+        c.fillStyle = `hsla(${(b.hue + 70) % 360},100%,85%,0.9)`;
+        c.shadowColor = c.fillStyle;
+        c.shadowBlur = 8;
+        c.fill();
+      }
+      c.restore();
+
+      // Dark gravitational core. Keep gameplay radius exactly b.r.
+      c.save();
+      c.beginPath();
+      c.arc(b.x, b.y, coreR + 4 * pulse, 0, Math.PI * 2);
+      c.fillStyle = `hsla(${b.hue},85%,45%,0.18)`;
+      c.shadowColor = `hsl(${b.hue},90%,55%)`;
+      c.shadowBlur = 30;
+      c.fill();
+
+      c.beginPath();
+      c.arc(b.x, b.y, coreR, 0, Math.PI * 2);
+      c.fillStyle = '#090914';
+      c.shadowColor = `hsl(${b.hue},90%,60%)`;
+      c.shadowBlur = 22;
+      c.fill();
+
+      c.beginPath();
+      c.arc(b.x, b.y, coreR * 0.76, 0, Math.PI * 2);
+      c.strokeStyle = `hsla(${(b.hue + 45) % 360},95%,72%,0.9)`;
+      c.lineWidth = 2.5;
+      c.stroke();
+
+      c.beginPath();
+      c.arc(b.x, b.y, coreR * 0.18, 0, Math.PI * 2);
+      c.fillStyle = '#ffffff';
+      c.shadowColor = '#ffffff';
+      c.shadowBlur = 10;
+      c.fill();
+      c.restore();
+      return;
+    }
+
+    // Existing visual for W15/W20 and any future boss without a custom visual.
     for (let k = 0; k < 3; k++) {
       c.beginPath();
-      c.arc(b.x, b.y, b.r + k * 10 + Math.sin(now / 200 + k) * 4, 0, Math.PI * 2);
+      c.arc(
+        b.x,
+        b.y,
+        b.r + k * 10 + Math.sin(now / 200 + k) * 4,
+        0,
+        Math.PI * 2
+      );
       c.strokeStyle = `hsla(${(b.hue + k * 40) % 360},80%,60%,${0.5 - k * 0.12})`;
       c.lineWidth = 3;
       c.stroke();

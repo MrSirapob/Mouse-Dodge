@@ -317,3 +317,10 @@ specifically for handing off between different AI tools mid-project.
 pass as of this entry.
 
 **Session 3 — W5 boss firing-origin alignment (ChatGPT):** fixed the remaining visual mismatch where boss projectiles appeared to originate from inside the boss core. Added `PatternLibrary.spawnBossBullet()` in `js/patterns/patterns.js`; boss ring, spiral, aimed, and homing shots now spawn just outside `Boss.r` along their travel angle. The boss center remains the single source of truth, while the projectile origin is offset by `boss.r + bulletRadius + 2` so the shot visually emerges from the visible core edge without changing the boss hitbox or attack angles.
+
+
+## 2026-08-20 — W10 Boss Visual + W20 Boss Name
+- Added W10 boss visual: dark gravitational core, counter-rotating orbital rings, broken orbit segments, and small star particles.
+- Kept W10 gameplay core anchored to `b.r`; visual rings are cosmetic only.
+- Renamed boss progression: W10 `ผู้กลืนกินดวงดาร`, W15 `ผู้เฝ้ารอ ณ จุดจบ`, W20 `ผู้ที่อยู่เบื้องหลังเจ้า`.
+- Added W20 to `CONFIG.bossNames`; no new W20 boss mechanics were changed.
