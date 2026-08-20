@@ -112,7 +112,7 @@ export const CONFIG = {
       { rank: "S", min: 80000 },
       { rank: "A", min: 60000 },
       { rank: "B", min: 45000 },
-      { rank: "C", min: 35000 },
+      { rank: "C", min: 15000 },
       { rank: "D", min: 0 },
     ],
   },
@@ -132,7 +132,7 @@ export const CONFIG = {
     // likely to appear when they're actually needed.
     weights: { heart: 35, energy: 25, shield: 15, score: 25 },
     heartWeightBoost: 40,
-    scoreValue: 220,
+    scoreValue: 400,
     shieldDuration: 3.0,
   },
   storage: {
@@ -150,9 +150,9 @@ export const CONFIG = {
   // used for any boss wave that doesn't have its own entry here (e.g.
   // W20+, or any future boss wave you add without naming it yet).
   bossNames: {
-    default: "⚠ BOSS INCOMING",
-    5: "⚠ BOSS INCOMING",
-    10: "⚠ BOSS INCOMING",
-    15: "⚠ BOSS INCOMING",
+    default: "สิ่งมีชีวิตที่ไร้เหลี่ยมมุม",
+    5: "ผู้ตื่นขึ้นจากวงกลมต้องห้าม",
+    10: "ผู้ที่กลืนกินจักรวาลจนหมดสิ้น",
+    15: "วงกลมสุดท้ายก่อนความว่างเปล่า",
   },
 };
