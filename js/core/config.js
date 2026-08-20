@@ -168,32 +168,39 @@ export const CONFIG = {
   // canvas background (Renderer.begin()/drawGrid()); `colors` replaces
   // WaveSystem's WAVE_COLORS for that stretch of waves (same 5-color
   // cycle length, so the existing `color(n, offset)` indexing keeps working
-  // unchanged).
+  // unchanged); `accent` is a single bright color used for the boss-wave
+  // chapter-transition flash/shake (Game.startWave()) — not part of the
+  // bullet cycle, just a one-off "the world just changed" cue.
   actThemes: [
     { // Act 0 — W1-4: "โลกยามค่ำ" (the mortal world, still whole)
       label: "โลกยามค่ำ",
       bg: "#07070c",
       colors: ["#ff5c5c", "#ff9f43", "#c56cf0", "#ff5cc0", "#54a0ff"],
+      accent: "#ff5c5c",
     },
     { // Act 1 — W5-9: "รอยร้าวแรกของผนึก" (the seal breaks)
       label: "รอยร้าวแรกของผนึก",
       bg: "#120a24",
       colors: ["#7c3aed", "#c56cf0", "#ff5cc0", "#a29bfe", "#6c5ce7"],
+      accent: "#a29bfe",
     },
     { // Act 2 — W10-14: "ท้องฟ้าที่ไร้ดวงดาว" (the stars are devoured)
       label: "ท้องฟ้าที่ไร้ดวงดาว",
       bg: "#03040a",
       colors: ["#54a0ff", "#00d2d3", "#74b9ff", "#a4b0be", "#dfe6e9"],
+      accent: "#54a0ff",
     },
     { // Act 3 — W15-19: "พิธีกรรมแห่งการล้าง" (the world is ritually unmade)
       label: "พิธีกรรมแห่งการล้าง",
       bg: "#180505",
       colors: ["#ff4757", "#e17055", "#d63031", "#ff7675", "#2d3436"],
+      accent: "#ff4757",
     },
     { // Act 4 — W20+: "ความว่างเปล่าไร้จุดจบ" (only the formless void remains)
       label: "ความว่างเปล่าไร้จุดจบ",
       bg: "#000000",
       colors: ["#f5f6fa", "#dfe6e9", "#636e72", "#2d3436", "#ff0037"],
+      accent: "#ff0037",
     },
   ],
 };

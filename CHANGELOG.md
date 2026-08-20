@@ -1,5 +1,24 @@
 # Changelog
 
+## Chapter-transition cue: accent-colored flash + shake burst on every boss wave (user-requested follow-up)
+- **Added `CONFIG.actThemes[i].accent`** — one bright color per act, used
+  only for this cue (not part of the bullet-color cycle).
+- **`Game.startWave(n)`** — when `isBossWave(n)` is true (every chapter
+  banner moment: W5/10/15/20/25/...), now also sets
+  `state.actFlashColor` to that act's accent (via a new `hexToRgb()`
+  helper) and `state.actFlashAlpha = 1`, plus bumps `state.shakeMag` to at
+  least 14. Both decay the same way the existing damage flash/shake do.
+  Goal: a new chapter reads as "the world just changed" the instant the
+  boss wave starts, not just via new banner text.
+- **`Renderer.flash(alpha, rgb)`** now takes an optional `"r,g,b"` color
+  (defaults to `'255,0,0'`, so the existing damage-flash call site is
+  unchanged); `Game.draw()` calls it a second time with
+  `state.actFlashAlpha` / `state.actFlashColor` for the new cue.
+- **`GameState`** gained `actFlashAlpha` (0) and `actFlashColor` (default
+  red) fields, reset with everything else on a new run.
+- **Files:** `js/core/config.js`, `js/systems/game.js`,
+  `js/core/gameState.js`, `js/rendering/renderer.js`.
+
 ## Per-act atmosphere: distinct background motifs + edge vignette (user-requested — "scarier and distinct, but stay off the bullets' focus")
 - **Added `Renderer.drawGrid(wave)` per-act branching + 7 new private
   draw methods** (`_drawGridLines`, `_drawCracks`, `_drawStars`,

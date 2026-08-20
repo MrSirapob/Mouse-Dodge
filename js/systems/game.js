@@ -1,16 +1,23 @@
-import { CONFIG, GRAZE_REWARD } from '../core/config.js?v=20260820-rivb';
-import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260820-rivb';
-import { circleHit, circleNear } from '../core/collision.js?v=20260820-rivb';
-import { Player } from '../entities/player.js?v=20260820-rivb';
-import { BulletManager } from '../entities/bullet.js?v=20260820-rivb';
-import { Boss } from '../entities/boss.js?v=20260820-rivb';
-import { ParticleSystem } from '../rendering/particles.js?v=20260820-rivb';
-import { PatternLibrary } from '../patterns/patterns.js?v=20260820-rivb';
-import { WaveSystem } from './waveSystem.js?v=20260820-rivb';
-import { SkillSystem } from './skillSystem.js?v=20260820-rivb';
-import { LifeSystem } from './lifeSystem.js?v=20260820-rivb';
-import { DevMode } from './devMode.js?v=20260820-rivb';
-import { ItemSystem } from './itemSystem.js?v=20260820-rivb';
+import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260820-ahyy';
+import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260820-ahyy';
+import { circleHit, circleNear } from '../core/collision.js?v=20260820-ahyy';
+import { Player } from '../entities/player.js?v=20260820-ahyy';
+import { BulletManager } from '../entities/bullet.js?v=20260820-ahyy';
+import { Boss } from '../entities/boss.js?v=20260820-ahyy';
+import { ParticleSystem } from '../rendering/particles.js?v=20260820-ahyy';
+import { PatternLibrary } from '../patterns/patterns.js?v=20260820-ahyy';
+import { WaveSystem } from './waveSystem.js?v=20260820-ahyy';
+import { SkillSystem } from './skillSystem.js?v=20260820-ahyy';
+import { LifeSystem } from './lifeSystem.js?v=20260820-ahyy';
+import { DevMode } from './devMode.js?v=20260820-ahyy';
+import { ItemSystem } from './itemSystem.js?v=20260820-ahyy';
+
+/** Converts a "#rrggbb" hex string to an "r,g,b" string for use in
+ * rgba(...) fill styles (see Renderer.flash()). */
+function hexToRgb(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`;
+}
 
 /**
  * Game is the top-level orchestrator: it owns all entities/systems and runs
@@ -442,6 +449,15 @@ export class Game {
       this.boss.active = true;
       this.ui.setBossVisible(true);
       this.ui.setBossName(this.boss.name);
+
+      // Chapter-transition cue (user-requested follow-up to the act
+      // theming): a brief full-screen flash tinted to the new act's
+      // accent color, plus a shake burst, so a new story chapter reads as
+      // "the world just changed" rather than only new banner text. Decays
+      // the same way the existing damage flash/shake do — see draw().
+      this.state.actFlashColor = hexToRgb(CONFIG.actThemes[actForWave(n)].accent);
+      this.state.actFlashAlpha = 1;
+      this.state.shakeMag = Math.max(this.state.shakeMag, 14);
     }
   }
 
@@ -975,6 +991,8 @@ export class Game {
     this.renderer.end();
     this.renderer.flash(this.state.flashAlpha);
     this.state.flashAlpha *= 0.9;
+    this.renderer.flash(this.state.actFlashAlpha, this.state.actFlashColor);
+    this.state.actFlashAlpha *= 0.9;
     this.renderer.drawLowLifeVignette(this.activePlayers());
   }
 

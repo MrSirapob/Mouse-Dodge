@@ -31,6 +31,11 @@ export class GameState {
     this.timeStopRemaining = 0;
     this.shakeMag = 0; this.damageShake = 0;
     this.flashAlpha = 0;
+    // Chapter-transition flash (tinted to the new act's accent color),
+    // set in Game.startWave() when a boss wave begins a new story act.
+    // Decays the same way flashAlpha does — see Game.draw().
+    this.actFlashAlpha = 0;
+    this.actFlashColor = '255,92,92';
     this.gameOverTimer = null;
   }
   isPlaying() { return this.state === GAME_STATES.PLAYING; }

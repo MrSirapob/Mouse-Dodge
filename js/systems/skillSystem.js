@@ -1,4 +1,4 @@
-import { CONFIG } from '../core/config.js?v=20260820-rivb';
+import { CONFIG } from '../core/config.js?v=20260820-ahyy';
 
 export class SkillSystem {
   constructor(game) { this.game = game; }

@@ -1,5 +1,5 @@
-import { ITEM_COLORS } from '../systems/itemSystem.js?v=20260820-rivb';
-import { CONFIG, actForWave } from '../core/config.js?v=20260820-rivb';
+import { ITEM_COLORS } from '../systems/itemSystem.js?v=20260820-ahyy';
+import { CONFIG, actForWave } from '../core/config.js?v=20260820-ahyy';
 
 /**
  * One draw function per item type, keyed by `item.type` (mirrors the
@@ -1252,12 +1252,16 @@ export class Renderer {
     c.restore();
   }
 
-  flash(alpha) {
+  /** Full-screen color flash. `rgb` is an "r,g,b" string (default matches
+   * the original hardcoded damage-red). Used for both the damage flash and
+   * the chapter-transition flash (see Game.startWave()), just with a
+   * different color/alpha driving it. */
+  flash(alpha, rgb = '255,0,0') {
     if (alpha <= 0.01) return;
     const c = this.ctx;
     c.save();
     c.setTransform(1, 0, 0, 1, 0, 0);
-    c.fillStyle = `rgba(255,0,0,${alpha * 0.4})`;
+    c.fillStyle = `rgba(${rgb},${alpha * 0.4})`;
     c.fillRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
     c.restore();
   }

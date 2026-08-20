@@ -59,6 +59,21 @@ what changed, why, key numbers if any.
 
 ## 2026-08-20 — Claude (Sonnet 5, claude.ai)
 
+**Session 9 — Chapter-transition flash/shake (user-requested follow-up):**
+Added a one-off "the world just changed" cue on every boss wave (chapter
+banner moment). `Game.startWave()` now sets `state.actFlashAlpha = 1` +
+`actFlashColor` (from the new `CONFIG.actThemes[i].accent`, via a small
+`hexToRgb()` helper) and bumps `shakeMag` to 14+ whenever `isBossWave(n)`.
+`Renderer.flash()` gained an optional color param (defaults to the old
+hardcoded red, so the existing damage-flash call is unchanged) and
+`Game.draw()` calls it a second time for the new act flash. Both decay
+the same way the existing damage flash/shake already did — no new decay
+logic. Ran `npm run bump-version` after (new tag `20260820-ahyy`),
+confirmed with `check-versions`. `npm test` → **179 PASS / 0 FAIL / 0
+WARN**.
+**Files:** `js/core/config.js`, `js/systems/game.js`,
+`js/core/gameState.js`, `js/rendering/renderer.js`, `CHANGELOG.md`.
+
 **Session 8 — Per-act atmosphere (user-requested follow-up):** Act theming
 from Session 7 only recolored things, so acts didn't feel distinct or
 scary. Added per-act background motifs in `js/rendering/renderer.js`
