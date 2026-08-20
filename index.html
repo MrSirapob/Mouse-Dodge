@@ -21,6 +21,7 @@
 <main id="gameRoot">
   <canvas id="game" aria-label="เกมหลบกระสุน"></canvas>
   <section id="hud" class="hidden" aria-live="polite">
+    <div class="space-hint" aria-hidden="true"><kbd>Space bar</kbd><span>เพื่อหยุดเกม</span></div>
     <div class="hud-zone hud-p1" aria-label="Player 1">
       <div class="hud-player-title p1-title"><span class="player-dot"></span>PLAYER 1</div>
       <div class="hud-row">
@@ -227,8 +228,10 @@
   <section id="pauseOverlay" class="hidden">
     <div class="big">⏸ หยุดชั่วคราว</div>
     <div class="small">กด SPACE เพื่อเล่นต่อ</div>
+    <button id="pauseResumeBtn" class="start resume-btn" type="button"><span>▶</span> เล่นต่อ</button>
+    <div class="pause-actions-divider"><span>หรือ</span></div>
     <div class="pause-actions">
-      <button id="pauseRestartBtn" class="start restart-btn" type="button"><span>↻</span> เล่นใหม่</button>
+      <button id="pauseRestartBtn" class="menu-btn restart-btn" type="button"><span>↻</span> เล่นใหม่</button>
       <button id="pauseMenuBtn" class="menu-btn" type="button">กลับเมนู</button>
     </div>
   </section>

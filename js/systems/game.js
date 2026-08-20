@@ -67,6 +67,7 @@ export class Game {
     input.onP2Action = () => this.skillSystem.use(this.players[1]);
     input.onPause = () => this.togglePause();
     this.ui.setMenuHandler(() => this.backToMenu());
+    this.ui.setResumeHandler(() => this.togglePause());
     this.ui.setResetBestHandler?.(() => this.resetBestStats());
     this.ui.setMouseSensitivityHandler?.((value) => this.input.setMouseSensitivity(value));
   }

@@ -402,12 +402,23 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .start {width: 100%;padding: 14px 16px;border: 0;border-radius: 8px;background: var(--accent);color: #06201d;font-weight: 800;letter-spacing: 2px;cursor: pointer;box-shadow: 0 4px 0 #2f8f88,0 6px 16px #4ecdc44d;font-size: 15px;transition: transform .12s,filter .12s,box-shadow .12s}
 .start:hover {filter: brightness(1.08);transform: translateY(-1px);box-shadow: 0 5px 0 #2f8f88,0 9px 22px #4ecdc44d}
 .start:active {transform: translateY(2px);box-shadow: 0 2px 0 #2f8f88,0 4px 10px #4ecdc433}
-.restart-btn {margin-top: 16px;background: linear-gradient(135deg,#4ecdc4,#6ee7df);position: relative;overflow: hidden}
+.restart-btn {position: relative;overflow: hidden}
 .restart-btn span {display: inline-block;font-size: 18px;margin-right: 6px;vertical-align: -1px;transition: transform .35s}
 .restart-btn:hover span {transform: rotate(-180deg)}
+.result-actions .restart-btn {background: linear-gradient(135deg,#4ecdc4,#6ee7df);color: #06201d;border-color: transparent}
 #pauseOverlay {cursor: auto;position: absolute;z-index: 30;inset: 0;display: flex;align-items: center;justify-content: center;color: #fff;padding: 16px;flex-direction: column;gap: 6px;background: #05050ab3}
 .big {font-size: 30px;font-weight: 800;letter-spacing: 3px}
 .small {font-size: 13px;color: #8b8fa3}
+
+/* Pause screen: "เล่นต่อ" (Resume) is the primary, most-likely-wanted action —
+   kept large, bright and separated above the secondary Restart/Menu group so
+   players don't fat-finger a restart when they only meant to resume. */
+.resume-btn {width: min(280px,80vw);margin-top: 18px;position: relative;overflow: hidden;font-size: 16px}
+.resume-btn span {display: inline-block;font-size: 15px;margin-right: 6px;vertical-align: -1px;transition: transform .2s}
+.resume-btn:hover span {transform: scale(1.15)}
+.pause-actions-divider {display: flex;align-items: center;gap: 10px;width: min(280px,80vw);margin: 14px 0 2px;color: #6b6f80;font-size: 11px;letter-spacing: 1px}
+.pause-actions-divider::before,
+.pause-actions-divider::after {content: "";flex: 1;height: 1px;background: #ffffff1f}
 
 /* MENU / OVERLAY SCREENS */
 .menu-btn {width: 100%;padding: 12px 16px;border: 1px solid #ffffff26;border-radius: 8px;background: #ffffff0a;color: #d3d6de;font-weight: 700;letter-spacing: 1px;cursor: pointer;box-shadow: none;transition: background .12s,border-color .12s,transform .12s}
@@ -415,9 +426,15 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .menu-btn:active {transform: translateY(1px)}
 
 /* GENERAL */
-.pause-actions {display: flex;flex-direction: column;gap: 10px;width: min(280px,80vw);margin-top: 18px}
+.pause-actions {display: flex;flex-direction: column;gap: 10px;width: min(280px,80vw);margin-top: 8px}
 .result-actions {display: flex;flex-direction: column;gap: 10px;margin-top: 16px}
 .result-actions .restart-btn {margin-top: 0}
+
+/* Top-right in-game hint: "Space bar เพื่อหยุดเกม" pill shown while playing */
+.space-hint {position: fixed;top: max(10px,env(safe-area-inset-top));right: max(10px,env(safe-area-inset-right));z-index: 20;display: flex;align-items: center;gap: 6px;padding: 7px 12px;border-radius: 999px;border: 1px solid #4ecdc466;background: linear-gradient(135deg,#0d1b1ae0,#0a1210e0);color: #d3d6de;font-size: 12px;letter-spacing: .4px;box-shadow: 0 4px 14px #0007,inset 0 0 0 1px #ffffff08;pointer-events: none}
+.space-hint kbd {font-family: inherit;font-size: 11px;font-weight: 800;letter-spacing: .5px;color: #06201d;background: linear-gradient(135deg,#4ecdc4,#6ee7df);border-radius: 5px;padding: 3px 7px;box-shadow: 0 2px 0 #2f8f88}
+.space-hint span {color: #a9adbb}
+@media (max-width: 700px) {.space-hint {display: none}}
 .skill-status span:first-child {color: #ff9f43}
 .skill-status span:last-child {color: #d8dbe5;font-variant-numeric: tabular-nums}
 

@@ -132,6 +132,7 @@ export class UI {
 
     this.onStart = null;
     this.onMenu = null;
+    this.onResume = null;
     this.onResetBest = null;
     // Tracks the best score as it stood *before* the most recent setBest()
     // call, so showGameOver() can tell whether this run just beat it.
@@ -326,7 +327,13 @@ export class UI {
         ),
       );
 
-    // Pause-screen actions: restart instantly with the current loadout, or back out to the menu.
+    // Pause-screen actions: resume the current run, restart instantly with the
+    // current loadout, or back out to the menu. Resume is the primary action
+    // (matches pressing Space) and is kept visually separated from the other
+    // two so players who meant to resume don't accidentally restart/quit.
+    document
+      .getElementById("pauseResumeBtn")
+      ?.addEventListener("click", () => this.onResume?.());
     document
       .getElementById("pauseRestartBtn")
       ?.addEventListener("click", () =>
@@ -439,6 +446,11 @@ export class UI {
     this.onMenu = fn;
   }
 
+  /** Called when the player clicks "เล่นต่อ" (Resume) on the Pause screen. */
+  setResumeHandler(fn) {
+    this.onResume = fn;
+  }
+
   setResetBestHandler(fn) {
     this.onResetBest = fn;
   }
@@ -468,6 +480,7 @@ export class UI {
   showResultScreen(html) {
     this.modeScreen?.classList.add("hidden");
     this.skillScreen?.classList.add("hidden");
+    this.pause?.classList.add("hidden");
     if (this.resultScreen) {
       this.resultScreen.innerHTML = html;
       this.resultScreen.classList.remove("hidden");
