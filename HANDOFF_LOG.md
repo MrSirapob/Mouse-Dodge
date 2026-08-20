@@ -148,9 +148,44 @@ detail. **File:** `js/systems/game.js`, plus the new test file.
 `npm run check-versions` → PASS, single consistent tag across 49
 occurrences / 27 files.
 
-**For the next session:** Only item 2 above (the cosmetic `lifeSystem.js`
-indentation glitch) is still open. No known landmines, WARNs, or
-correctness gaps at this time.
+**Session 4 — Pause screen Resume button + Space-bar hint (user-requested UX
+fixes), plus a test-suite breakage found and fixed along the way:**
+
+1. Pause was confusing players into hitting Restart/Menu when they only
+   meant to resume — added a dedicated, visually primary "เล่นต่อ" (Resume)
+   button (`#pauseResumeBtn`), separated from Restart/Menu by a divider.
+   Space bar still works as before; the button just gives a mouse-clickable,
+   harder-to-fumble equivalent. New `UI.setResumeHandler()`.
+2. Added a persistent, bordered "Space bar เพื่อหยุดเกม" hint pinned
+   top-right of the HUD (`.space-hint`) so the pause control doesn't require
+   opening How-to-Play to discover.
+3. Found and fixed a real bug while addressing (1): `UI.showResultScreen()`
+   never hid `#pauseOverlay`, unlike every other screen-transition method —
+   could leave Pause's opaque backdrop burying the whole result screen
+   (Reset Best button included) behind it. Added the missing hide call.
+4. **Broke, then fixed, the test suite in the same session:** step 1's new
+   `this.ui.setResumeHandler(...)` call in `Game`'s constructor wasn't
+   matched by a stub in `tests/helpers/gameFactory.mjs`'s `makeFakeUI()`,
+   so every `createGame()`-based test threw `TypeError:
+   this.ui.setResumeHandler is not a function` — took the suite from 179
+   PASS to failing across unit/integration/simulation. Caught by running
+   `npm test` before considering this done; added the missing stub line.
+   **Lesson for next time:** any new `Game` constructor call into `this.ui.*`
+   needs its `makeFakeUI()` stub added in the *same* commit, not after.
+
+See `CHANGELOG.md` ("Pause screen: separate Resume..." and "Test fixture
+gap...") for full detail. **Files:** `index.html`, `js/ui/ui.js`,
+`js/systems/game.js`, `css/main.css`, `tests/helpers/gameFactory.mjs`.
+
+**End-of-day test result (Session 4):** `npm test` → **179 PASS / 0 FAIL /
+0 WARN** (dipped to a wall of TypeErrors mid-session per item 4 above,
+confirmed back to 179/0/0 after the stub fix). `npm run check-versions` →
+PASS, single consistent tag `20260814w10final` across 49 occurrences / 27
+files.
+
+**For the next session:** Only the item 2 cosmetic `lifeSystem.js`
+indentation glitch (flagged Session 2) is still open. No known landmines,
+WARNs, or correctness gaps at this time.
 
 ---
 

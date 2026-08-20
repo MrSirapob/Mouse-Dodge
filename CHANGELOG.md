@@ -1,6 +1,53 @@
 # Changelog
 
-## Dev Mode SPEED bullet-tunneling fix (clamp-vs-scale ordering)
+## Pause screen: separate "Resume" from Restart/Menu, plus an always-visible Space-bar hint
+- **Added a dedicated "เล่นต่อ" (Resume) button to the Pause screen.**
+  Previously Pause only offered "เล่นใหม่" (Restart) and "กลับเมนู" (Menu) —
+  no button actually resumed the run, so players who paused by reflex (or
+  wanted to resume with the mouse instead of Space) had no safe way back in
+  and would sometimes hit Restart/Menu by mistake instead. Resume is now the
+  primary, most prominent action (`#pauseResumeBtn`, `.start.resume-btn`
+  styling) and is visually separated from Restart/Menu by a "หรือ" divider
+  (`.pause-actions-divider`) so a misclick can't restart or quit a run the
+  player only meant to resume. Wired via a new `UI.setResumeHandler()` →
+  `Game.togglePause()`, matching the existing Space-bar behavior.
+- **Added a persistent "Space bar เพื่อหยุดเกม" hint, top-right of the HUD**
+  (`.space-hint`, `position: fixed` so it isn't affected by the HUD's own
+  grid/layout changes across breakpoints), so the pause control is
+  discoverable without opening How-to-Play. Bordered pill with the accent
+  gradient on `<kbd>Space bar</kbd>` to read as a keycap. Hidden at
+  `max-width: 700px` (mobile has no keyboard).
+- **Fixed: `showResultScreen()` never hid the Pause overlay.** Every other
+  screen-transition method (`returnToMenu()`, `showModeScreen()`, etc.)
+  explicitly hides `#pauseOverlay`; `showResultScreen()` — the one Game Over
+  actually calls — did not. Normally harmless since Pause can only reach
+  Game Over indirectly, but it left the Pause overlay (`z-index: 30`, opaque
+  backdrop) able to visually bury the entire result screen — including its
+  "Reset Best" button — behind Pause's own smaller button set in any path
+  that reached Game Over without Pause explicitly closing first. Added the
+  missing `this.pause?.classList.add("hidden")` call.
+- **Files:** `index.html`, `js/ui/ui.js`, `js/systems/game.js`,
+  `css/main.css`.
+
+## Test fixture gap: `makeFakeUI()` missing `setResumeHandler`, broke every `createGame()`-based test
+- **Fixed: the whole suite's `createGame()` helper threw on construction**
+  (`this.ui.setResumeHandler is not a function`) after the Pause/Resume
+  change above added a `this.ui.setResumeHandler(...)` call to `Game`'s
+  constructor. `tests/helpers/gameFactory.mjs`'s `makeFakeUI()` stub records
+  every other `UI.set*Handler` method the constructor calls
+  (`setMenuHandler`, `setResetBestHandler`, `setMouseSensitivityHandler`)
+  but was never updated for the new one — since almost every unit,
+  integration, and simulation test goes through `createGame()`, this took
+  the suite from 179 PASS to a wall of `TypeError`s across unit, simulation,
+  and integration files. A reminder that a new `Game` constructor call
+  wired through `this.ui.*` needs a matching stub in `makeFakeUI()` in the
+  same change, not as a follow-up.
+- Added `setResumeHandler: record('setResumeHandler')` alongside the other
+  handler stubs. `npm test` → **179 PASS / 0 FAIL / 0 WARN** (back to
+  baseline). `npm run check-versions` → PASS, single consistent tag
+  `20260814w10final` across 49 occurrences / 27 files.
+- **File:** `tests/helpers/gameFactory.mjs`.
+
 - **Fixed: `Game.loop()` could produce a physics-unsafe dt at high Dev Mode
   SPEED.** Flagged by code review (see "Doc/code mismatch" entry above,
   same review pass) but not fixed at the time. The frame-time formula was

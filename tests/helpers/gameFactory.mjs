@@ -100,6 +100,7 @@ export function makeFakeUI() {
     calls,
     setBest: record('setBest'),
     setMenuHandler: record('setMenuHandler'),
+    setResumeHandler: record('setResumeHandler'),
     setResetBestHandler: record('setResetBestHandler'),
     setMouseSensitivityHandler: record('setMouseSensitivityHandler'),
     hideOverlay: record('hideOverlay'),
