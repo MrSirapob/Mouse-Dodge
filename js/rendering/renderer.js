@@ -754,24 +754,6 @@ export class Renderer {
     c.restore();
   }
 
-  /** Draws a floating text popup (graze score / item pickup feedback), rising and fading out. */
-  drawScorePopup(p) {
-    const c = this.ctx;
-    if (p.life <= 0) return;
-    const riseY = (1 - p.life) * -34;
-
-    c.save();
-    c.globalAlpha = Math.max(0, p.life);
-    c.font = 'bold 16px system-ui, sans-serif';
-    c.textAlign = 'center';
-    c.textBaseline = 'middle';
-    c.fillStyle = p.color;
-    c.shadowColor = p.color;
-    c.shadowBlur = 8;
-    c.fillText(p.text, p.x, p.y + riseY);
-    c.restore();
-  }
-
   drawWarning(w) {
     const c = this.ctx;
     const p = w.t / w.duration;
