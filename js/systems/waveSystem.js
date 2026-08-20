@@ -329,7 +329,7 @@ export class WaveSystem {
         this.p.accelerateRain(6.0, 24, 0.17, 0.7, 2.0, c1, true);
         wall(10.0, 5.6, c2, true, 0.065);
         wall(11.7, 5.2, c1, false, 0.075);
-        this.p.reverseRain(13.0, 22, 0.2, 2.45, 1.55, c3, true);
+        this.p.reverseRain(13.0, 22, 0.2, 2.45, 4.8, c3, true);
         spiral(17.0, 9.0, 5, 2.2, c1);
         this.p.sineRain(22.0, 28, 0.14, 2.35, 145, 0.85, c2, false);
         bouncer(26.0, 16, 0.38, 2.3, c1);
@@ -346,7 +346,7 @@ export class WaveSystem {
         wall(9.0, 5.7, c1, true, 0.055);
         wall(10.8, 5.4, c2, false, 0.065);
         wall(12.6, 5.2, c1, true, 0.07);
-        this.p.reverseRain(12.0, 26, 0.17, 5.2, 1.35, c2, false);
+        this.p.reverseRain(12.0, 26, 0.17, 5.2, 2.2, c2, false);
         this.p.orbitBurst(16.0, 22, 0.16, 120, 2.2, 1.8, c1);
         this.p.edgeSplitter(19.0, 9, 0.28, 4.5, c3);
         splitter(20.0, 12, 0.42, 4.4, c2);

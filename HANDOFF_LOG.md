@@ -59,6 +59,21 @@ what changed, why, key numbers if any.
 
 ## 2026-08-20 — Claude (Sonnet 5, claude.ai)
 
+**Session 13 — W9 reverseRain travel distance fix (user-requested):** Same issue as W8 Session 12.
+`reverseRain(fromTop=false, speed=5.2, reverseAfter=1.35)` → 421px travel → reversed at y≈317 (midscreen).
+Changed to `reverseAfter=2.2` → 686px → reverses at y≈52 (~95% from bottom), before y<-80 cull at 2.62s.
+**Files:** `js/systems/waveSystem.js`. **`npm test` → 179 PASS / 0 FAIL / 0 WARN**.
+**For the next session:** W10 boss also has 2 reverseRain calls with short reverseAfter (1.45 and 1.35) —
+those may be intentional for boss density (lots of patterns stacked); not changed this session.
+
+**Session 12 — W8 reverseRain travel distance fix (user-requested):** Bullets from `reverseRain`
+on W8 were only reaching ~29% of the arena (y≈210 from top) before reversing. Root cause: `reverseAfter=1.55s`
+× speed 2.45 × 60 = 228px travel. Changed to `reverseAfter=4.8s` → 706px → reverses at y≈688 (~95% of
+arena height), safely inside the y>800 out-of-bounds cull threshold (5.56s). One number change only.
+**Files:** `js/systems/waveSystem.js`.
+**End-of-day test result:** `npm test` → **179 PASS / 0 FAIL / 0 WARN**.
+**For the next session:** Nothing pending.
+
 **Session 11 — W8 orbit-splitter wave-not-ending bug + hit invulnerability reduction (user-requested):**
 
 1. **W8 orbit-splitter bug fixed.** `orbitBurst()` (called on W8 at t=0, count=32, releaseSpeed=0.9)
