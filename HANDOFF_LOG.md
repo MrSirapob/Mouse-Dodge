@@ -59,6 +59,25 @@ what changed, why, key numbers if any.
 
 ## 2026-08-20 — Claude (Sonnet 5, claude.ai)
 
+**Session 11 — W8 orbit-splitter wave-not-ending bug + hit invulnerability reduction (user-requested):**
+
+1. **W8 orbit-splitter bug fixed.** `orbitBurst()` (called on W8 at t=0, count=32, releaseSpeed=0.9)
+   spawns orbit bullets with `splitter:true, splitDelay:0.85`. At split time the parent orbit bullet
+   used its `vx/vy` (cos(a)*0.9, sin(a)*0.9) to seed child speed: `0.9*0.9 = 0.81 px/frame` ≈ 48 px/s.
+   At that rate the 8 child bullets took ~13 s to exit the 1280×720 arena, stalling `isWaveClear()`
+   and preventing W8 from transitioning. Fix: added `splitSpeed: 3.5` to orbit-splitter opts
+   (read by game.js split code via `b.splitSpeed ?? ...` fallback) and `maxAge: 2.5` on the parent as a
+   safety net. Also gave non-split orbit bullets `maxAge: 4.0`. One new field added to `BulletManager.spawn()`
+   (`splitSpeed: opts.splitSpeed ?? null`).
+2. **Hit invulnerability reduced 3.0 → 1.0 s** in `CONFIG.lives.hitInvulnerability`. `respawnInvulnerability`
+   (coop revive) unchanged at 1.0 s.
+
+**Files:** `js/patterns/patterns.js`, `js/systems/game.js`, `js/entities/bullet.js`, `js/core/config.js`.
+**End-of-day test result:** `npm test` → **179 PASS / 0 FAIL / 0 WARN**.
+**For the next session:** Nothing pending. Note: if W9 orbit burst (`releaseSpeed=1.8`) also caused a slow-drain
+issue it's also fixed by this same change (same `orbitBurst()` path). Only the `lifeSystem.js` cosmetic
+indentation glitch (flagged Session 2) remains open as low-priority.
+
 **Session 10 — W3-4 AIM balance follow-up (user-requested):** User said
 AIM still felt too dense specifically on W3-4 (not W1-2). Added a second
 tier to `aimCountMult` in `WaveSystem.build(n)`: stays `0.64` for `n <= 2`,

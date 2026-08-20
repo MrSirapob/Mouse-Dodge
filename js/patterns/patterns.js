@@ -378,8 +378,8 @@ export class PatternLibrary {
           5,
           color,
           split
-            ? { trajectory: 'orbit', centerX: 640, centerY: 360, angle: a, radius, orbitSpeed, splitter: true, splitDelay: 0.85, splitCount: 8 }
-            : { trajectory: 'orbit', centerX: 640, centerY: 360, angle: a, radius, orbitSpeed }
+            ? { trajectory: 'orbit', centerX: 640, centerY: 360, angle: a, radius, orbitSpeed, splitter: true, splitDelay: 0.85, splitCount: 8, splitSpeed: 3.5, maxAge: 2.5 }
+            : { trajectory: 'orbit', centerX: 640, centerY: 360, angle: a, radius, orbitSpeed, maxAge: 4.0 }
         );
       });
     }

@@ -916,7 +916,7 @@ export class Game {
       if (b.splitter && !b.split && b.age >= (b.splitDelay ?? 0.9)) {
         b.split = true;
         const base = Math.atan2(b.vy, b.vx);
-        const speed = Math.hypot(b.vx, b.vy) * 0.9;
+        const speed = b.splitSpeed ?? (Math.hypot(b.vx, b.vy) * 0.9);
         const splitCount = b.splitCount ?? 6;
         for (let k = 0; k < splitCount; k++) {
           const angle = base + (Math.PI * 2 * k) / splitCount;

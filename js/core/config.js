@@ -21,7 +21,7 @@ export const CONFIG = {
     color: "#4ecdc4",
     p2Color: "#ffd166",
   },
-  lives: { max: 3, hitInvulnerability: 3.0, respawnInvulnerability: 1.0 },
+  lives: { max: 3, hitInvulnerability: 1.0, respawnInvulnerability: 1.0 },
   skills: {
     // Buff pass (2026-08-20): cooldowns lowered and radii/durations raised
     // across all 8 skills so they're useful against W1-4 Bullet Hell density

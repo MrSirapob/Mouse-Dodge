@@ -41,6 +41,8 @@ export class BulletManager{
       curve: opts.curve || 0,
       splitDelay: opts.splitDelay,
       splitCount: opts.splitCount,
+      // If set, split children use this speed instead of deriving from vx/vy.
+      splitSpeed: opts.splitSpeed ?? null,
 
       // W10 perimeter formation state.
       perimeterBullet: !!opts.perimeterBullet,
