@@ -4,9 +4,9 @@
   "waves": {
     "wave1": {
       "cap": 420,
-      "peakActive": 262,
-      "averageActive": 163.76,
-      "spawned": 1000,
+      "peakActive": 224,
+      "averageActive": 127.54,
+      "spawned": 769,
       "patterns": [
         "aimed",
         "cross",
@@ -18,9 +18,9 @@
     },
     "wave2": {
       "cap": 420,
-      "peakActive": 260,
-      "averageActive": 164.65,
-      "spawned": 1059,
+      "peakActive": 216,
+      "averageActive": 139.87,
+      "spawned": 900,
       "patterns": [
         "aimed",
         "cross",

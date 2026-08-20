@@ -93,10 +93,16 @@ export class WaveSystem {
     const aimCountMult = n <= 4 ? 0.64 : 1.0;
     const aimSpeedMult = n <= 4 ? 1.08 : 1.0;
 
+    // Per-wave bullet-count scaling (2026-08-20): W1 fires 30% fewer
+    // bullets across all count-based patterns, W2 fires 20% fewer.
+    // Wall and spiral have no discrete bullet count so they're unaffected.
+    // W3+ remain at 1.0 (unchanged).
+    const waveCountMult = n === 1 ? 0.70 : n === 2 ? 0.80 : 1.0;
+
     const aimed = (t, count, interval = 0.3, spd = 2.15, color = c1) => {
       this.p.aimed(
         t,
-        Math.ceil(count * 1.7 * aimCountMult),
+        Math.ceil(count * waveCountMult * 1.7 * aimCountMult),
         interval,
         spd * speedTier * aimSpeedMult,
         color,
@@ -105,34 +111,36 @@ export class WaveSystem {
     };
 
     const ring = (t, x = 640, y = 360, count = 28, spd = 2.25, color = c2) => {
-      this.p.ring(t, x, y, Math.ceil(count * 1.7), spd * speedTier, color);
+      this.p.ring(t, x, y, Math.ceil(count * waveCountMult * 1.7), spd * speedTier, color);
       labels.add("วงแหวนกลืนกินสรรพสิ่ง");
     };
 
     const wall = (t, spd = 2.45, color = c1, vertical = false, gap = null) => {
+      // wall has no discrete bullet count — waveCountMult deliberately not applied.
       this.p.wall(t, spd * speedTier, color, vertical, gap);
       labels.add("กำแพงทมิฬปิดฟากสวรรค์");
     };
 
     const spiral = (t, len, arms = 3, spd = 1.9, color = c2) => {
+      // spiral uses len/arms (not a bullet count) — waveCountMult not applied.
       this.p.spiral(t, len, arms, spd * speedTier, color);
       labels.add("มหาวังวนกลืนกินดวงวิญญาณ");
     };
 
     const cross = (t, count, spd = 2.45, color = c1) => {
-      this.p.cross(t, Math.ceil(count * 1.7), spd * speedTier, color);
+      this.p.cross(t, Math.ceil(count * waveCountMult * 1.7), spd * speedTier, color);
       labels.add("กางเขนประหารสี่ทิศ");
     };
 
     const laser = (t, count, interval = 0.9, color = c3) => {
-      this.p.laserBarrage(t, Math.ceil(count * 1.35), interval, color);
+      this.p.laserBarrage(t, Math.ceil(count * waveCountMult * 1.35), interval, color);
       labels.add("มหาลำแสงพิพากษาเหนือปฐพี");
     };
 
     const homing = (t, count, interval = 0.45, spd = 1.85, color = c2) => {
       this.p.homing(
         t,
-        Math.ceil(count * 1.7),
+        Math.ceil(count * waveCountMult * 1.7),
         interval,
         spd * speedTier,
         color,
@@ -143,7 +151,7 @@ export class WaveSystem {
     const splitter = (t, count, interval = 0.8, spd = 1.95, color = c1) => {
       this.p.splitter(
         t,
-        Math.ceil(count * 1.7),
+        Math.ceil(count * waveCountMult * 1.7),
         interval,
         spd * speedTier,
         color,
@@ -154,7 +162,7 @@ export class WaveSystem {
     const bouncer = (t, count, interval = 0.72, spd = 2.0, color = c2) => {
       this.p.bouncer(
         t,
-        Math.ceil(count * 1.7),
+        Math.ceil(count * waveCountMult * 1.7),
         interval,
         spd * speedTier,
         color,

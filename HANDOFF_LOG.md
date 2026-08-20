@@ -104,8 +104,21 @@ unchanged); `phase` cooldown 9→7, duration 2.0→2.5. No behavior changes —
 numbers only. All tests still PASS (skill tests read from CONFIG directly
 so no hardcoded values to update).
 **Files:** `js/core/config.js`.
-**End-of-session test result:** `npm test` → **179 PASS / 0 FAIL / 0 WARN**
-(unchanged count — no new tests added, no existing ones broken).
+
+**Session 6 — W1/W2 bullet count reduction (user-requested):** Added
+`waveCountMult` to `waveSystem.js build(n)` — 0.70 for W1 (−30%), 0.80
+for W2 (−20%), 1.0 for all others. Applied uniformly inside all
+count-based wrappers (aimed/ring/cross/laser/homing/splitter/bouncer).
+Wall and spiral have no discrete bullet count so they're naturally
+unaffected. Old → new peak active: W1 262→224, W2 260→216; W3/W4
+unchanged (420/396). Regenerated `tests/fixtures/balance-baseline.json`
+deliberately per tests/README.md policy (old values noted above).
+**Files:** `js/systems/waveSystem.js`,
+`tests/fixtures/balance-baseline.json`.
+**End-of-day test result:** `npm test` → **179 PASS / 0 FAIL / 0 WARN**.
+**For the next session:** Nothing pending — Session 5+6 are the latest
+changes. The `lifeSystem.js` cosmetic indent glitch (flagged Session 2)
+is still the only open low-priority item.
 
 **Session 2 — code review + fixed the AGENTS.md doc/code mismatch it
 found:** Did a full code review of the project (all of `js/**`, plus the
