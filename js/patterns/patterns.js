@@ -460,114 +460,108 @@ export class PatternLibrary {
 
 
   bossPerimeterCrossfire(start, duration, count, interval, speed, color) {
-    // W10 SIGNATURE:
-    // Build ONE complete two-layer rectangular formation first.
-    // Then release exactly one bullet at a time. Unreleased bullets remain
-    // locked to their square positions until their own release time.
+    // W10 SIGNATURE — reworked:
+    // 1. Telegraph: rectangle outline appears ~1s before.
+    // 2. Boss fires one bullet per slot in rapid succession; each flies to
+    //    its position on the rectangle and snaps in place.
+    // 3. After all bullets have had time to arrive, they ALL fire toward the
+    //    player simultaneously (no staggered release).
+    //
+    // Parameters:
+    //   count    — number of bullets that form the rectangle
+    //   interval — hold time (s) after the last bullet arrives before firing
+    //   speed    — bullet speed when fired (velocity units; actual = speed * 5)
+
+    const spawnStep = 0.045;               // seconds between each boss shot
+    const flySpeed  = 13;                  // velocity units → 780 px/s
+    const flightBuf = 0.8;                 // buffer for last bullet to arrive
+    const holdTime  = Math.max(0.6, interval); // wait in formation before firing
+
+    // Absolute wave time when all formation bullets fire.
+    const fireTime = start + (count - 1) * spawnStep + flightBuf + holdTime;
+
+    // ── 1. Telegraph ────────────────────────────────────────────────────────
     this.game.queue(Math.max(0, start - 1.0), () => {
       const view = this.game.renderer?.visibleWorldBounds?.() || WORLD;
       const margin = 22;
-      const left = view.left + margin;
-      const right = view.right - margin;
-      const top = view.top + margin;
-      const bottom = view.bottom - margin;
+      const L = view.left  + margin;
+      const R = view.right  - margin;
+      const T = view.top    + margin;
+      const B = view.bottom - margin;
+      const cx = (L + R) / 2;
+      const cy = (T + B) / 2;
 
-      // Telegraph exactly where the formation will appear.
-      const cx = (left + right) / 2;
-      const cy = (top + bottom) / 2;
-      const outerW = right - left;
-      const outerH = bottom - top;
-      const innerInset = Math.min(24, Math.min(outerW, outerH) * 0.055);
-
+      // Show the rectangle outline as a ring-warning so players can read
+      // where the formation will appear before bullets start flying.
       this.game.ringWarnings.push({
         shape: 'square', x: cx, y: cy,
-        width: outerW, height: outerH,
-        t: 0, duration: 1.0, color
-      });
-      this.game.ringWarnings.push({
-        shape: 'square', x: cx, y: cy,
-        width: outerW - innerInset * 2,
-        height: outerH - innerInset * 2,
-        t: 0, duration: 1.0, color
+        width: R - L, height: B - T,
+        t: 0,
+        // Duration covers the full spawn+flight window so the outline stays
+        // visible until the last bullet is in position.
+        duration: 1.0 + (count - 1) * spawnStep + flightBuf,
+        color
       });
     });
 
+    // ── 2. Calculate positions then queue one spawn per slot ─────────────────
     this.game.queue(start, () => {
       const view = this.game.renderer?.visibleWorldBounds?.() || WORLD;
       const margin = 22;
-      const left = view.left + margin;
-      const right = view.right - margin;
-      const top = view.top + margin;
-      const bottom = view.bottom - margin;
+      const L = view.left  + margin;
+      const R = view.right  - margin;
+      const T = view.top    + margin;
+      const B = view.bottom - margin;
+      const W = R - L;
+      const H = B - T;
+      const perimeter = 2 * (W + H);
 
-      const outerW = right - left;
-      const outerH = bottom - top;
-      const innerInset = Math.min(24, Math.min(outerW, outerH) * 0.055);
+      // Distribute formation slots evenly around the rectangle perimeter.
+      for (let k = 0; k < count; k++) {
+        const d = (k / count) * perimeter;
+        let fx, fy;
+        if      (d < W)          { fx = L + d;              fy = T; }
+        else if (d < W + H)      { fx = R;                  fy = T + (d - W); }
+        else if (d < 2 * W + H)  { fx = R - (d - W - H);   fy = B; }
+        else                     { fx = L;                  fy = B - (d - 2*W - H); }
 
-      // 48 points per rectangle = clearly visible on all four sides.
-      // Use the same number for both layers so the formation reads as two
-      // complete rectangles rather than random scattered bullets.
-      const pointsPerLayer = 48;
-      const layers = [
-        [left, right, top, bottom],
-        [left + innerInset, right - innerInset,
-         top + innerInset, bottom - innerInset]
-      ];
+        // Queue each bullet to spawn from the boss at its staggered time.
+        const spawnAt = this.game.state.waveTime + k * spawnStep;
+        this.game.queue(spawnAt, () => {
+          this.game.bullets.spawn(
+            this.game.boss.x, this.game.boss.y,
+            0, 0,
+            6, color,
+            {
+              maxAge: Math.max(12, duration + 6),
+              perimeterBullet: true,
+              perimeterReleased: false,
+              flyToX: fx,
+              flyToY: fy,
+              flyToSpeed: flySpeed,
+            }
+          );
+        });
+      }
+    });
 
-  
-      // Build both layers visually, but ONLY the inner rectangle is armed.
-      // Outer rectangle remains a visual pressure boundary.
-      for (let layerIndex = 0; layerIndex < layers.length; layerIndex++) {
-        const [L, R, T, B] = layers[layerIndex];
-        const W = R - L;
-        const H = B - T;
-        const perimeter = 2 * (W + H);
-
-        for (let k = 0; k < pointsPerLayer; k++) {
-          const d = (k / pointsPerLayer) * perimeter;
-          let x, y;
-
-          if (d < W) {
-            x = L + d; y = T;
-          } else if (d < W + H) {
-            x = R; y = T + (d - W);
-          } else if (d < 2 * W + H) {
-            x = R - (d - W - H); y = B;
-          } else {
-            x = L; y = B - (d - 2 * W - H);
-          }
-
-          // Both rectangles are visible, but only the INNER rectangle
-          // contains live bullets. Pick release order randomly so the player
-          // cannot predict a clockwise/counter-clockwise sequence.
-          if (layerIndex === 1) {
-            this.game.bullets.spawn(
-              x, y, 0, 0, 6, color,
-              {
-                maxAge: Math.max(12, duration + 6),
-                perimeterBullet: true,
-                perimeterHold: true,
-                releaseDelay: 0,
-                perimeterSpeed: speed * 5
-              }
-            );
-          }
+    // ── 3. Fire signal — all arrived formation bullets shoot at once ──────────
+    this.game.queue(fireTime, () => {
+      for (const b of this.game.bullets.items) {
+        if (!b.perimeterBullet || b.perimeterReleased) continue;
+        // Snap any still-in-flight stragglers to their target position.
+        if (!b.flyToArrived) {
+          b.x = b.flyToX;
+          b.y = b.flyToY;
+          b.flyToArrived = true;
         }
+        // Each bullet aims at the player's current position.
+        const t = this.targetPlayer(b.x, b.y);
+        const angle = Math.atan2(t.y - b.y, t.x - b.x);
+        b.vx = Math.cos(angle) * (speed * 5);
+        b.vy = Math.sin(angle) * (speed * 5);
+        b.perimeterReleased = true;
       }
-
-      // Randomize the actual inner-layer release order after all bullets
-      // have been created. Each selected bullet receives a unique delay.
-      const inner = this.game.bullets.items.filter(b =>
-        b.perimeterBullet && b.perimeterHold && !b.perimeterReleased
-      );
-      for (let i = inner.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [inner[i], inner[j]] = [inner[j], inner[i]];
-      }
-      const randomStep = Math.max(0.055, interval * 0.55);
-      inner.forEach((b, i) => {
-        b.releaseDelay = i * randomStep;
-      });
     });
   }
   bossRing(start, count, speed, color) {

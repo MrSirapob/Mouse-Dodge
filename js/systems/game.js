@@ -764,23 +764,51 @@ export class Game {
       const b = this.bullets.items[i];
       b.age += dt;
 
+      // Fly-to-position: formation bullet spawned at boss, flying to its slot.
+      // When it arrives it snaps in place (vx=vy=0); the pattern's fire
+      // callback will release it later. While still flying, skip the
+      // perimeterHold freeze so normal vx/vy movement applies.
+      if (!b.flyToArrived) {
+        const dx = b.flyToX - b.x;
+        const dy = b.flyToY - b.y;
+        const dist = Math.hypot(dx, dy);
+        const step = b.flyToSpeed * dt * 60;
+        if (dist <= step + 2) {
+          // Snap to slot and hold still.
+          b.x = b.flyToX;
+          b.y = b.flyToY;
+          b.vx = 0;
+          b.vy = 0;
+          b.flyToArrived = true;
+        } else {
+          // Still flying — steer toward target at flyToSpeed.
+          b.vx = (dx / dist) * b.flyToSpeed;
+          b.vy = (dy / dist) * b.flyToSpeed;
+        }
+        // Don't apply the hold-freeze while still in flight.
+        // Fall through so normal vx/vy movement step runs below.
+      }
+
       // Perimeter formation bullets stay frozen in their square position
       // until their individual release time. Then they lock onto the player
       // and leave the formation one by one.
       if (b.perimeterHold && !b.perimeterReleased) {
-        if (b.age < b.releaseDelay) {
+        // If still flying to position, skip freeze — handled above.
+        if (!b.flyToArrived) {
+          // (intentionally left empty — flyTo block already set velocity)
+        } else if (b.age < b.releaseDelay) {
           b.vx = 0;
           b.vy = 0;
           continue;
+        } else {
+          const target = this.targetPlayerForBullet(b.x, b.y);
+          if (target) {
+            const angle = Math.atan2(target.y - b.y, target.x - b.x);
+            b.vx = Math.cos(angle) * b.perimeterSpeed;
+            b.vy = Math.sin(angle) * b.perimeterSpeed;
+          }
+          b.perimeterReleased = true;
         }
-
-        const target = this.targetPlayerForBullet(b.x, b.y);
-        if (target) {
-          const angle = Math.atan2(target.y - b.y, target.x - b.x);
-          b.vx = Math.cos(angle) * b.perimeterSpeed;
-          b.vy = Math.sin(angle) * b.perimeterSpeed;
-        }
-        b.perimeterReleased = true;
       }
 
       // Short continuation of the Repulse impulse so bullets visibly travel

@@ -59,6 +59,9 @@ what changed, why, key numbers if any.
 
 ## 2026-08-20 — Claude (Sonnet 5, claude.ai)
 
+**Session 5 — W10 formation attack rework (user-requested):** Rewrote `bossPerimeterCrossfire` so bullets now fly out from the boss one by one and slot into the rectangle formation before firing simultaneously. Old behaviour: 48 bullets appeared at perimeter positions instantly, then released randomly one-by-one. New behaviour: (1) Telegraph: rectangle outline appears ~1s before. (2) Boss fires `count` bullets in rapid succession (0.045s apart); each flies at 780px/s to its rectangle slot and snaps in place. (3) After all bullets arrive + hold time, **all fire at once** toward the player. Added `flyToX/Y/Speed/Arrived` fields to `bullet.js` and a "fly-to-position" update block in `game.js updateBullets()` (before the existing perimeterHold block). Existing `perimeterHold` path is unchanged and correctly skips bullets still in flight. `npm test` → **179 PASS / 0 FAIL / 0 WARN**.
+**Files:** `js/entities/bullet.js`, `js/systems/game.js`, `js/patterns/patterns.js`.
+
 **Session 4 — edgeSplitter pattern (user-requested fairness fix):** Replaced `explodeNearPlayer` everywhere in `waveSystem.js` (W7, W8, W9, W10 boss ×2) with a new `edgeSplitter()` in `patterns.js`. The old pattern spawned splitter bullets directly beside the player (radius 65-78px away) with no warning — effectively undodgeable. The new method spawns the same splitter-type bullet from a random screen edge aimed at the player (with ±0.18 rad spread), giving the player a clear read and time to react. Bullet radius bumped 6→9 so it's more visible; splitCount 6→8. `explodeNearPlayer` is kept in the library (marked LEGACY) so nothing silently breaks. `npm test` → **179 PASS / 0 FAIL / 0 WARN**.
 **Files:** `js/patterns/patterns.js`, `js/systems/waveSystem.js`.
 

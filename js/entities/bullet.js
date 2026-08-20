@@ -49,6 +49,14 @@ export class BulletManager{
       releaseDelay: opts.releaseDelay ?? 0,
       perimeterSpeed: opts.perimeterSpeed ?? 0,
 
+      // Fly-to-position: bullet spawns at boss and travels to a fixed spot
+      // before holding still. Set flyToX/Y at spawn; once arrived the bullet
+      // holds at that position until the pattern's fire callback releases it.
+      flyToX: opts.flyToX ?? null,
+      flyToY: opts.flyToY ?? null,
+      flyToSpeed: opts.flyToSpeed ?? 0,
+      flyToArrived: opts.flyToX == null, // true from birth if no target
+
       repulseT:0,
       repulseStrength:0,
       assistCooldown:0,
