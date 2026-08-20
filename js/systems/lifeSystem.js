@@ -9,7 +9,7 @@ export class LifeSystem {
     player.hitFlash = 0.30;
     this.game.state.shakeMag = 12; this.game.state.damageShake = 0.22;
     this.game.particles.spawn(player.x, player.y, '#ff5c5c', 28);
-        if (player.lives <= 0) {
+    if (player.lives <= 0) {
       player.down = true;
       player.reviveProgress = 0;
       if (this.game.allPlayersDown()) this.game.gameOver();
