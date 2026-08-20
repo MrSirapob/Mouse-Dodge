@@ -59,6 +59,26 @@ what changed, why, key numbers if any.
 
 ## 2026-08-20 — Claude (Sonnet 5, claude.ai)
 
+**Session 8 — Per-act atmosphere (user-requested follow-up):** Act theming
+from Session 7 only recolored things, so acts didn't feel distinct or
+scary. Added per-act background motifs in `js/rendering/renderer.js`
+(`drawGrid(wave)` now branches by act): Act 1 pulsing violet cracks, Act 2
+a dying starfield (grid removed), Act 3 scorched grid + rising embers,
+Act 4 near-black with rare static bursts (grid removed) — plus an
+edge-only vignette that darkens a bit more per act. User's explicit
+constraint: must not steal focus from bullet-dodging. Handled by
+construction, not just tuning: everything draws inside `drawGrid()`,
+which `drawWorld()` calls *first* (before bullets/boss/players), and
+alphas are capped low (~0.35 max on the brightest element). Crack/star/
+ember positions are built once via a seeded PRNG and cached
+(`_actAssets()`) so nothing respawns randomly frame-to-frame. Ran
+`npm run bump-version` after (new tag `20260820-rivb`), confirmed with
+`check-versions`. `npm test` → **179 PASS / 0 FAIL / 0 WARN** (renderer
+has no automated visual tests — this was verified by code review + the
+z-order/alpha constraints above, not a test run; worth an eyeball pass
+next session on an actual canvas).
+**Files:** `js/rendering/renderer.js`, `CHANGELOG.md`.
+
 **Session 7 — Narrative act theming (user-requested):** Added
 `CONFIG.actThemes` + `actForWave(n)` (`js/core/config.js`) giving each
 story chapter (mortal world W1-4 → seal breaks W5-9 → stars devoured

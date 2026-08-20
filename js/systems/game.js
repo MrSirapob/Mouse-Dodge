@@ -1,16 +1,16 @@
-import { CONFIG, GRAZE_REWARD } from '../core/config.js?v=20260820-xx1g';
-import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260820-xx1g';
-import { circleHit, circleNear } from '../core/collision.js?v=20260820-xx1g';
-import { Player } from '../entities/player.js?v=20260820-xx1g';
-import { BulletManager } from '../entities/bullet.js?v=20260820-xx1g';
-import { Boss } from '../entities/boss.js?v=20260820-xx1g';
-import { ParticleSystem } from '../rendering/particles.js?v=20260820-xx1g';
-import { PatternLibrary } from '../patterns/patterns.js?v=20260820-xx1g';
-import { WaveSystem } from './waveSystem.js?v=20260820-xx1g';
-import { SkillSystem } from './skillSystem.js?v=20260820-xx1g';
-import { LifeSystem } from './lifeSystem.js?v=20260820-xx1g';
-import { DevMode } from './devMode.js?v=20260820-xx1g';
-import { ItemSystem } from './itemSystem.js?v=20260820-xx1g';
+import { CONFIG, GRAZE_REWARD } from '../core/config.js?v=20260820-rivb';
+import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260820-rivb';
+import { circleHit, circleNear } from '../core/collision.js?v=20260820-rivb';
+import { Player } from '../entities/player.js?v=20260820-rivb';
+import { BulletManager } from '../entities/bullet.js?v=20260820-rivb';
+import { Boss } from '../entities/boss.js?v=20260820-rivb';
+import { ParticleSystem } from '../rendering/particles.js?v=20260820-rivb';
+import { PatternLibrary } from '../patterns/patterns.js?v=20260820-rivb';
+import { WaveSystem } from './waveSystem.js?v=20260820-rivb';
+import { SkillSystem } from './skillSystem.js?v=20260820-rivb';
+import { LifeSystem } from './lifeSystem.js?v=20260820-rivb';
+import { DevMode } from './devMode.js?v=20260820-rivb';
+import { ItemSystem } from './itemSystem.js?v=20260820-rivb';
 
 /**
  * Game is the top-level orchestrator: it owns all entities/systems and runs

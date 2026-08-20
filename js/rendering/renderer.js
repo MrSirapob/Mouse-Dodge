@@ -1,5 +1,5 @@
-import { ITEM_COLORS } from '../systems/itemSystem.js?v=20260820-xx1g';
-import { CONFIG, actForWave } from '../core/config.js?v=20260820-xx1g';
+import { ITEM_COLORS } from '../systems/itemSystem.js?v=20260820-rivb';
+import { CONFIG, actForWave } from '../core/config.js?v=20260820-rivb';
 
 /**
  * One draw function per item type, keyed by `item.type` (mirrors the
@@ -468,11 +468,37 @@ export class Renderer {
     this.ctx.restore();
   }
 
-  drawGrid() {
+  drawGrid(wave = 0) {
     const c = this.ctx;
+    const act = actForWave(wave);
     c.fillStyle = this.bg || CONFIG.actThemes[0].bg;
     c.fillRect(0, 0, WORLD.width, WORLD.height);
-    c.strokeStyle = 'rgba(255,255,255,.03)';
+
+    // Per-act atmosphere (user-requested, 2026-08-20): distinct background
+    // motifs per story act, not just a recolor. Everything here draws
+    // BEFORE bullets/boss/players (drawWorld calls drawGrid first) and is
+    // capped to low alpha, so it can never compete with or obscure what
+    // the player is actually dodging — it's strictly a background layer.
+    if (act === 0) {
+      this._drawGridLines();
+    } else if (act === 1) {
+      this._drawGridLines(0.5);
+      this._drawCracks();
+    } else if (act === 2) {
+      this._drawStars();
+    } else if (act === 3) {
+      this._drawScorchedGrid();
+      this._drawEmbers();
+    } else {
+      this._drawVoidStatic();
+    }
+
+    this._drawActVignette(act);
+  }
+
+  _drawGridLines(alphaMult = 1) {
+    const c = this.ctx;
+    c.strokeStyle = `rgba(255,255,255,${0.03 * alphaMult})`;
     c.lineWidth = 1;
     for (let x = 0; x <= WORLD.width; x += 40) {
       c.beginPath();
@@ -488,9 +514,184 @@ export class Renderer {
     }
   }
 
+  /**
+   * Lazily builds (once) the fixed background elements the per-act
+   * atmosphere below reuses — crack paths, a starfield, ember spawn
+   * points. Positions are randomized once and cached on the instance so
+   * they stay put frame to frame; only opacity/position *animate* via
+   * time. Respawning them randomly every frame would just read as noise
+   * and compete with bullets for attention, which is exactly what this is
+   * meant to avoid.
+   */
+  _actAssets() {
+    if (this._actAssetsCache) return this._actAssetsCache;
+    let seed = 1337;
+    const rand = () => {
+      seed = (seed + 0x6d2b79f5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+
+    const cracks = [];
+    for (let i = 0; i < 6; i++) {
+      const points = [];
+      let x = rand() * WORLD.width, y = rand() * WORLD.height;
+      for (let j = 0; j < 5; j++) {
+        points.push({ x, y });
+        x += (rand() - 0.5) * 220;
+        y += (rand() - 0.5) * 220;
+      }
+      cracks.push({ points, phase: rand() * Math.PI * 2 });
+    }
+
+    const stars = [];
+    for (let i = 0; i < 50; i++) {
+      stars.push({
+        x: rand() * WORLD.width,
+        y: rand() * WORLD.height,
+        r: 0.8 + rand() * 1.4,
+        phase: rand() * Math.PI * 2,
+        deadPhase: rand() * Math.PI * 2,
+      });
+    }
+
+    const embers = [];
+    for (let i = 0; i < 26; i++) {
+      embers.push({
+        x: rand() * WORLD.width,
+        speed: 12 + rand() * 18,
+        r: 1 + rand() * 1.6,
+        phase: rand() * WORLD.height,
+        drift: (rand() - 0.5) * 10,
+      });
+    }
+
+    this._actAssetsCache = { cracks, stars, embers };
+    return this._actAssetsCache;
+  }
+
+  /** Act 1 — faint pulsing violet crack lines. Alpha stays well under any
+   * bullet's brightness so they read as background texture, not a threat. */
+  _drawCracks() {
+    const c = this.ctx;
+    const { cracks } = this._actAssets();
+    const t = performance.now() / 1000;
+    c.lineWidth = 1.5;
+    c.strokeStyle = '#a29bfe';
+    for (const crack of cracks) {
+      const alpha = 0.06 + (Math.sin(t * 0.6 + crack.phase) * 0.5 + 0.5) * 0.10;
+      c.globalAlpha = alpha;
+      c.beginPath();
+      crack.points.forEach((p, i) => (i === 0 ? c.moveTo(p.x, p.y) : c.lineTo(p.x, p.y)));
+      c.stroke();
+    }
+    c.globalAlpha = 1;
+  }
+
+  /** Act 2 — dim starfield where individual stars slowly wink out (the
+   * boss devouring them), never brighter than a faint ambient dot. */
+  _drawStars() {
+    const c = this.ctx;
+    const { stars } = this._actAssets();
+    const t = performance.now() / 1000;
+    c.fillStyle = '#dfe6e9';
+    for (const s of stars) {
+      const twinkle = 0.5 + Math.sin(t * 0.8 + s.phase) * 0.5;
+      const dying = 0.5 + Math.sin(t * 0.05 + s.deadPhase) * 0.5; // slow "eaten" cycle
+      const alpha = 0.35 * twinkle * dying;
+      if (alpha < 0.02) continue;
+      c.globalAlpha = alpha;
+      c.beginPath();
+      c.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      c.fill();
+    }
+    c.globalAlpha = 1;
+  }
+
+  /** Act 3 — cracked/scorched ground instead of a clean grid: wider,
+   * dimmer base lines plus the same crack paths in an ember-red tint. */
+  _drawScorchedGrid() {
+    const c = this.ctx;
+    const { cracks } = this._actAssets();
+    c.strokeStyle = 'rgba(255,90,60,.05)';
+    c.lineWidth = 1;
+    for (let x = 0; x <= WORLD.width; x += 60) {
+      c.beginPath();
+      c.moveTo(x, 0);
+      c.lineTo(x, WORLD.height);
+      c.stroke();
+    }
+    for (let y = 0; y <= WORLD.height; y += 60) {
+      c.beginPath();
+      c.moveTo(0, y);
+      c.lineTo(WORLD.width, y);
+      c.stroke();
+    }
+    c.strokeStyle = 'rgba(255,60,40,.07)';
+    c.lineWidth = 1.5;
+    for (const crack of cracks) {
+      c.beginPath();
+      crack.points.forEach((p, i) => (i === 0 ? c.moveTo(p.x, p.y) : c.lineTo(p.x, p.y)));
+      c.stroke();
+    }
+  }
+
+  /** Act 3 — dim embers drifting upward, looping via time modulo so
+   * nothing respawns/jumps randomly frame to frame. */
+  _drawEmbers() {
+    const c = this.ctx;
+    const { embers } = this._actAssets();
+    const t = performance.now() / 1000;
+    c.fillStyle = '#ff7675';
+    for (const e of embers) {
+      const y = WORLD.height - ((t * e.speed + e.phase) % (WORLD.height + 40));
+      const x = e.x + Math.sin(t * 0.5 + e.phase) * e.drift;
+      const alpha = 0.18 * (0.4 + 0.6 * Math.sin((y / WORLD.height) * Math.PI));
+      c.globalAlpha = Math.max(0, alpha);
+      c.beginPath();
+      c.arc(x, y, e.r, 0, Math.PI * 2);
+      c.fill();
+    }
+    c.globalAlpha = 1;
+  }
+
+  /** Act 4 — near-black void: rare, brief static bars. Low alpha and
+   * background-layer only, so a burst can never dim or hide a bullet
+   * drawn on top of it a moment later. */
+  _drawVoidStatic() {
+    const c = this.ctx;
+    const t = performance.now() / 1000;
+    // Short glitch burst roughly every ~4s, lasting ~150ms.
+    if (t % 4 > 0.15) return;
+    c.fillStyle = 'rgba(255,255,255,.05)';
+    for (let i = 0; i < 4; i++) {
+      const y = (t * 900 + i * 137) % WORLD.height;
+      const h = 2 + (i % 3);
+      c.fillRect(0, y, WORLD.width, h);
+    }
+  }
+
+  /** Edge vignette that darkens more with each act. Radius/alpha are
+   * capped so the center play area — where the player actually dodges —
+   * is always left clear; only the far corners darken. */
+  _drawActVignette(act) {
+    if (act === 0) return;
+    const c = this.ctx;
+    const maxAlpha = [0, 0.10, 0.16, 0.22, 0.30][act];
+    const grad = c.createRadialGradient(
+      WORLD.width / 2, WORLD.height / 2, Math.min(WORLD.width, WORLD.height) * 0.42,
+      WORLD.width / 2, WORLD.height / 2, Math.max(WORLD.width, WORLD.height) * 0.72
+    );
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, `rgba(0,0,0,${maxAlpha})`);
+    c.fillStyle = grad;
+    c.fillRect(0, 0, WORLD.width, WORLD.height);
+  }
+
   /** Draws every layer of the world in back-to-front order. */
   drawWorld(game) {
-    this.drawGrid();
+    this.drawGrid(game.state.wave);
     for (const w of game.ringWarnings) this.drawWarning(w);
     for (const l of game.lasers) this.drawLaser(l);
     if (game.boss.active) this.drawBoss(game.boss);

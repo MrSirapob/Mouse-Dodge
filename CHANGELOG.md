@@ -1,5 +1,36 @@
 # Changelog
 
+## Per-act atmosphere: distinct background motifs + edge vignette (user-requested — "scarier and distinct, but stay off the bullets' focus")
+- **Added `Renderer.drawGrid(wave)` per-act branching + 7 new private
+  draw methods** (`_drawGridLines`, `_drawCracks`, `_drawStars`,
+  `_drawScorchedGrid`, `_drawEmbers`, `_drawVoidStatic`,
+  `_drawActVignette`) so each story act (see the palette work above) gets
+  its own background motif instead of only a recolored grid: Act 0
+  unchanged plain grid; Act 1 faint pulsing violet crack lines over a
+  dimmed grid; Act 2 grid removed entirely, replaced by a dim starfield
+  where individual stars slowly wink out (devoured); Act 3 wider scorched
+  grid + the crack paths in ember-red, plus embers drifting upward; Act 4
+  no grid, near-black, with rare brief white static bursts (~150ms every
+  ~4s). An edge-only radial vignette (`_drawActVignette`, alpha capped
+  0.10→0.30 across acts 1-4) darkens the corners a bit more each act.
+- **Kept everything strictly in the background layer, by construction:**
+  all of this draws inside `drawGrid()`, which `drawWorld()` still calls
+  *first*, before warnings/lasers/boss/items/bullets/particles/players.
+  Alpha values are deliberately low (max ~0.35 for the brightest star,
+  ~0.18 for embers, ~0.30 for the vignette) so nothing here can visually
+  compete with or obscure a bullet — it's asset + z-order, not just a
+  tuning number, so it can't regress by someone bumping an alpha later
+  without also moving the draw call.
+- **`_actAssets()`** lazily builds and caches (on the renderer instance)
+  the crack paths / starfield / ember spawn points once via a tiny seeded
+  PRNG, so positions stay fixed frame to frame — only opacity/position
+  *animate* via `performance.now()`. Respawning them randomly every frame
+  would read as noise and compete with bullets for attention, which is
+  exactly what this was asked to avoid.
+- **`Renderer.drawWorld(game)`** now passes `game.state.wave` into
+  `drawGrid()`.
+- **Files:** `js/rendering/renderer.js`.
+
 ## Narrative "act" theming: background + bullet palette shift per boss chapter (user-requested)
 - **Added `CONFIG.actThemes` and `actForWave(n)` to `js/core/config.js`.**
   The story was already implicit in `CONFIG.bossNames` and the chapter
