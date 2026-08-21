@@ -949,6 +949,7 @@ export class UI {
       "skillVal",
       "skillBarFill",
       "skillChip",
+      s,
     );
 
     const p2Skill = s.skillP2;
@@ -961,6 +962,7 @@ export class UI {
       "p2SkillVal",
       "p2SkillBarFill",
       "p2SkillChip",
+      s,
     );
   }
 
@@ -1039,9 +1041,21 @@ export class UI {
     valueId,
     barId,
     chipId,
+    s,
   ) {
     const cd = Math.max(0, player.skillCooldown);
     const ready = cd <= 0;
+
+    // Fire the ready callout only on the exact cooldown -> ready edge, not
+    // every frame the chip happens to already read ready. The "READY" text
+    // alone lives in a top corner and is easy to miss mid-swarm, so this
+    // adds motion (chip pop) plus a peripheral screen-edge pulse that
+    // doesn't cover the play area.
+    if (ready && player._skillWasReady === false) {
+      this.pulseSkillReady(chipId);
+      if (s) s.skillReadyFlashAlpha = 1;
+    }
+    player._skillWasReady = ready;
 
     document.getElementById(nameId).textContent = name;
     document.getElementById(statusId).textContent = ready
@@ -1055,5 +1069,22 @@ export class UI {
     fill.style.width = `${ready ? 100 : Math.max(0, Math.min(100, (1 - cd / maxCd) * 100))}%`;
 
     document.getElementById(chipId).classList.toggle("ready", ready);
+  }
+
+  /** Brief self-cleaning scale/glow pop on the skill chip, triggered once
+   * when its skill goes from cooldown to ready — see updateSkillDisplay().
+   * Removes and re-adds the class (with a reflow in between) so a rapid
+   * retrigger restarts the animation instead of doing nothing. */
+  pulseSkillReady(chipId) {
+    const chip = document.getElementById(chipId);
+    if (!chip) return;
+    chip.classList.remove("skill-pop");
+    void chip.offsetWidth;
+    chip.classList.add("skill-pop");
+    chip.addEventListener(
+      "animationend",
+      () => chip.classList.remove("skill-pop"),
+      { once: true },
+    );
   }
 }

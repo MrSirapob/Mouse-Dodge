@@ -17,6 +17,11 @@ export class Player {
     this.hitFlash = 0;
     this.skillCooldown = 0;
     this.skillBaseCooldown = 0;
+    // Tracks whether the skill read "ready" last frame, so UI.updateSkillDisplay()
+    // can fire the ready pulse only on the cooldown->ready edge, not every
+    // frame it happens to already be ready. Starts true since skillCooldown
+    // starts at 0 (already ready) and that isn't a "just became ready" event.
+    this._skillWasReady = true;
     this.grazeCooldownReduced = 0;
     this.shieldTimer = 0;
     // Charge-based shield from the Shield *item* pickup (distinct from the

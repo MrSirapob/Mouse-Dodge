@@ -41,6 +41,13 @@ export class GameState {
     // Decays the same way flashAlpha does — see Game.draw().
     this.actFlashAlpha = 0;
     this.actFlashColor = '255,92,92';
+    // Screen-edge green pulse fired once when a player's skill goes from
+    // cooldown to ready (see UI.pulseSkillReady()). The "READY" chip sits
+    // in a top corner and is easy to miss once the screen is full of
+    // bullets, so this adds a peripheral-vision cue that doesn't cover the
+    // play area. Set to 1 on the transition, decays the same way
+    // flashAlpha does — see Game.draw().
+    this.skillReadyFlashAlpha = 0;
     clearTimeout(this.gameOverTimer);
     this.gameOverTimer = null;
 

@@ -116,6 +116,17 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .skill-card.ready .skill-bar i {background: linear-gradient(90deg,#54d69a,#7bed9f)}
 .skill-card:not(.ready) .skill-bar i {opacity: .9}
 
+/* Skill-ready callout: a quick scale/glow pop on the chip itself, fired
+   once on the cooldown->ready edge (see UI.pulseSkillReady()). The color
+   change from .ready alone is easy to miss mid-swarm; the motion here is
+   what catches peripheral vision without covering the play area. */
+@keyframes skillReadyPop {
+  0% {transform: scale(1);box-shadow: 0 2px 7px #0005}
+  30% {transform: scale(1.14);box-shadow: 0 0 0 3px rgba(123,237,159,.55),0 0 22px 6px rgba(123,237,159,.65)}
+  100% {transform: scale(1);box-shadow: 0 2px 7px #0005}
+}
+.skill-card.skill-pop {animation: skillReadyPop .55s cubic-bezier(.34,1.56,.64,1)}
+
 /* GENERAL */
 .option {color: #d3d6de;border-radius: 9px;padding: 11px 8px;cursor: pointer;box-shadow: none;letter-spacing: 1px;min-height: 48px;background: rgba(255,255,255,.035);border: 1px solid rgba(255,255,255,.09);font-weight: 800}
 .option.selected {color: #fff;background: linear-gradient(180deg,rgba(78,205,196,.16),rgba(78,205,196,.05));border-color: rgba(78,205,196,.7);box-shadow: 0 0 0 1px rgba(78,205,196,.15) inset,0 8px 20px rgba(0,0,0,.18)}

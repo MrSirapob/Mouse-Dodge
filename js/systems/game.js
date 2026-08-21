@@ -1031,6 +1031,8 @@ export class Game {
     this.state.actFlashAlpha *= 0.9;
     this.renderer.drawLowLifeVignette(this.activePlayers());
     this.renderer.drawStatic(this.state.staticRemaining);
+    this.renderer.drawSkillReadyPulse(this.state.skillReadyFlashAlpha);
+    this.state.skillReadyFlashAlpha *= 0.9;
   }
 
   loop(now) {

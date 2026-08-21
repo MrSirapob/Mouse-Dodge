@@ -1293,6 +1293,33 @@ export class Renderer {
   }
 
   /**
+   * Screen-edge green pulse, fired once when a player's skill goes from
+   * cooldown to ready (see UI.pulseSkillReady() / state.skillReadyFlashAlpha).
+   * Same edge-vignette shape as drawLowLifeVignette() so it reads in
+   * peripheral vision without covering the play area where the bullets
+   * are — but this is a single decaying burst rather than a repeating
+   * heartbeat, driven entirely by the alpha passed in.
+   */
+  drawSkillReadyPulse(alpha) {
+    if (alpha <= 0.01) return;
+    const c = this.ctx;
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+
+    c.save();
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    const grad = c.createRadialGradient(
+      w / 2, h / 2, Math.min(w, h) * 0.38,
+      w / 2, h / 2, Math.max(w, h) * 0.72
+    );
+    grad.addColorStop(0, 'rgba(123,237,159,0)');
+    grad.addColorStop(1, `rgba(123,237,159,${alpha * 0.5})`);
+    c.fillStyle = grad;
+    c.fillRect(0, 0, w, h);
+    c.restore();
+  }
+
+  /**
    * Screen-space visual-noise overlay for the Mystery Box item's "static"
    * bad outcome — random flickering bars + grain, fading out over its
    * remaining duration. `remaining` is seconds left (state.staticRemaining);
