@@ -59,6 +59,14 @@ what changed, why, key numbers if any.
 
 ## 2026-08-21 — Claude (Sonnet 5, claude.ai)
 
+**Session 18 — Graze spark uses player color; hit particles are now a blood effect:**
+- Graze spark burst (`game.js` graze branch) switched from a fixed green (`#7bed9f`) to the grazing player's own `p.color`.
+- Added `ParticleSystem.spawnBlood(x, y, count)` in `js/rendering/particles.js`: randomized dark/bright red palette, varied droplet radii, slight upward pop that arcs downward via a per-particle `gravity` field (new, opt-in — `update()` only applies it if `p.gravity` is set, so the plain `spawn()` particles are unaffected), and a slower fade (`fadeRate: 1.1` vs the default 1.5).
+- Both hit-related particle bursts now use `spawnBlood()` instead of `spawn()` with a flat color: the bullet-hits-player burst in `game.js` (`this.particles.spawnBlood(b.x, b.y, 10)`) and the player-damage burst in `lifeSystem.js` (`this.game.particles.spawnBlood(player.x, player.y, 28)`). Non-hit particle bursts (bullet cleanup/despawn/split, item pickups, skill effects, shield-charge block, revive) are untouched — still plain `spawn()`.
+**Files:** `js/rendering/particles.js`, `js/systems/game.js`, `js/systems/lifeSystem.js`, `CHANGELOG.md`.
+**Test result:** `npm test` — all 180 PASS, 0 FAIL, 0 WARN. Ran `npm run bump-version` after.
+**For the next session:** Nothing pending.
+
 **Session 17 — UX Fixes: Skill-ready visual cues:**
 - Suppressed the skill-ready pop at the very start of a new game (elapsed < 0.5s) so it doesn't fire when starting with 0 cooldown.
 - Changed the skill-ready glow and screen flash color from green (`--graze`) to cyan (`--accent` / `#4ecdc4`) so it isn't confused with the Heal skill's green visual effects.

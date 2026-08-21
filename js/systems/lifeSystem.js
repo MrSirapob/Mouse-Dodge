@@ -1,4 +1,4 @@
-import { CONFIG } from '../core/config.js?v=20260821-r5h8';
+import { CONFIG } from '../core/config.js?v=20260821-si7f';
 
 export class LifeSystem {
   constructor(game) { this.game = game; }
@@ -20,7 +20,7 @@ export class LifeSystem {
     player.invulnerable = CONFIG.lives.hitInvulnerability;
     player.hitFlash = 0.30;
     this.game.state.shakeMag = 12; this.game.state.damageShake = 0.22;
-    this.game.particles.spawn(player.x, player.y, '#ff5c5c', 28);
+    this.game.particles.spawnBlood(player.x, player.y, 28);
     if (player.lives <= 0) {
       player.down = true;
       player.reviveProgress = 0;

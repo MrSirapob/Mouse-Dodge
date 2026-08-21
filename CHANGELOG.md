@@ -898,6 +898,16 @@ between old and new files).
 - Verification: `npm test` => 179 PASS, 0 FAIL, 0 WARN.
 
 
+### 2026-08-21 — Graze/hit particle colors
+- Graze spark burst now uses the grazing player's own color (`p.color`) instead
+  of a fixed green (`#7bed9f`), so it visually matches whichever player earned it.
+- Player-hit and bullet-hit-player particle bursts now use a new
+  `ParticleSystem.spawnBlood()` effect: a mix of dark/bright red shades,
+  varied droplet sizes, a slight upward pop that arcs downward under gravity,
+  and a slower fade — reads as a blood splatter instead of a generic red spark
+  burst. Bullet destruction/cleanup particles (non-hit) are unchanged.
+- Verification: `npm test` => 180 PASS, 0 FAIL, 0 WARN.
+
 ## 2026-08-20 — Boss Story / W10 Visual
 - W10 boss visual added as a gravitational/dark-core design with orbital rings and star fragments.
 - Boss names updated for W10/W15/W20 story progression.

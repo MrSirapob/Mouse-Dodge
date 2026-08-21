@@ -7,7 +7,7 @@
 
 import { TestSuite, assert, assertNoNaN, assertEqual } from '../helpers/assertions.mjs';
 import { createGame, jumpToWave, tick } from '../helpers/gameFactory.mjs';
-import { CONFIG } from '../../js/core/config.js?v=20260821-r5h8';
+import { CONFIG } from '../../js/core/config.js?v=20260821-si7f';
 
 export async function run() {
   const s = new TestSuite('BULLET SYSTEM');
