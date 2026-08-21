@@ -1,5 +1,27 @@
 # Changelog
 
+## Fix: run timer (HUD clock) froze during the NO HIT / wave-transition banner (user-reported, "ตอนที่ขึ้น no hit ทำใมเวลาหยุดเดิน")
+- **Root cause:** `Game.update()` has an early-return branch for
+  `state.wavePhase === 'transition'` (covers both the "NO HIT" banner and
+  the following "WAVE N" banner) that intentionally skips `updateTimers()`
+  — that function also drives `waveTime`/`shakeMag`/skill timers, which
+  correctly should hold still during the banner. But `updateTimers()` is
+  also the only place that advances `state.elapsed`, the HUD's run clock —
+  so as a side effect the visible timer froze for the whole banner window
+  (~1.6–3s) and then jumped back to counting once the next wave started.
+  Reported as "เวลาหยุดเดิน" (the clock stops, then resumes).
+- **Fix:** the `transition` branch now bumps `state.elapsed` directly with
+  the real (unscaled) frame time each frame, independent of
+  `updateTimers()`. Everything else that branch already intentionally
+  holds (waveTime, shakeMag, skill cooldowns, bullets/patterns) is
+  unaffected. Player movement was already unaffected by this phase (see
+  HANDOFF_LOG.md Session 4) — only the clock display was actually frozen.
+- **Files:** `js/systems/game.js`.
+- Verified with a headless repro against the real `Game` class (via
+  `tests/helpers/gameFactory.mjs`): `state.elapsed` now advances by the
+  expected ~1s over 60 simulated transition frames, where before it stayed
+  flat at 0. Full suite still 180/180 PASS.
+
 ## New item: Mystery Box — 50/50 gamble pickup (user-requested, "Mystery Box แต่คุณต้องให้เท่าเทียมกันแบบ 50 50 สิ")
 - **New `mystery` item type**, added at weight 12 alongside the existing
   heart/energy/shield/score in `CONFIG.items.weights`. Distinct from every

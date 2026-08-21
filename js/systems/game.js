@@ -1,16 +1,16 @@
-import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260821-xdqs';
-import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260821-xdqs';
-import { circleHit, circleNear } from '../core/collision.js?v=20260821-xdqs';
-import { Player } from '../entities/player.js?v=20260821-xdqs';
-import { BulletManager } from '../entities/bullet.js?v=20260821-xdqs';
-import { Boss } from '../entities/boss.js?v=20260821-xdqs';
-import { ParticleSystem } from '../rendering/particles.js?v=20260821-xdqs';
-import { PatternLibrary } from '../patterns/patterns.js?v=20260821-xdqs';
-import { WaveSystem } from './waveSystem.js?v=20260821-xdqs';
-import { SkillSystem } from './skillSystem.js?v=20260821-xdqs';
-import { LifeSystem } from './lifeSystem.js?v=20260821-xdqs';
-import { DevMode } from './devMode.js?v=20260821-xdqs';
-import { ItemSystem } from './itemSystem.js?v=20260821-xdqs';
+import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260821-hp8v';
+import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260821-hp8v';
+import { circleHit, circleNear } from '../core/collision.js?v=20260821-hp8v';
+import { Player } from '../entities/player.js?v=20260821-hp8v';
+import { BulletManager } from '../entities/bullet.js?v=20260821-hp8v';
+import { Boss } from '../entities/boss.js?v=20260821-hp8v';
+import { ParticleSystem } from '../rendering/particles.js?v=20260821-hp8v';
+import { PatternLibrary } from '../patterns/patterns.js?v=20260821-hp8v';
+import { WaveSystem } from './waveSystem.js?v=20260821-hp8v';
+import { SkillSystem } from './skillSystem.js?v=20260821-hp8v';
+import { LifeSystem } from './lifeSystem.js?v=20260821-hp8v';
+import { DevMode } from './devMode.js?v=20260821-hp8v';
+import { ItemSystem } from './itemSystem.js?v=20260821-hp8v';
 
 /** Converts a "#rrggbb" hex string to an "r,g,b" string for use in
  * rgba(...) fill styles (see Renderer.flash()). */
@@ -619,6 +619,14 @@ export class Game {
 
     if (s.wavePhase === 'transition') {
       this.updatePlayers(0, rawDt);
+      // The run clock (state.elapsed, shown on the HUD) must keep counting
+      // through the wave/NO HIT banners same as it does at every other
+      // moment of a run — a player's total time-survived shouldn't get a
+      // free pause just because a banner is on screen. updateTimers() is
+      // intentionally NOT called here (it also drives waveTime/shakeMag/
+      // skill timers, which SHOULD hold during the transition), so bump
+      // elapsed directly with the real (unscaled) frame time instead.
+      s.elapsed += rawDt;
       s.waveTransition = Math.max(0, s.waveTransition - rawDt);
       this.particles.update(rawDt);
       this.updateScorePopups(rawDt);

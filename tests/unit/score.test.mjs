@@ -6,7 +6,7 @@
 
 import { TestSuite, assert, assertEqual, assertNoNaN, assertClose } from '../helpers/assertions.mjs';
 import { createGame, jumpToWave, tick } from '../helpers/gameFactory.mjs';
-import { CONFIG, GRAZE_REWARD } from '../../js/core/config.js?v=20260821-xdqs';
+import { CONFIG, GRAZE_REWARD } from '../../js/core/config.js?v=20260821-hp8v';
 
 export async function run() {
   const s = new TestSuite('COMBAT: Score / Graze / Combo');

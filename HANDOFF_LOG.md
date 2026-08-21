@@ -82,6 +82,27 @@ legibility at item.r scale, static-overlay readability, whether the control-slow
 outcome feels fair vs. frustrating in an actual dodge situation) — same "logic-verified,
 not eyeballed live" gap as Session 10's rank reveal work.
 
+**Session 12 — Fix: HUD run timer froze during NO HIT / wave-transition banner (user-reported: "แก้ตอนที่ขึ้น no hit ทำใมเวลาหยุดเดิน" → clarified via follow-up that "หยุดเดิน" meant the on-screen clock pausing, not the player character, and confirmed it happens with mouse control):**
+Traced it — did NOT confirm player movement was actually blocked (it isn't: verified with a
+headless repro against the real `Game` class that mouse/keyboard movement both continue fine
+during `wavePhase === 'transition'`, matching the intentional design noted in Session 4's
+entry above). The real bug: `update()`'s `transition` branch (covers the NO HIT banner + the
+following WAVE N banner) skips `updateTimers()` entirely — correct for holding `waveTime`/
+`shakeMag`/skill timers still, but `updateTimers()` is also the only place `state.elapsed`
+(the HUD clock) advances, so the visible timer froze for the ~1.6-3s banner window and then
+jumped back to counting. Fix: the `transition` branch now increments `state.elapsed` directly
+with real frame time, independent of `updateTimers()`. Ran `npm run bump-version` after.
+**Files:** `js/systems/game.js`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **180 PASS / 0 FAIL / 0 WARN** (no new tests added —
+confirmed the fix with an ad-hoc headless repro against `tests/helpers/gameFactory.mjs`
+showing `state.elapsed` advancing ~1s over 60 simulated transition frames, then removed the
+scratch script; existing wave-flow tests don't assert on `elapsed` during transition so they
+didn't need changes).
+**For the next session:** Nothing pending. If a dedicated regression test for
+"elapsed keeps advancing through wavePhase transition" is wanted, `tests/integration/
+wave-flow.test.mjs` is the natural home (see its existing transition-timing tests for the
+pattern).
+
 **Session 10 — Game-over rank reveal: build-up + per-tier pop/shake/particles (user-requested, "ทำระบบอะไรเพิ่มดี ขอว้าวๆ ไม่เอาระบบเสียง" → picked from a shortlist, then narrowed to the existing end-of-run RANK block after a live in-run version was rejected for covering the playfield):**
 Full detail in the CHANGELOG.md entry at the top of the file. Short version: `showGameOver()`'s
 static rank letter now cycles up from D to the actual rank (decelerating, ~0.9s for SSS,
