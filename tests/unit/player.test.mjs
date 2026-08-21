@@ -4,8 +4,8 @@
 // no DOM/game dependencies beyond CONFIG).
 
 import { TestSuite, assert, assertNoNaN, assertEqual, assertClose } from '../helpers/assertions.mjs';
-import { Player } from '../../js/entities/player.js?v=20260821-2lwf';
-import { CONFIG } from '../../js/core/config.js?v=20260821-2lwf';
+import { Player } from '../../js/entities/player.js?v=20260821-vk7t';
+import { CONFIG } from '../../js/core/config.js?v=20260821-vk7t';
 
 export function run() {
   const s = new TestSuite('LOGIC: Player');

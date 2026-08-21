@@ -1,4 +1,4 @@
-import { CONFIG } from '../core/config.js?v=20260821-2lwf';
+import { CONFIG } from '../core/config.js?v=20260821-vk7t';
 
 export const ITEM_COLORS = {
   heart: '#ff5c8a',

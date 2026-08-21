@@ -8,8 +8,8 @@
 import { TestSuite, assert, assertEqual, assertNoNaN } from '../helpers/assertions.mjs';
 import { createGame, jumpToWave } from '../helpers/gameFactory.mjs';
 import { withSeededRandom } from '../helpers/seededRandom.mjs';
-import { CONFIG } from '../../js/core/config.js?v=20260821-2lwf';
-import { ITEM_COLORS } from '../../js/systems/itemSystem.js?v=20260821-2lwf';
+import { CONFIG } from '../../js/core/config.js?v=20260821-vk7t';
+import { ITEM_COLORS } from '../../js/systems/itemSystem.js?v=20260821-vk7t';
 
 export async function run() {
   const s = new TestSuite('ITEMS');
