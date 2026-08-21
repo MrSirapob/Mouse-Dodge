@@ -59,6 +59,26 @@ what changed, why, key numbers if any.
 
 ## 2026-08-21 — Claude (Sonnet 5, claude.ai)
 
+**Session 6 — W10 boss density pass (user-requested: "อัดเพิ่ม W10 เพราะเพื่อนเทสแล้วบอกว่า W10 ง่ายกว่า W5"):**
+Followed up on the balance-question conversation from Session 5's simulation numbers. Root
+cause of W10 reading softer than W5: `buildBoss(10)` never used `bossSpiral()`, which is
+W5's main sustained-pressure tool (fixed 20 steps/sec × `arms`, independent of `duration` —
+e.g. 3 arms = 60 bullets/sec continuous). Added 4 `bossSpiral()` bursts into W10's phase
+gaps, each timed to stay clear of the existing Perimeter Formation telegraph-to-fire windows
+(kept those SOLO per the existing in-code design comment — did not touch that). See
+CHANGELOG.md for exact placements/timings and the before/after simulateWave(10) numbers
+(peak 155→372, avg 53.4→112.0, spawned 694→1554). Peak density is now close to W5's (89% vs
+100%); average sustained pressure is still lower by design — W10 leans on telegraphed
+formations rather than a continuous barrage. Verified via `simulateWave()`, not by manual
+playtesting — if the friend who flagged this still finds it soft (or now too hard), the 4
+`bossSpiral()` calls are the single place to retune (their `duration`/`arms` control the
+added density directly).
+**Files:** `js/systems/waveSystem.js`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **180 PASS / 0 FAIL / 0 WARN**.
+**For the next session:** Nothing pending. If W10 still needs more (or less) pressure,
+adjust the 4 `bossSpiral()` calls' `duration`/`arms` args — see the CHANGELOG entry for
+which phase each one sits in and why those windows were chosen.
+
 **Session 5 — W10 boss `reverseRain` shallow-penetration fix; corrected a stale HANDOFF_LOG note (user-requested, "แก้ทั้ง 2 อัน"):**
 User asked what else might need attention besides audio. Two things were flagged
 from earlier sessions' "for the next session" notes:

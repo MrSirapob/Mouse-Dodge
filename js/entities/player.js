@@ -1,4 +1,4 @@
-import { CONFIG } from '../core/config.js?v=20260821-b0ds';
+import { CONFIG } from '../core/config.js?v=20260821-xdqs';
 
 export class Player {
   constructor(id, color) {

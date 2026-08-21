@@ -1,5 +1,37 @@
 # Changelog
 
+## W10 boss density pass — added `bossSpiral()` layering (user-requested: playtester said W10 felt easier than W5)
+- **`simulateWave(10)` showed W10 was the least dense wave of W1-10**: peak
+  155/420 (37%), average active 53.4, 694 total bullets spawned over the
+  60s wave — versus W5's peak 340/340 (100%, hitting the cap and dropping
+  511 spawn attempts), average active 262.0, 3838 spawned. A boss wave
+  reading as less demanding than the earlier waves around it (let alone the
+  earlier boss) matches a real playtester report of W10 feeling easier
+  than W5.
+- **Root cause: W10 never called `bossSpiral()`**, the pattern W5 leans on
+  most for sustained pressure — it fires a fixed 20 steps/sec regardless of
+  its `duration` argument, so `arms` bullets every 0.05s (3 arms = 60
+  bullets/sec). W10's pattern set (`bossAimed`, `bossRing`,
+  `bossPerimeterCrossfire`, `edgeSplitter`, `reverseRain`, `bossHoming`,
+  `machineGunTop`, `movingSweep`, `sineRain`) has nothing else with that
+  continuous a spawn rate.
+- **Fix:** added 4 `bossSpiral()` bursts into `buildBoss(10)`'s
+  "connective tissue" between phases — timed to never overlap a Perimeter
+  Formation's telegraph-to-fire window, since those are deliberately kept
+  SOLO (see the existing in-code comment). Phase 1 (1.0s, 5.0s dur, 3 arms),
+  Phase 2 (13.5s, 2.0s dur, 2 arms — short gap before its telegraph),
+  Phase 4 (39.0s, 6.0s dur, 3 arms — layered into the wave's busiest
+  stretch alongside machine gun/moving sweep, matching W5's "no dead air"
+  philosophy), Phase 5 (55.0s, 3.0s dur, 2 arms — after the final
+  Perimeter fires, through the closing `bossHoming`).
+- **Result:** peak 155→372 (89% density), average active 53.4→112.0,
+  spawned 694→1554, pattern count 8→9. Peak density is now close to W5's
+  (89% vs 100%) though average sustained pressure is still lower — W10
+  leans more on its telegraphed formation "set pieces" than W5's
+  continuous barrage, which is an intentional difference in feel, not a
+  gap to fully close.
+- **Files:** `js/systems/waveSystem.js`.
+
 ## W10 boss `reverseRain` traveled too shallow before reversing (same bug as the W8/W9 fix, user-requested)
 - **Both `reverseRain()` calls in W10's boss pattern set (Phase 3) still had
   the pre-fix short `reverseAfter` values** (1.45 and 1.35) that Sessions
