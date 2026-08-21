@@ -1,5 +1,40 @@
 # Changelog
 
+## Mobile HUD: WAVE stat hidden behind the player HUD on narrow phones (e.g. iPhone XR) — fixed a dead-CSS structural bug in `main.css` (user-reported)
+- **Symptom:** on narrow phone widths, the WAVE stat in the center HUD
+  (`#hudCenter`) appeared to vanish/get covered by the player 1 (and, in
+  co-op, player 2) lives/skill cards.
+- **Root cause: every `@media` responsive block in `css/main.css` was
+  physically located near the *top* of the file, before the unconditional
+  base rules for `#hud` further down** (added by a prior "CSS cleanup"
+  pass — see `CHANGES_css_cleanup.md` — whose own notes say the effective
+  cascade was verified assuming base rules come first; something after
+  that pass moved the media blocks ahead of them, silently breaking that
+  assumption). CSS resolves equal-specificity `!important` conflicts by
+  **source order**, not by which `@media` condition is "more specific" —
+  so the later, unconditional base `#hud` rule (fixed-width 82px lives
+  card + up to 118px skill card, sized for desktop) always won over the
+  earlier mobile overrides meant to shrink those, on every screen size,
+  including phones. On an iPhone XR (~390-414px usable width), that
+  desktop-sized player HUD doesn't fit and overflows past its grid column
+  into the center column, visually covering the WAVE stat — matching the
+  reported symptom exactly.
+- **Fix:** moved the entire block of `@media` rules (previously lines
+  25-358) to the end of the file, after all base rules — no rule content
+  changed, only position, restoring the file's own documented structure
+  ("BASE/RESET ... then responsive @media overrides, then @keyframes
+  animations" — see the header comment in `main.css`). Verified via an
+  order-independent diff (sorted, comments/blank-lines stripped) that the
+  only difference between old and new `main.css` is the added explanatory
+  comment — no rule was gained, lost, or altered.
+- **Not changed:** the actual per-breakpoint values (which breakpoint sets
+  what pixel size) — those were already correctly tuned across many past
+  sessions; they just weren't reachable at all until this fix. If mobile
+  HUD sizing still needs adjustment after this, that's a separate,
+  now-actually-live set of rules to tune (see the `@media` blocks at the
+  end of `main.css`).
+- **Files:** `css/main.css`.
+
 ## W10 boss `bossSpiral()` bursts replaced with a new `bossNova()` pattern (user-requested: W10 shouldn't reuse W5's signature gimmick)
 - **W10 reused W5's `bossSpiral()` verbatim** as its sustained-pressure filler
   (added in the density pass documented in the entry directly below). That

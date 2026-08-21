@@ -22,340 +22,7 @@
      panel's structure in devMode.js, not in the HTML file.
    ============================================================ */
 
-/* Responsive: @media (max-width:700px) */
 
-@media(max-width:700px) {
-  .chip.best {display: none}
-  .rules {grid-template-columns: 1fr}
-  .panel {max-height: 92vh}
-  .rules li {font-size: 12px}
-  .chip {padding: 5px 8px;font-size: 11px}
-  .hud-card {padding: 6px 8px;min-width: 94px}
-  .skill-card {min-width: 124px}
-  .hud-label {font-size: 8px}
-  .menu-screen {width: min(560px,94vw);max-height: calc(100dvh - 12px);padding: 18px 9px}
-  .hero-title-wrap {margin-bottom: 20px}
-  .mode-choice {min-height: 62px}
-  .mode-choice strong {font-size: 15px}
-  .skill-player-block {padding: 10px}
-  .skill-card-grid {grid-template-columns: repeat(2,1fr)}
-  .player-score {padding: 5px 7px}
-  .player-score b {font-size: 11px}
-  #downBanner {top: 16%;padding: 10px 16px}
-  #noHitBanner {width: min(92vw,620px);padding: 15px 18px}
-  #noHitTitle {font-size: clamp(28px,8vw,42px)}
-  #noHitSubtitle {font-size: 12px;margin-top: 5px}
-  .score-results b {font-size: 16px}
-  .team-result b {font-size: 20px}
-  .chip.lives {flex-basis: 104px;min-width: 104px;width: 104px}
-  .chip.p2-lives {flex-basis: 104px;min-width: 104px;width: 104px}
-  .chip.lives b {min-width: 62px}
-  .chip.p2-lives b {min-width: 62px}
-  .p1-score {min-width: 82px}
-  .p2-score {min-width: 82px}
-  .hud-zone {gap: 3px}
-  .hud-player-title {min-width: 31px;height: 29px;padding: 0 4px;font-size: 6px}
-  .hud-zone .lives-card {height: 29px;min-height: 29px;padding: 3px 5px}
-  .hud-zone .skill-card {height: 29px;min-height: 29px;width: 82px;padding: 3px 5px}
-  .hud-zone .lives-card b {font-size: 9px}
-  .hud-zone .hud-label {font-size: 5px}
-  .hud-zone .skill-head>b {font-size: 6px}
-  .hud-zone .skill-status {font-size: 4px}
-  #overlay #resultScreen {width: calc(100vw - 16px);max-width: calc(100vw - 16px);max-height: calc(100dvh - 16px)}
-  #overlay #resultScreen .panel {width: 100%;padding: 20px 16px}
-  .skill-card-option {min-height: 92px}
-  .skill-card-icon {width: 48px;height: 48px}
-  .skill-card-icon img {width: 46px;height: 46px}
-  #hud .hud-player-title {padding: 0 4px;min-width: 54px;height: 34px;font-size: 8px;display: none !important}
-  #hud .hud-p2 .hud-row {display: flex !important;flex: 0 0 auto !important;align-items: center !important;gap: 4px !important;width: auto !important}
-  #hud .lives-card {flex: 0 0 auto !important;width: 50px !important;min-width: 50px !important;height: 30px !important;padding: 4px 5px !important;border-radius: 7px !important}
-  #hud .lives-card b {font-size: 9px !important;letter-spacing: .5px !important}
-  #hud .skill-card {flex: 0 0 auto !important;width: 58px !important;min-width: 58px !important;height: 30px !important;min-height: 30px !important;padding: 4px 5px !important;border-radius: 7px !important}
-  #hud .skill-head {gap: 3px !important}
-  #hud .skill-head .hud-label {font-size: 5px !important}
-  #hud .skill-head>b {font-size: 6px !important;max-width: 34px;overflow: hidden;text-overflow: ellipsis}
-  #hud .skill-status {font-size: 5px;display: none !important}
-  #hud .skill-bar {height: 2px !important;margin-top: 2px !important}
-  #hud {padding: 0 !important;top: max(8px,env(safe-area-inset-top)) !important;left: 8px !important;right: 8px !important;width: auto !important;display: grid !important;grid-template-columns: minmax(0,1fr) auto !important;grid-template-areas: "p1 center" !important;align-items: start !important;gap: 8px !important;flex-wrap: nowrap !important}
-  #hud .hud-p1 {justify-self: start !important;grid-area: p1 !important;width: auto !important;max-width: none !important;min-width: 0 !important;display: flex !important;flex-direction: row !important;align-items: center !important;gap: 8px !important;overflow: visible !important}
-  #hud .hud-p1 .hud-player-title {display: none !important}
-  #hud .hud-p1 .p1-score {display: none !important}
-  #hud .hud-p1 .hud-row {align-items: center !important;gap: 4px !important;display: flex !important;flex: 0 0 auto !important;width: auto !important;margin: 0 !important}
-  #hud .hud-p1 .lives-card {width: auto !important;min-width: 94px !important;height: 44px !important;padding: 6px 10px !important;justify-content: center !important;border-radius: 9px !important}
-  #hud .hud-p1 .lives-card .hud-label {display: none !important}
-  #hud .hud-p1 .lives-card b {display: flex !important;align-items: center !important;justify-content: center !important;gap: 2px !important;width: auto !important;min-width: 0 !important;overflow: visible !important;text-overflow: clip !important;white-space: nowrap !important;font-size: 21px !important;line-height: 1 !important;letter-spacing: 0 !important}
-  #hud .hud-p1 .lives-card b .life-heart {display: inline-flex !important;width: 21px !important;height: 22px !important;align-items: center !important;justify-content: center !important;flex: 0 0 21px !important;line-height: 1 !important;opacity: 1 !important}
-  #hud .hud-p1 .skill-card {width: 132px !important;min-width: 132px !important;height: 44px !important;min-height: 44px !important;padding: 6px 9px !important;border-radius: 9px !important}
-  #hud .hud-p1 .skill-head .hud-label {font-size: 8px !important;margin-bottom: 2px !important}
-  #hud .hud-p1 .skill-head>b {font-size: 11px !important;max-width: none !important}
-  #hud .hud-p1 .skill-status {display: flex !important;font-size: 8px !important;margin-top: 3px !important}
-  #hud .hud-p1 .skill-bar {height: 4px !important;margin-top: 4px !important}
-  #hud .hud-p2 {width: 100% !important;max-width: 112px !important;min-width: 0 !important;align-items: center !important;gap: 4px !important;overflow: hidden !important;justify-self: end !important;display: none !important}
-  .reset-best-area {margin-top: 20px;padding-top: 12px}
-  .reset-best-btn {font-size: 8px;padding: 6px 10px;min-width: 100px}
-  .howto-head h2 {font-size: 24px}
-  .howto-platform {padding: 8px 18px}
-  .howto-mode {padding: 8px 18px}
-  .howto-section {padding: 12px 13px}
-  .control-list>div {grid-template-columns: 105px 1fr;font-size: 12px}
-  .howto-panel {max-height: 58vh;overflow: auto;padding: 0 2px 4px}
-  .menu-actions {gap: 7px}
-  .menu-actions .howto-btn {min-width: 0;flex: 1;padding: 8px 10px}
-  .settings-panel {padding: 15px 13px}
-  .settings-copy span {font-size: 10px}
-  .score-line {height: 15px !important}
-  .score-popup-layer {left: calc(100% + 5px) !important}
-  #waveBanner {width: min(92vw,620px);padding: 15px 18px}
-  #waveTitle {font-size: clamp(28px,8vw,42px)}
-  #waveSubtitle {font-size: 12px;margin-top: 5px}
-}
-
-/* Responsive: @media (max-height:600px) */
-
-@media(max-height:600px) {
-  .panel {padding: 14px 18px}
-  .rules {margin: 10px 0 12px}
-  .rules li {padding: 6px 8px}
-  .tagline {margin-bottom: 10px}
-}
-
-/* Animation: @keyframes skill-fired */
-
-@keyframes skill-fired {
-  0% {transform: scale(1);box-shadow: 0 0 0 transparent}
-  35% {transform: scale(1.12);box-shadow: 0 0 18px #4ecdc499}
-  100% {transform: scale(1);box-shadow: 0 0 0 transparent}
-}
-
-/* Responsive: @media (max-width:430px) */
-
-@media (max-width:430px) {
-  .chip {padding: 4px 7px}
-  .chip.lives {flex-basis: 96px;min-width: 96px;width: 96px}
-  .chip.p2-lives {flex-basis: 96px;min-width: 96px;width: 96px}
-  .chip.lives b {min-width: 54px}
-  .chip.p2-lives b {min-width: 54px}
-  .hud-row {gap: 3px}
-  .lives-card {height: 34px}
-  .player-score {height: 34px}
-  .hud-card {padding: 4px 5px;border-radius: 6px}
-  .skill-card {min-width: 116px;min-height: 36px}
-  .skill-bar {height: 2px}
-  .hud-zone {grid-template-columns: auto minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}
-  .hud-label {font-size: 5px}
-  .lives-card b {font-size: 7px}
-  .player-score b {font-size: 7px}
-  .skill-head>b {font-size: 6px}
-  .skill-status {font-size: 6px;display: none}
-  .hud-player-title {letter-spacing: 1.5px;height: 16px;min-width: 28px;font-size: 5px;padding: 0 2px;display: none}
-  .hud-zone .skill-card {width: 68px}
-  .hud-zone .lives-card b {font-size: 8px}
-  #hud .hud-player-title {display: none;min-width: 43px;height: 30px;padding: 0 5px;font-size: 6px}
-  #hud .lives-card {min-width: 55px;height: 30px;padding: 4px 6px}
-  #hud .lives-card b {font-size: 8px}
-  #hud .skill-card {width: 76px;min-width: 76px;height: 30px;min-height: 30px;padding: 4px 5px}
-  #hud .skill-head .hud-label {font-size: 5px}
-  #hud .skill-head>b {font-size: 6px}
-  #hud .skill-status {display: none}
-  .hud-zone[aria-label="Game status"] .hud-stat {min-width: 62px;padding: 0 5px}
-  .hud-zone[aria-label="Game status"] .hud-stat > b {font-size: 11px}
-  #hud {width: calc(100vw - 4px);padding: 0 3px;grid-template-columns: 1fr auto 1fr !important;left: 3px;right: 3px;gap: 7px !important}
-  #hud .hud-p1 {gap: 4px !important}
-  #hud .hud-p2 {gap: 4px !important}
-}
-
-/* Responsive: @media (max-width:520px) */
-
-@media(max-width:520px) {
-  .rules li {font-size: 11px}
-  .hero-title-wrap {margin-bottom: 18px}
-  .hero-title-wrap h1 {font-size: clamp(38px,13vw,60px)}
-}
-
-/* Animation: @keyframes skill-panel-in */
-
-@keyframes skill-panel-in {
-  from {opacity: 0;transform: translateY(-4px)}
-  to {opacity: 1;transform: translateY(0)}
-}
-
-/* Responsive: @media (max-height:620px) */
-
-@media(max-height:620px) {
-  .menu-screen {padding: 10px 10px}
-  .hero-title-wrap {margin-bottom: 12px}
-  .hero-title-wrap h1 {font-size: clamp(34px,8vw,52px)}
-  .hero-line {margin: 7px auto}
-  .mode-choice {min-height: 50px}
-  .skill-player-block {margin-top: 7px;padding: 8px}
-  .skill-card-option {min-height: 58px}
-  .selected-loadout {margin: 7px 0}
-  .menu-hint {margin-top: 6px}
-}
-
-/* Animation: @keyframes down-pulse */
-
-@keyframes down-pulse {
-  from {transform: translateX(-50%) scale(1);box-shadow: 0 10px 32px rgba(0,0,0,.42),0 0 12px rgba(255,92,92,.12)}
-  to {transform: translateX(-50%) scale(1.025);box-shadow: 0 10px 32px rgba(0,0,0,.42),0 0 28px rgba(255,92,92,.28)}
-}
-
-/* Animation: @keyframes rank-reveal */
-
-@keyframes rank-reveal {
-  from {opacity: 0;transform: scale(.72) translateY(8px);filter: blur(5px)}
-  to {opacity: 1;transform: scale(1) translateY(0);filter: blur(0)}
-}
-
-/* Animation: @keyframes down-pulse */
-
-@keyframes down-pulse {
-  from {transform: translateX(-50%) scale(1);box-shadow: 0 10px 32px rgba(0,0,0,.42),0 0 10px rgba(255,209,102,.08)}
-  to {transform: translateX(-50%) scale(1.02);box-shadow: 0 10px 32px rgba(0,0,0,.42),0 0 24px rgba(255,209,102,.18)}
-}
-
-/* Responsive: @media (max-width:900px) */
-
-@media(max-width:900px) {
-  .hud-card {padding: 6px 7px}
-  .hud-label {font-size: 8px}
-  .lives-card {height: 36px}
-  .player-score {height: 36px}
-  .lives-card b {font-size: 10px}
-  .player-score b {font-size: 10px}
-  .skill-card {min-height: 38px}
-  #hud {gap: 4px;top: max(7px,env(safe-area-inset-top));width: calc(100vw - 10px);grid-template-columns: minmax(0,1fr) 220px minmax(0,1fr)}
-  .hud-zone {grid-template-columns: auto minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr)}
-  .hud-player-title {min-width: 55px;font-size: 7px}
-}
-
-/* Responsive: @media (max-width:620px) */
-
-@media(max-width:620px) {
-  .p2-title {justify-content: flex-start}
-  .hud-p1 {grid-area: p1}
-  .hud-p2 {grid-area: p2}
-  #hud {top: max(7px,env(safe-area-inset-top));left: 6px;right: 6px;transform: none;grid-template-areas: 'p1 p2' 'center center';width: calc(100vw - 6px);grid-template-columns: minmax(0,1fr) 170px minmax(0,1fr);gap: 3px}
-  .hud-zone {grid-template-columns: auto minmax(0,1fr) minmax(0,1fr) minmax(0,1.05fr);gap: 2px}
-  .hud-player-title {min-width: 38px;height: 32px;padding: 0 3px;font-size: 6px;letter-spacing: .8px}
-  .player-dot {width: 4px;height: 4px}
-  .skill-card {height: 32px;min-height: 32px}
-  .lives-card {height: 32px;min-height: 32px}
-  .player-score {height: 32px;min-height: 32px}
-  .lives-card b {font-size: 8px}
-  .player-score b {font-size: 8px}
-  .hud-label {font-size: 6px;letter-spacing: .7px}
-  .skill-head>b {font-size: 7px}
-  .skill-status {font-size: 5px}
-  .hud-zone[aria-label="Game status"] .hud-stat {min-width: 72px;height: 32px;padding: 0 7px}
-  .hud-zone[aria-label="Game status"] .hud-stat > b {font-size: 12px}
-}
-
-/* Responsive: @media (max-width:820px) */
-
-@media (max-width:820px) {
-  #hud {left: 6px !important;right: 6px !important;grid-template-columns: minmax(0,1fr) minmax(88px,104px) minmax(0,1fr) !important;gap: 5px !important}
-  #hud .hud-p1 {gap: 3px !important}
-  #hud .hud-p2 {gap: 3px !important}
-  #hud .hud-p1 .hud-player-title {min-width: 42px !important;height: 32px;font-size: 7px}
-  #hud .hud-p2 .hud-player-title {min-width: 42px !important;height: 32px;font-size: 7px}
-  #hud .lives-card {width: 62px !important;min-width: 62px !important;height: 32px;padding: 4px 5px}
-  #hud .lives-card b {font-size: 9px}
-  #hud .skill-card {width: 78px !important;min-width: 60px !important;height: 32px;min-height: 32px;padding: 4px 5px}
-  #hud .skill-head .hud-label {font-size: 5px}
-  #hud .skill-head>b {font-size: 6px}
-  #hud .skill-status {font-size: 4px}
-}
-
-/* Responsive: @media (max-width:600px) */
-
-@media (max-width:600px) {
-  #hud .hud-p1 .hud-player-title {min-width: 30px !important;height: 29px;padding: 0 3px;font-size: 5px}
-  #hud .hud-p2 .hud-player-title {min-width: 30px !important;height: 29px;padding: 0 3px;font-size: 5px}
-  #hud .lives-card {width: 52px !important;min-width: 52px !important;height: 29px;padding: 3px 4px}
-  #hud .lives-card b {font-size: 7px;letter-spacing: .5px}
-  #hud .skill-card {width: 62px !important;min-width: 54px !important;height: 29px;min-height: 29px;padding: 3px 4px}
-  #hud .skill-head .hud-label {font-size: 4px}
-  #hud .skill-head>b {font-size: 5px}
-  #hud .skill-status {display: none}
-  #devPanel {bottom: 7px;width: calc(100vw - 12px);padding: 10px}
-  #devPanel .dev-row button {min-width: 0;flex: 1 1 calc(50% - 6px)}
-  #devPanel .dev-wave-btn {flex: 0 0 46px !important}
-  /* The 5 SPEED buttons wrap 2/2/1 under the generic 50%-basis rule above;
-     give #devSpeedRow its own ~20% basis so all 5 stay on one row. */
-  #devPanel #devSpeedRow button {flex: 1 1 calc(20% - 5px);min-width: 0;padding: 6px 3px;font-size: 9px}
-  #hud {left: 3px !important;right: 3px !important;grid-template-columns: minmax(0,1fr) minmax(72px,82px) minmax(0,1fr) !important;gap: 9px !important}
-  #hud .hud-p1 {gap: 6px !important}
-  #hud .hud-p2 {gap: 6px !important}
-}
-
-/* Responsive: @media (max-width:380px) */
-
-@media (max-width:380px) {
-  #hud .hud-p1 .hud-player-title {min-width: 25px !important;font-size: 4px}
-  #hud .hud-p2 .hud-player-title {min-width: 25px !important;font-size: 4px}
-  #hud .lives-card {width: 43px !important;min-width: 43px !important}
-  #hud .lives-card b {font-size: 6px}
-  #hud .skill-card {width: 50px !important;min-width: 44px !important}
-  #hud .skill-head>b {font-size: 4px}
-  #hud {grid-template-columns: minmax(0,1fr) 64px minmax(0,1fr) !important;left: 5px !important;right: 5px !important;gap: 5px !important}
-  #hud .hud-p1 {gap: 5px !important}
-  #hud .hud-p1 .lives-card {min-width: 82px !important;height: 40px !important;padding: 5px 7px !important}
-  #hud .hud-p1 .lives-card b {font-size: 18px !important}
-  #hud .hud-p1 .lives-card b .life-heart {width: 18px !important;height: 19px !important;flex-basis: 18px !important}
-  #hud .hud-p1 .skill-card {width: 112px !important;min-width: 112px !important;height: 40px !important;padding: 5px 7px !important}
-  #hud .hud-p1 .skill-head>b {font-size: 10px !important}
-  #hud .hud-p1 .skill-status {font-size: 7px !important}
-}
-
-/* Responsive: @media (max-width:500px) */
-
-@media(max-width:500px) {
-  #devPanel {right: 6px;bottom: 6px;width: min(340px,calc(100vw - 12px))}
-  #devPanel .dev-row {gap: 4px}
-  #devPanel button {font-size: 7px;min-height: 28px;padding: 4px}
-  #devPanel #devSpeedRow button {padding: 4px 1px;font-size: 8px}
-}
-
-/* Responsive: @media (max-width:360px) */
-
-@media (max-width:360px) {
-  #hud {grid-template-columns: minmax(0,1fr) 78px minmax(0,1fr) !important;gap: 3px !important}
-  #hud .hud-p1 {max-width: 98px !important;gap: 3px !important}
-  #hud .hud-p2 {max-width: 98px !important;gap: 3px !important}
-  #hud .lives-card {width: 45px !important;min-width: 45px !important}
-  #hud .skill-card {width: 50px !important;min-width: 50px !important;padding-left: 4px !important;padding-right: 4px !important}
-}
-
-/* Responsive: @media (max-width:700px) */
-
-@media (max-width:700px) {
-}
-
-/* Animation: @keyframes grazeScoreSidePop */
-
-@keyframes grazeScoreSidePop {
-  0% {opacity: 0;transform: translateY(-50%) translateX(-4px) scale(1)}
-  15% {opacity: 1;transform: translateY(-50%) translateX(0) scale(1)}
-  68% {opacity: 1;transform: translateY(-50%) translateX(4px) scale(1)}
-  100% {opacity: 0;transform: translateY(-50%) translateX(12px) scale(1)}
-}
-
-/* Animation: @keyframes waveBannerFade */
-
-@keyframes waveBannerFade {
-  0% {opacity: 0}
-  10% {opacity: 1}
-  85% {opacity: 1}
-  100% {opacity: 0}
-}
-
-/* Responsive: @media (prefers-reduced-motion: reduce) */
-
-@media (prefers-reduced-motion: reduce) {
-  #waveBanner.wave-show {animation: none;opacity: 1}
-  #noHitBanner.no-hit-show {animation: none;opacity: 1}
-}
 
 /* BASE / RESET */
 :root {--accent: #4ecdc4;--danger: #ff5c5c;--gold: #ffd93d;--graze: #7bed9f;--panel: rgba(14,16,26,.92);--border: rgba(255,255,255,.12);--safe-top: max(12px,env(safe-area-inset-top));--safe-left: max(12px,env(safe-area-inset-left))}
@@ -796,3 +463,350 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 #noHitBanner.no-hit-show {visibility: visible;animation: waveBannerFade var(--no-hit-ms) ease-in-out both}
 #noHitTitle {font-size: clamp(38px,7vw,60px);line-height: 1;font-weight: 800;letter-spacing: 4px;color: var(--gold)}
 #noHitSubtitle {font-size: clamp(14px,2vw,18px);color: #fff;margin-top: 10px;font-weight: 700}
+
+/* ============================================================
+   RESPONSIVE OVERRIDES + ANIMATIONS
+   ------------------------------------------------------------
+   Moved here (2026-08-21) from the top of the file, where they
+   were silently dead on mobile: CSS cascades by source order for
+   equal-specificity rules, and #hud's base rule below used
+   !important with the same #hud specificity, so it always won
+   over these @media overrides regardless of viewport width —
+   these blocks now correctly come AFTER the base rules they're
+   meant to override, matching the structure this header comment
+   has documented all along. No rule content changed, only order.
+   ============================================================ */
+/* Responsive: @media (max-width:700px) */
+
+@media(max-width:700px) {
+  .chip.best {display: none}
+  .rules {grid-template-columns: 1fr}
+  .panel {max-height: 92vh}
+  .rules li {font-size: 12px}
+  .chip {padding: 5px 8px;font-size: 11px}
+  .hud-card {padding: 6px 8px;min-width: 94px}
+  .skill-card {min-width: 124px}
+  .hud-label {font-size: 8px}
+  .menu-screen {width: min(560px,94vw);max-height: calc(100dvh - 12px);padding: 18px 9px}
+  .hero-title-wrap {margin-bottom: 20px}
+  .mode-choice {min-height: 62px}
+  .mode-choice strong {font-size: 15px}
+  .skill-player-block {padding: 10px}
+  .skill-card-grid {grid-template-columns: repeat(2,1fr)}
+  .player-score {padding: 5px 7px}
+  .player-score b {font-size: 11px}
+  #downBanner {top: 16%;padding: 10px 16px}
+  #noHitBanner {width: min(92vw,620px);padding: 15px 18px}
+  #noHitTitle {font-size: clamp(28px,8vw,42px)}
+  #noHitSubtitle {font-size: 12px;margin-top: 5px}
+  .score-results b {font-size: 16px}
+  .team-result b {font-size: 20px}
+  .chip.lives {flex-basis: 104px;min-width: 104px;width: 104px}
+  .chip.p2-lives {flex-basis: 104px;min-width: 104px;width: 104px}
+  .chip.lives b {min-width: 62px}
+  .chip.p2-lives b {min-width: 62px}
+  .p1-score {min-width: 82px}
+  .p2-score {min-width: 82px}
+  .hud-zone {gap: 3px}
+  .hud-player-title {min-width: 31px;height: 29px;padding: 0 4px;font-size: 6px}
+  .hud-zone .lives-card {height: 29px;min-height: 29px;padding: 3px 5px}
+  .hud-zone .skill-card {height: 29px;min-height: 29px;width: 82px;padding: 3px 5px}
+  .hud-zone .lives-card b {font-size: 9px}
+  .hud-zone .hud-label {font-size: 5px}
+  .hud-zone .skill-head>b {font-size: 6px}
+  .hud-zone .skill-status {font-size: 4px}
+  #overlay #resultScreen {width: calc(100vw - 16px);max-width: calc(100vw - 16px);max-height: calc(100dvh - 16px)}
+  #overlay #resultScreen .panel {width: 100%;padding: 20px 16px}
+  .skill-card-option {min-height: 92px}
+  .skill-card-icon {width: 48px;height: 48px}
+  .skill-card-icon img {width: 46px;height: 46px}
+  #hud .hud-player-title {padding: 0 4px;min-width: 54px;height: 34px;font-size: 8px;display: none !important}
+  #hud .hud-p2 .hud-row {display: flex !important;flex: 0 0 auto !important;align-items: center !important;gap: 4px !important;width: auto !important}
+  #hud .lives-card {flex: 0 0 auto !important;width: 50px !important;min-width: 50px !important;height: 30px !important;padding: 4px 5px !important;border-radius: 7px !important}
+  #hud .lives-card b {font-size: 9px !important;letter-spacing: .5px !important}
+  #hud .skill-card {flex: 0 0 auto !important;width: 58px !important;min-width: 58px !important;height: 30px !important;min-height: 30px !important;padding: 4px 5px !important;border-radius: 7px !important}
+  #hud .skill-head {gap: 3px !important}
+  #hud .skill-head .hud-label {font-size: 5px !important}
+  #hud .skill-head>b {font-size: 6px !important;max-width: 34px;overflow: hidden;text-overflow: ellipsis}
+  #hud .skill-status {font-size: 5px;display: none !important}
+  #hud .skill-bar {height: 2px !important;margin-top: 2px !important}
+  #hud {padding: 0 !important;top: max(8px,env(safe-area-inset-top)) !important;left: 8px !important;right: 8px !important;width: auto !important;display: grid !important;grid-template-columns: minmax(0,1fr) auto !important;grid-template-areas: "p1 center" !important;align-items: start !important;gap: 8px !important;flex-wrap: nowrap !important}
+  #hud .hud-p1 {justify-self: start !important;grid-area: p1 !important;width: auto !important;max-width: none !important;min-width: 0 !important;display: flex !important;flex-direction: row !important;align-items: center !important;gap: 8px !important;overflow: visible !important}
+  #hud .hud-p1 .hud-player-title {display: none !important}
+  #hud .hud-p1 .p1-score {display: none !important}
+  #hud .hud-p1 .hud-row {align-items: center !important;gap: 4px !important;display: flex !important;flex: 0 0 auto !important;width: auto !important;margin: 0 !important}
+  #hud .hud-p1 .lives-card {width: auto !important;min-width: 94px !important;height: 44px !important;padding: 6px 10px !important;justify-content: center !important;border-radius: 9px !important}
+  #hud .hud-p1 .lives-card .hud-label {display: none !important}
+  #hud .hud-p1 .lives-card b {display: flex !important;align-items: center !important;justify-content: center !important;gap: 2px !important;width: auto !important;min-width: 0 !important;overflow: visible !important;text-overflow: clip !important;white-space: nowrap !important;font-size: 21px !important;line-height: 1 !important;letter-spacing: 0 !important}
+  #hud .hud-p1 .lives-card b .life-heart {display: inline-flex !important;width: 21px !important;height: 22px !important;align-items: center !important;justify-content: center !important;flex: 0 0 21px !important;line-height: 1 !important;opacity: 1 !important}
+  #hud .hud-p1 .skill-card {width: 132px !important;min-width: 132px !important;height: 44px !important;min-height: 44px !important;padding: 6px 9px !important;border-radius: 9px !important}
+  #hud .hud-p1 .skill-head .hud-label {font-size: 8px !important;margin-bottom: 2px !important}
+  #hud .hud-p1 .skill-head>b {font-size: 11px !important;max-width: none !important}
+  #hud .hud-p1 .skill-status {display: flex !important;font-size: 8px !important;margin-top: 3px !important}
+  #hud .hud-p1 .skill-bar {height: 4px !important;margin-top: 4px !important}
+  #hud .hud-p2 {width: 100% !important;max-width: 112px !important;min-width: 0 !important;align-items: center !important;gap: 4px !important;overflow: hidden !important;justify-self: end !important;display: none !important}
+  .reset-best-area {margin-top: 20px;padding-top: 12px}
+  .reset-best-btn {font-size: 8px;padding: 6px 10px;min-width: 100px}
+  .howto-head h2 {font-size: 24px}
+  .howto-platform {padding: 8px 18px}
+  .howto-mode {padding: 8px 18px}
+  .howto-section {padding: 12px 13px}
+  .control-list>div {grid-template-columns: 105px 1fr;font-size: 12px}
+  .howto-panel {max-height: 58vh;overflow: auto;padding: 0 2px 4px}
+  .menu-actions {gap: 7px}
+  .menu-actions .howto-btn {min-width: 0;flex: 1;padding: 8px 10px}
+  .settings-panel {padding: 15px 13px}
+  .settings-copy span {font-size: 10px}
+  .score-line {height: 15px !important}
+  .score-popup-layer {left: calc(100% + 5px) !important}
+  #waveBanner {width: min(92vw,620px);padding: 15px 18px}
+  #waveTitle {font-size: clamp(28px,8vw,42px)}
+  #waveSubtitle {font-size: 12px;margin-top: 5px}
+}
+
+/* Responsive: @media (max-height:600px) */
+
+@media(max-height:600px) {
+  .panel {padding: 14px 18px}
+  .rules {margin: 10px 0 12px}
+  .rules li {padding: 6px 8px}
+  .tagline {margin-bottom: 10px}
+}
+
+/* Animation: @keyframes skill-fired */
+
+@keyframes skill-fired {
+  0% {transform: scale(1);box-shadow: 0 0 0 transparent}
+  35% {transform: scale(1.12);box-shadow: 0 0 18px #4ecdc499}
+  100% {transform: scale(1);box-shadow: 0 0 0 transparent}
+}
+
+/* Responsive: @media (max-width:430px) */
+
+@media (max-width:430px) {
+  .chip {padding: 4px 7px}
+  .chip.lives {flex-basis: 96px;min-width: 96px;width: 96px}
+  .chip.p2-lives {flex-basis: 96px;min-width: 96px;width: 96px}
+  .chip.lives b {min-width: 54px}
+  .chip.p2-lives b {min-width: 54px}
+  .hud-row {gap: 3px}
+  .lives-card {height: 34px}
+  .player-score {height: 34px}
+  .hud-card {padding: 4px 5px;border-radius: 6px}
+  .skill-card {min-width: 116px;min-height: 36px}
+  .skill-bar {height: 2px}
+  .hud-zone {grid-template-columns: auto minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}
+  .hud-label {font-size: 5px}
+  .lives-card b {font-size: 7px}
+  .player-score b {font-size: 7px}
+  .skill-head>b {font-size: 6px}
+  .skill-status {font-size: 6px;display: none}
+  .hud-player-title {letter-spacing: 1.5px;height: 16px;min-width: 28px;font-size: 5px;padding: 0 2px;display: none}
+  .hud-zone .skill-card {width: 68px}
+  .hud-zone .lives-card b {font-size: 8px}
+  #hud .hud-player-title {display: none;min-width: 43px;height: 30px;padding: 0 5px;font-size: 6px}
+  #hud .lives-card {min-width: 55px;height: 30px;padding: 4px 6px}
+  #hud .lives-card b {font-size: 8px}
+  #hud .skill-card {width: 76px;min-width: 76px;height: 30px;min-height: 30px;padding: 4px 5px}
+  #hud .skill-head .hud-label {font-size: 5px}
+  #hud .skill-head>b {font-size: 6px}
+  #hud .skill-status {display: none}
+  .hud-zone[aria-label="Game status"] .hud-stat {min-width: 62px;padding: 0 5px}
+  .hud-zone[aria-label="Game status"] .hud-stat > b {font-size: 11px}
+  #hud {width: calc(100vw - 4px);padding: 0 3px;grid-template-columns: 1fr auto 1fr !important;left: 3px;right: 3px;gap: 7px !important}
+  #hud .hud-p1 {gap: 4px !important}
+  #hud .hud-p2 {gap: 4px !important}
+}
+
+/* Responsive: @media (max-width:520px) */
+
+@media(max-width:520px) {
+  .rules li {font-size: 11px}
+  .hero-title-wrap {margin-bottom: 18px}
+  .hero-title-wrap h1 {font-size: clamp(38px,13vw,60px)}
+}
+
+/* Animation: @keyframes skill-panel-in */
+
+@keyframes skill-panel-in {
+  from {opacity: 0;transform: translateY(-4px)}
+  to {opacity: 1;transform: translateY(0)}
+}
+
+/* Responsive: @media (max-height:620px) */
+
+@media(max-height:620px) {
+  .menu-screen {padding: 10px 10px}
+  .hero-title-wrap {margin-bottom: 12px}
+  .hero-title-wrap h1 {font-size: clamp(34px,8vw,52px)}
+  .hero-line {margin: 7px auto}
+  .mode-choice {min-height: 50px}
+  .skill-player-block {margin-top: 7px;padding: 8px}
+  .skill-card-option {min-height: 58px}
+  .selected-loadout {margin: 7px 0}
+  .menu-hint {margin-top: 6px}
+}
+
+/* Animation: @keyframes down-pulse */
+
+@keyframes down-pulse {
+  from {transform: translateX(-50%) scale(1);box-shadow: 0 10px 32px rgba(0,0,0,.42),0 0 12px rgba(255,92,92,.12)}
+  to {transform: translateX(-50%) scale(1.025);box-shadow: 0 10px 32px rgba(0,0,0,.42),0 0 28px rgba(255,92,92,.28)}
+}
+
+/* Animation: @keyframes rank-reveal */
+
+@keyframes rank-reveal {
+  from {opacity: 0;transform: scale(.72) translateY(8px);filter: blur(5px)}
+  to {opacity: 1;transform: scale(1) translateY(0);filter: blur(0)}
+}
+
+/* Animation: @keyframes down-pulse */
+
+@keyframes down-pulse {
+  from {transform: translateX(-50%) scale(1);box-shadow: 0 10px 32px rgba(0,0,0,.42),0 0 10px rgba(255,209,102,.08)}
+  to {transform: translateX(-50%) scale(1.02);box-shadow: 0 10px 32px rgba(0,0,0,.42),0 0 24px rgba(255,209,102,.18)}
+}
+
+/* Responsive: @media (max-width:900px) */
+
+@media(max-width:900px) {
+  .hud-card {padding: 6px 7px}
+  .hud-label {font-size: 8px}
+  .lives-card {height: 36px}
+  .player-score {height: 36px}
+  .lives-card b {font-size: 10px}
+  .player-score b {font-size: 10px}
+  .skill-card {min-height: 38px}
+  #hud {gap: 4px;top: max(7px,env(safe-area-inset-top));width: calc(100vw - 10px);grid-template-columns: minmax(0,1fr) 220px minmax(0,1fr)}
+  .hud-zone {grid-template-columns: auto minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr)}
+  .hud-player-title {min-width: 55px;font-size: 7px}
+}
+
+/* Responsive: @media (max-width:620px) */
+
+@media(max-width:620px) {
+  .p2-title {justify-content: flex-start}
+  .hud-p1 {grid-area: p1}
+  .hud-p2 {grid-area: p2}
+  #hud {top: max(7px,env(safe-area-inset-top));left: 6px;right: 6px;transform: none;grid-template-areas: 'p1 p2' 'center center';width: calc(100vw - 6px);grid-template-columns: minmax(0,1fr) 170px minmax(0,1fr);gap: 3px}
+  .hud-zone {grid-template-columns: auto minmax(0,1fr) minmax(0,1fr) minmax(0,1.05fr);gap: 2px}
+  .hud-player-title {min-width: 38px;height: 32px;padding: 0 3px;font-size: 6px;letter-spacing: .8px}
+  .player-dot {width: 4px;height: 4px}
+  .skill-card {height: 32px;min-height: 32px}
+  .lives-card {height: 32px;min-height: 32px}
+  .player-score {height: 32px;min-height: 32px}
+  .lives-card b {font-size: 8px}
+  .player-score b {font-size: 8px}
+  .hud-label {font-size: 6px;letter-spacing: .7px}
+  .skill-head>b {font-size: 7px}
+  .skill-status {font-size: 5px}
+  .hud-zone[aria-label="Game status"] .hud-stat {min-width: 72px;height: 32px;padding: 0 7px}
+  .hud-zone[aria-label="Game status"] .hud-stat > b {font-size: 12px}
+}
+
+/* Responsive: @media (max-width:820px) */
+
+@media (max-width:820px) {
+  #hud {left: 6px !important;right: 6px !important;grid-template-columns: minmax(0,1fr) minmax(88px,104px) minmax(0,1fr) !important;gap: 5px !important}
+  #hud .hud-p1 {gap: 3px !important}
+  #hud .hud-p2 {gap: 3px !important}
+  #hud .hud-p1 .hud-player-title {min-width: 42px !important;height: 32px;font-size: 7px}
+  #hud .hud-p2 .hud-player-title {min-width: 42px !important;height: 32px;font-size: 7px}
+  #hud .lives-card {width: 62px !important;min-width: 62px !important;height: 32px;padding: 4px 5px}
+  #hud .lives-card b {font-size: 9px}
+  #hud .skill-card {width: 78px !important;min-width: 60px !important;height: 32px;min-height: 32px;padding: 4px 5px}
+  #hud .skill-head .hud-label {font-size: 5px}
+  #hud .skill-head>b {font-size: 6px}
+  #hud .skill-status {font-size: 4px}
+}
+
+/* Responsive: @media (max-width:600px) */
+
+@media (max-width:600px) {
+  #hud .hud-p1 .hud-player-title {min-width: 30px !important;height: 29px;padding: 0 3px;font-size: 5px}
+  #hud .hud-p2 .hud-player-title {min-width: 30px !important;height: 29px;padding: 0 3px;font-size: 5px}
+  #hud .lives-card {width: 52px !important;min-width: 52px !important;height: 29px;padding: 3px 4px}
+  #hud .lives-card b {font-size: 7px;letter-spacing: .5px}
+  #hud .skill-card {width: 62px !important;min-width: 54px !important;height: 29px;min-height: 29px;padding: 3px 4px}
+  #hud .skill-head .hud-label {font-size: 4px}
+  #hud .skill-head>b {font-size: 5px}
+  #hud .skill-status {display: none}
+  #devPanel {bottom: 7px;width: calc(100vw - 12px);padding: 10px}
+  #devPanel .dev-row button {min-width: 0;flex: 1 1 calc(50% - 6px)}
+  #devPanel .dev-wave-btn {flex: 0 0 46px !important}
+  /* The 5 SPEED buttons wrap 2/2/1 under the generic 50%-basis rule above;
+     give #devSpeedRow its own ~20% basis so all 5 stay on one row. */
+  #devPanel #devSpeedRow button {flex: 1 1 calc(20% - 5px);min-width: 0;padding: 6px 3px;font-size: 9px}
+  #hud {left: 3px !important;right: 3px !important;grid-template-columns: minmax(0,1fr) minmax(72px,82px) minmax(0,1fr) !important;gap: 9px !important}
+  #hud .hud-p1 {gap: 6px !important}
+  #hud .hud-p2 {gap: 6px !important}
+}
+
+/* Responsive: @media (max-width:380px) */
+
+@media (max-width:380px) {
+  #hud .hud-p1 .hud-player-title {min-width: 25px !important;font-size: 4px}
+  #hud .hud-p2 .hud-player-title {min-width: 25px !important;font-size: 4px}
+  #hud .lives-card {width: 43px !important;min-width: 43px !important}
+  #hud .lives-card b {font-size: 6px}
+  #hud .skill-card {width: 50px !important;min-width: 44px !important}
+  #hud .skill-head>b {font-size: 4px}
+  #hud {grid-template-columns: minmax(0,1fr) 64px minmax(0,1fr) !important;left: 5px !important;right: 5px !important;gap: 5px !important}
+  #hud .hud-p1 {gap: 5px !important}
+  #hud .hud-p1 .lives-card {min-width: 82px !important;height: 40px !important;padding: 5px 7px !important}
+  #hud .hud-p1 .lives-card b {font-size: 18px !important}
+  #hud .hud-p1 .lives-card b .life-heart {width: 18px !important;height: 19px !important;flex-basis: 18px !important}
+  #hud .hud-p1 .skill-card {width: 112px !important;min-width: 112px !important;height: 40px !important;padding: 5px 7px !important}
+  #hud .hud-p1 .skill-head>b {font-size: 10px !important}
+  #hud .hud-p1 .skill-status {font-size: 7px !important}
+}
+
+/* Responsive: @media (max-width:500px) */
+
+@media(max-width:500px) {
+  #devPanel {right: 6px;bottom: 6px;width: min(340px,calc(100vw - 12px))}
+  #devPanel .dev-row {gap: 4px}
+  #devPanel button {font-size: 7px;min-height: 28px;padding: 4px}
+  #devPanel #devSpeedRow button {padding: 4px 1px;font-size: 8px}
+}
+
+/* Responsive: @media (max-width:360px) */
+
+@media (max-width:360px) {
+  #hud {grid-template-columns: minmax(0,1fr) 78px minmax(0,1fr) !important;gap: 3px !important}
+  #hud .hud-p1 {max-width: 98px !important;gap: 3px !important}
+  #hud .hud-p2 {max-width: 98px !important;gap: 3px !important}
+  #hud .lives-card {width: 45px !important;min-width: 45px !important}
+  #hud .skill-card {width: 50px !important;min-width: 50px !important;padding-left: 4px !important;padding-right: 4px !important}
+}
+
+/* Responsive: @media (max-width:700px) */
+
+@media (max-width:700px) {
+}
+
+/* Animation: @keyframes grazeScoreSidePop */
+
+@keyframes grazeScoreSidePop {
+  0% {opacity: 0;transform: translateY(-50%) translateX(-4px) scale(1)}
+  15% {opacity: 1;transform: translateY(-50%) translateX(0) scale(1)}
+  68% {opacity: 1;transform: translateY(-50%) translateX(4px) scale(1)}
+  100% {opacity: 0;transform: translateY(-50%) translateX(12px) scale(1)}
+}
+
+/* Animation: @keyframes waveBannerFade */
+
+@keyframes waveBannerFade {
+  0% {opacity: 0}
+  10% {opacity: 1}
+  85% {opacity: 1}
+  100% {opacity: 0}
+}
+
+/* Responsive: @media (prefers-reduced-motion: reduce) */
+
+@media (prefers-reduced-motion: reduce) {
+  #waveBanner.wave-show {animation: none;opacity: 1}
+  #noHitBanner.no-hit-show {animation: none;opacity: 1}
+}

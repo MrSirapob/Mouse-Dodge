@@ -59,6 +59,33 @@ what changed, why, key numbers if any.
 
 ## 2026-08-21 — Claude (Sonnet 5, claude.ai)
 
+**Session 9 — Mobile HUD fix: WAVE stat hidden on iPhone XR (user-reported, "wave ui หายอ่ะ เหมือนมันทับกันกับ ui ของผู้เล่น"):**
+Root cause: **every `@media` block in `css/main.css` sat before the unconditional base
+`#hud` rule** in source order, so the later base rule (desktop-sized 82px lives-card /
+118px skill-card, both `!important`) always won the cascade over the mobile overrides meant
+to shrink them — on any screen, not just narrow ones. On an iPhone XR's ~390-414px usable
+width, that desktop-sized player HUD overflows its grid column and visually covers the
+center `#hudCenter` WAVE stat. This looks like it undid the guarantee `CHANGES_css_cleanup.md`
+documented (effective cascade verified assuming base-then-media order) — something after
+that 08-15 cleanup moved the media blocks ahead of the base rules. Fix: moved the whole
+`@media` block (rules only, no values changed) to the end of the file, after all base rules,
+matching the structure the file's own header comment already described. Verified via an
+order-independent diff (sorted/comments-stripped) that old vs new `main.css` differ only by
+the added explanatory comment. Did not touch any per-breakpoint pixel values — those were
+already tuned, just unreachable. `npm test` is CSS-blind (no visual assertions) so this was
+verified by manually tracing the cascade (source order + specificity + `!important` tier)
+for the conflicting rules, not by a screenshot — **worth an actual iPhone XR (or similarly
+narrow) device/simulator check next session to confirm visually**, since no automated test
+covers CSS layout in this repo.
+**Files:** `css/main.css`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **180 PASS / 0 FAIL / 0 WARN** (unaffected; CSS-only
+change).
+**For the next session:** Nothing pending, but flagging a gap: this repo's test suite has no
+visual/CSS regression coverage at all, so a bug like this (correct-looking rules that are
+silently dead due to file order) can hide indefinitely. Worth considering a lightweight check
+(even just "no selector should be declared in more than one place across the file" per
+`CHANGES_css_cleanup.md`'s own convention) if this class of bug recurs.
+
 **Session 8 — HANDOFF_LOG housekeeping (user-requested, "ช่วยสรุป log ให้หน่อย ตอนนี้มันยาวเกิน"):**
 File had grown to 589 lines / 4 dated entries (08-18 through 08-21). Applied this file's own
 "Housekeeping" rule: archived the 2026-08-20, 2026-08-19, and 2026-08-18 entries (590 → 209
