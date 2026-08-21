@@ -418,8 +418,7 @@
   equality on a `CONFIG`-derived object (`assertEqual`, not deep-equal)
   started failing for reasons unrelated to the actual change (surfaced as 2
   false FAILs in `bullet.test.mjs`/`bullethell-simulation.test.mjs` during
-  the session that found it; see `HANDOFF_LOG.md`'s 2026-08-19 entry for
-  the original repro).
+  the session that found it).
   - `scripts/bump-version.mjs` and `scripts/check-versions.mjs` now walk
     `tests/**/*.mjs` in addition to `index.html`/`js/**/*.js`, so all three
     stay in sync in one pass and `check-versions` will catch it if they
