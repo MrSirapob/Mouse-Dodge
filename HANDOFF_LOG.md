@@ -59,6 +59,29 @@ what changed, why, key numbers if any.
 
 ## 2026-08-21 — Claude (Sonnet 5, claude.ai)
 
+**Session 5 — W10 boss `reverseRain` shallow-penetration fix; corrected a stale HANDOFF_LOG note (user-requested, "แก้ทั้ง 2 อัน"):**
+User asked what else might need attention besides audio. Two things were flagged
+from earlier sessions' "for the next session" notes:
+1. **W10 boss `reverseRain` (Phase 3, both calls) still had short `reverseAfter`**
+   (1.45 / 1.35) — the exact same shallow-penetration bug Session 12/13 fixed for
+   W8/W9, left un-applied to the boss wave and noted as "may be intentional." Fixed
+   the same way: `1.45→4.2` and `1.35→3.95`, both now reaching ~95% arena
+   penetration before reversing (see CHANGELOG.md for the px math). One-line-each
+   change plus explanatory comments.
+2. **The "`lifeSystem.js` cosmetic indent glitch" repeated across several old
+   entries turned out to be already fixed** — `git log -- js/systems/lifeSystem.js`
+   shows commit `8ba3d8d "fix: correct indentation in lifeSystem.js for better
+   readability"` already resolved it; the file is correctly/consistently indented
+   now. The old entries were never updated after that commit landed, so the note
+   kept getting carried forward as if still open. No code change needed; leaving
+   the old entries as-is (historical record) but flagging here so it stops getting
+   re-surfaced as a pending item.
+Ran `npm run bump-version` after the waveSystem.js edit.
+**Files:** `js/systems/waveSystem.js`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **180 PASS / 0 FAIL / 0 WARN**.
+**For the next session:** Nothing pending. The `lifeSystem.js` indent item can be
+considered fully closed — no need to keep re-flagging it.
+
 **Session 4 — Score frozen during wave-announcement banner (user-reported):**
 User asked whether it was correct that time/score kept moving normally while
 the "WAVE N" banner was up. Traced it: `startWave()` already holds spawning

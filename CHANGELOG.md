@@ -1,5 +1,19 @@
 # Changelog
 
+## W10 boss `reverseRain` traveled too shallow before reversing (same bug as the W8/W9 fix, user-requested)
+- **Both `reverseRain()` calls in W10's boss pattern set (Phase 3) still had
+  the pre-fix short `reverseAfter` values** (1.45 and 1.35) that Sessions
+  12/13 already identified and fixed for W8/W9 — left un-applied to the
+  boss wave and flagged in `HANDOFF_LOG.md` as "may be intentional." Not
+  intentional: same shallow-penetration bug (bullets only reached ~33-34%
+  of the 720px arena before reversing back the way they came).
+  - `reverseAfter=1.45` (speed 2.8, from top) → `4.2`: travel
+    243.6px (~34%) → 705.6px (~95%).
+  - `reverseAfter=1.35` (speed 2.9, from bottom) → `3.95`: travel
+    234.9px (~33%) → 687.3px (~95%).
+  Both now match the ~95% penetration ratio used by the W8/W9 fix.
+- **Files:** `js/systems/waveSystem.js`.
+
 ## Score no longer accrues during the wave-announcement banner (user-reported)
 - **`Game.updateScore()` ran unconditionally every frame, including while
   `state.waveTime` is still negative** (the window `startWave()` uses to

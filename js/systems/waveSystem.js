@@ -1,4 +1,4 @@
-import { CONFIG, actForWave } from "../core/config.js?v=20260821-7eax";
+import { CONFIG, actForWave } from "../core/config.js?v=20260821-b0ds";
 
 /**
  * ========================= PATTERN GUIDE FOR AI =========================
@@ -527,12 +527,18 @@ export class WaveSystem {
       this.p.bossPerimeterCrossfire(17.0, 5.0, 32, 0.48, 2.3, c1);
 
       // PHASE 3
-      this.p.reverseRain(25.0, 22, 0.18, 2.8, 1.45, c1, true);
+      // reverseAfter bumped 1.45 -> 4.2 (same bug/fix as W8/W9 Session 12/13,
+      // see CHANGELOG): at the old value bullets only traveled
+      // 1.45*2.8*60 = 243.6px (~34% of the 720px arena) before reversing.
+      // 4.2 -> 705.6px (~95%, matching the W8/W9 fix ratio).
+      this.p.reverseRain(25.0, 22, 0.18, 2.8, 4.2, c1, true);
       this.p.bossHoming(27.0, 18, 0.32, 2.4, c2);
 
       // PHASE 3 SIGNATURE: perimeter formation only.
       this.p.bossPerimeterCrossfire(29.0, 5.0, 34, 0.42, 2.5, c3);
-      this.p.reverseRain(35.0, 24, 0.16, 2.9, 1.35, c1, false);
+      // Same fix as above: 1.35 -> 3.95 (old: 1.35*2.9*60 = 234.9px, ~33%
+      // of arena; new: 687.3px, ~95%).
+      this.p.reverseRain(35.0, 24, 0.16, 2.9, 3.95, c1, false);
 
       // PHASE 4 — machine gun + moving sweep.
       this.p.machineGunTop(38.0, 52, 0.09, 5.2, 0.7, c1);
