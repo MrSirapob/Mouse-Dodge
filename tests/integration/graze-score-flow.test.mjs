@@ -8,7 +8,7 @@
 import { TestSuite, assert, assertEqual } from '../helpers/assertions.mjs';
 import { createGame, jumpToWave, tick } from '../helpers/gameFactory.mjs';
 import { withSeededRandom } from '../helpers/seededRandom.mjs';
-import { GRAZE_REWARD } from '../../js/core/config.js?v=20260820-5vbq';
+import { GRAZE_REWARD } from '../../js/core/config.js?v=20260821-iylt';
 
 export async function run() {
   const s = new TestSuite('INTEGRATION: Graze -> Combo -> Score');
@@ -17,6 +17,7 @@ export async function run() {
     const { game } = await createGame();
     jumpToWave(game, 1);
     game.actionQueue = [];
+    game.state.waveDuration = 999;
     const player = game.players[0];
     player.x = 640;
     player.y = 360;

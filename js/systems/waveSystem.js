@@ -1,4 +1,4 @@
-import { CONFIG, actForWave } from "../core/config.js?v=20260820-5vbq";
+import { CONFIG, actForWave } from "../core/config.js?v=20260821-iylt";
 
 /**
  * ========================= PATTERN GUIDE FOR AI =========================
@@ -63,7 +63,10 @@ export class WaveSystem {
 
   duration(n) {
     if (this.game.isBossWave(n)) return 60;
-    if (n <= 4) return 30;
+    if (n === 1) return 20;
+    if (n === 2) return 23;
+    if (n === 3) return 26;
+    if (n === 4) return 29;
     if (n <= 9) return 40;
     if (n <= 14) return 40;
     if (n <= 19) return 45;
@@ -514,21 +517,21 @@ export class WaveSystem {
       this.p.bossAimed(7.0, 30, 0.18, 3.2, c1);
 
       // PHASE 1 SIGNATURE: perimeter formation only.
-      this.p.bossPerimeterCrossfire(9.0, 3.5, 10, 0.55, 2.1, c3);
+      this.p.bossPerimeterCrossfire(9.0, 3.5, 30, 0.55, 2.1, c3);
 
       // PHASE 2
       this.p.bossRing(13.0, 62, 2.9, c2);
       this.p.edgeSplitter(15.0, 10, 0.32, 3.8, c3);
 
       // PHASE 2 SIGNATURE: perimeter formation only.
-      this.p.bossPerimeterCrossfire(17.0, 5.0, 12, 0.48, 2.3, c1);
+      this.p.bossPerimeterCrossfire(17.0, 5.0, 32, 0.48, 2.3, c1);
 
       // PHASE 3
       this.p.reverseRain(25.0, 22, 0.18, 2.8, 1.45, c1, true);
       this.p.bossHoming(27.0, 18, 0.32, 2.4, c2);
 
       // PHASE 3 SIGNATURE: perimeter formation only.
-      this.p.bossPerimeterCrossfire(29.0, 5.0, 14, 0.42, 2.5, c3);
+      this.p.bossPerimeterCrossfire(29.0, 5.0, 34, 0.42, 2.5, c3);
       this.p.reverseRain(35.0, 24, 0.16, 2.9, 1.35, c1, false);
 
       // PHASE 4 — machine gun + moving sweep.
@@ -540,7 +543,7 @@ export class WaveSystem {
 
       // PHASE 5 — final perimeter formation, again SOLO.
       this.p.sineRain(50.0, 28, 0.13, 3.0, 145, 0.82, c3, true);
-      this.p.bossPerimeterCrossfire(52.0, 5.0, 16, 0.36, 2.8, c1);
+      this.p.bossPerimeterCrossfire(52.0, 5.0, 36, 0.36, 2.8, c1);
       this.p.bossHoming(58.0, 18, 0.24, 2.55, c2);
 
       return "「บทที่สอง : เมื่อสวรรค์ถูกลากลงจากบัลลังก์」";

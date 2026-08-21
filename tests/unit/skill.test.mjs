@@ -9,8 +9,8 @@
 
 import { TestSuite, assert, assertEqual } from '../helpers/assertions.mjs';
 import { createGame, jumpToWave } from '../helpers/gameFactory.mjs';
-import { CONFIG } from '../../js/core/config.js?v=20260820-5vbq';
-import { SkillSystem } from '../../js/systems/skillSystem.js?v=20260820-5vbq';
+import { CONFIG } from '../../js/core/config.js?v=20260821-iylt';
+import { SkillSystem } from '../../js/systems/skillSystem.js?v=20260821-iylt';
 
 // Methods on SkillSystem.prototype that are actual skills (not use()/finish()).
 const NON_SKILL_METHODS = new Set(['constructor', 'use', 'finish']);

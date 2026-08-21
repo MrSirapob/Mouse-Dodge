@@ -1,5 +1,36 @@
 # Changelog
 
+## W10 boss: perimeter-formation ("square") bullet count +20 per occurrence (user-requested)
+- **`WaveSystem.buildBoss(10)`** — all four `bossPerimeterCrossfire()` calls
+  (the rectangle-outline formation attack, one per boss phase) had their
+  `count` raised by 20: Phase 1 10→30, Phase 2 12→32, Phase 3 14→34,
+  Phase 5 16→36. `start`/`interval`/`speed` untouched, so the telegraph
+  timing and per-bullet speed are the same — only the number of bullets
+  making up each rectangle increased.
+- **Timing note (Phase 5 only):** `bossPerimeterCrossfire`'s fire moment is
+  `start + (count-1)*0.045 + 0.8 + holdTime` seconds into the wave. With
+  the new count, Phase 5's formation now fires at ~59.4s into a 60s boss
+  wave (was ~58.5s) — margin before `Game.beginWaveTransition()` wipes
+  `actionQueue` on the `active`→`draining` cutover shrank from ~1.5s to
+  ~0.6s. Still fires in time in testing, but if W10's boss duration or
+  Phase 5's start time ever moves earlier, this is the thing that breaks
+  first (formation bullets spawn but never get their release signal, then
+  sit idle until `maxAge` expires and stalls wave-clear).
+- **Files:** `js/systems/waveSystem.js`.
+
+## W1-4 wave duration tuning: 20/23/26/29s progression (user-requested)
+- **`WaveSystem.duration(n)`** — W1-4 changed from a flat 30s each to a
+  ramp: W1=20s, W2=23s, W3=26s, W4=29s. W5+ unaffected (boss 60s,
+  W6-14 40s, W16-19 45s, W20+ 60s).
+- Regenerated `tests/fixtures/balance-baseline.json` for W1-4 (shorter
+  waves spawn fewer bullets in the same window — W3's `peakActive` no
+  longer pins the 420 cap since it now runs out of time first).
+- `tests/integration/graze-score-flow.test.mjs`'s 8-bullet graze-combo
+  test now pins `game.state.waveDuration = 999` so the shortened W1
+  duration can't cut the multi-bullet sequence off mid-test.
+- **Files:** `js/systems/waveSystem.js`, `tests/fixtures/balance-baseline.json`,
+  `tests/integration/graze-score-flow.test.mjs`, `WAVE_DESIGN_NOTES.md`.
+
 ## Chapter-transition cue: accent-colored flash + shake burst on every boss wave (user-requested follow-up)
 - **Added `CONFIG.actThemes[i].accent`** — one bright color per act, used
   only for this cue (not part of the bullet-color cycle).

@@ -57,7 +57,39 @@ what changed, why, key numbers if any.
 
 ---
 
+## 2026-08-21 — Claude (Sonnet 5, claude.ai)
+
+**Session 1 — Housekeeping for Session 14's W1-4 duration change + W10 formation count bump (user-requested):**
+Previous entry's Session 14 (W1-4 duration → 20/23/26/29s) was left uncommitted with no `CHANGELOG.md`
+entry and no version bump — added both retroactively (see CHANGELOG.md, two new entries). Note:
+the working tree at pickup had the W1-4 duration edit already applied but the newest HANDOFF_LOG
+entry attributed it to "Claude (Sonnet 5, claude.ai)" while the user described it as Gemini's work —
+flagging the mismatch here in case it matters for whoever reads this next; did not change the
+attribution on the existing entry since I can't verify which tool actually wrote it.
+Also bumped `WaveSystem.buildBoss(10)`'s four `bossPerimeterCrossfire()` (rectangle/"square" formation)
+counts by +20 each (10→30, 12→32, 14→34, 16→36) per user request. See CHANGELOG.md for the Phase 5
+timing-margin note (fires ~59.4s into the 60s boss wave now, was ~58.5s — still safe but worth watching
+if W10's pacing changes again).
+Ran `npm run bump-version` after all edits (new tag — see `check-versions` output below).
+**Files:** `js/systems/waveSystem.js`, `CHANGELOG.md`, plus the version-bump touches every `?v=` file.
+**End-of-day test result:** `npm test` → **179 PASS / 0 FAIL / 0 WARN**.
+**For the next session:** Nothing pending. If W10 Phase 5's formation count or start time changes again,
+recheck the fire-time-vs-60s-cap margin noted in CHANGELOG.md.
+
+---
+
 ## 2026-08-20 — Claude (Sonnet 5, claude.ai)
+
+**Session 14 — W1-4 duration tuning 20-30s (user-requested):**
+Adjusted W1-4 durations in `WaveSystem.duration(n)` from a flat 30s to a 20-30s progression:
+W1 = 20s, W2 = 23s, W3 = 26s, W4 = 29s.
+Regenerated `tests/fixtures/balance-baseline.json` per balance baseline policy.
+In `tests/integration/graze-score-flow.test.mjs`, set `game.state.waveDuration = 999` in the 8-bullet
+graze combo test so W1 transition doesn't interrupt the multi-bullet sequence.
+Updated `WAVE_DESIGN_NOTES.md`.
+**Files:** `js/systems/waveSystem.js`, `tests/fixtures/balance-baseline.json`, `tests/integration/graze-score-flow.test.mjs`, `WAVE_DESIGN_NOTES.md`.
+**End-of-day test result:** `npm test` → **179 PASS / 0 FAIL / 0 WARN**.
+**For the next session:** Nothing pending.
 
 **Session 13 — W9 reverseRain travel distance fix (user-requested):** Same issue as W8 Session 12.
 `reverseRain(fromTop=false, speed=5.2, reverseAfter=1.35)` → 421px travel → reversed at y≈317 (midscreen).
