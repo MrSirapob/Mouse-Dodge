@@ -59,6 +59,11 @@ what changed, why, key numbers if any.
 
 ## 2026-08-21 — Claude (Sonnet 5, claude.ai)
 
+**Session 15 — Per-stat "New Best" badges on Game Over screen (Antigravity):**
+Replaced the single `🏆 New Best!` badge (score-only) with four independent per-stat badges shown as a flex row. Each badge appears only if that stat was beaten: `🏆 Best Score!` (gold), `⏱ Best Time!` (cyan), `🌊 Best Wave!` (red), `✨ Best Graze!` (green). All use the same pop-in animation. No badge row is rendered at all if no stat improved.
+**Files:** `js/ui/ui.js`
+**Test result:** `npm.cmd test` — all 180 PASS, 0 FAIL.
+
 **Session 14 — Bug fix: "New Best" badge intermittently missing (Antigravity):**
 Root cause: `GameState.reset()` (called when the player hits "เล่นอีกครั้ง") simply nulled `this.gameOverTimer` without cancelling it first via `clearTimeout`. If the player restarted within the 350ms `setTimeout` window after dying, the timer kept running and fired `showGameOver()` into the new run's UI, overwriting or corrupting the screen — causing the New Best badge to either never appear or flash and disappear instantly. Fix: call `clearTimeout(this.gameOverTimer)` before nulling it in `GameState.reset()`.
 **Files:** `js/core/gameState.js`

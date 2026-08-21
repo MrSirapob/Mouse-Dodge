@@ -1,4 +1,4 @@
-import { CONFIG } from "../core/config.js?v=20260821-48bq";
+import { CONFIG } from "../core/config.js?v=20260821-ukbr";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -626,18 +626,31 @@ export class UI {
       ? `<div class="howto-tip run-tip">💡 ${runTip.text}</div>`
       : "";
 
-    // A "New Best!" counts if this run's score actually beat the previous best.
-    const isNewBestScore =
-      Math.round(finalScore) > 0 &&
-      Math.round(finalScore) > Math.round(bestScore);
+    // Per-stat "New Best" badges — each compared against the pre-run record.
+    const isNewBestScore = Math.round(finalScore) > 0 && Math.round(finalScore) > Math.round(bestScore);
+    const isNewBestTime  = time > bestTime;
+    const isNewBestWave  = wave > bestWave;
+    const isNewBestGraze = graze > bestGraze;
+    const anyNewBest = isNewBestScore || isNewBestTime || isNewBestWave || isNewBestGraze;
 
-    const newBestBadge = isNewBestScore
+    const newBestBadge = anyNewBest
       ? `<style>
-           .new-best-badge{display:inline-flex;align-items:center;gap:6px;margin:0 0 14px;padding:6px 14px;border-radius:999px;background:rgba(255,217,61,.12);border:1px solid rgba(255,217,61,.4);color:var(--gold);font-size:12px;font-weight:900;letter-spacing:.5px;animation:new-best-pop .45s cubic-bezier(.2,.8,.2,1) both}
+           .new-best-badges{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;justify-content:center}
+           .new-best-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.4px;animation:new-best-pop .45s cubic-bezier(.2,.8,.2,1) both}
+           .new-best-badge.score{background:rgba(255,217,61,.12);border:1px solid rgba(255,217,61,.4);color:var(--gold)}
+           .new-best-badge.time{background:rgba(78,205,196,.12);border:1px solid rgba(78,205,196,.4);color:#4ecdc4}
+           .new-best-badge.wave{background:rgba(255,107,107,.12);border:1px solid rgba(255,107,107,.4);color:#ff6b6b}
+           .new-best-badge.graze{background:rgba(123,237,159,.12);border:1px solid rgba(123,237,159,.4);color:#7bed9f}
            @keyframes new-best-pop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
          </style>
-         <div class="new-best-badge">🏆 New Best!</div>`
+         <div class="new-best-badges">
+           ${isNewBestScore ? '<span class="new-best-badge score">🏆 Best Score!</span>' : ''}
+           ${isNewBestTime  ? '<span class="new-best-badge time">⏱ Best Time!</span>'   : ''}
+           ${isNewBestWave  ? '<span class="new-best-badge wave">🌊 Best Wave!</span>'  : ''}
+           ${isNewBestGraze ? '<span class="new-best-badge graze">✨ Best Graze!</span>' : ''}
+         </div>`
       : "";
+
 
     this.showResultScreen(`
       <div class="panel">
