@@ -1,4 +1,4 @@
-import { CONFIG } from "../core/config.js?v=20260821-tmlp";
+import { CONFIG } from "../core/config.js?v=20260821-2lwf";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -219,6 +219,11 @@ export class UI {
       );
     }
 
+    this.fitOverlayScreens();
+    window.addEventListener("resize", () => this.fitOverlayScreens(), {
+      passive: true,
+    });
+
     this.showModeScreen();
   }
 
@@ -420,6 +425,7 @@ export class UI {
     this.skillScreen?.classList.add("hidden");
     this.resultScreen?.classList.add("hidden");
     this.updateMouseSensitivityDisplay();
+    this.fitOverlayScreens();
   }
 
   updateMouseSensitivityDisplay() {
@@ -449,6 +455,7 @@ export class UI {
     this.settingsScreen?.classList.add("hidden");
     this.skillScreen?.classList.add("hidden");
     this.resultScreen?.classList.add("hidden");
+    this.fitOverlayScreens();
   }
 
   showHowToPlayScreen() {
@@ -457,6 +464,7 @@ export class UI {
     this.howToPlayScreen?.classList.remove("hidden");
     this.skillScreen?.classList.add("hidden");
     this.resultScreen?.classList.add("hidden");
+    this.fitOverlayScreens();
   }
 
   showSkillScreen() {
@@ -477,6 +485,7 @@ export class UI {
         : "P1: เมาส์ · Space: หยุดเกม";
     }
     this.updateLoadout();
+    this.fitOverlayScreens();
   }
 
   updateLoadout() {
@@ -507,6 +516,46 @@ export class UI {
 
   // --- Overlays -------------------------------------------------
 
+  /**
+   * Scales visible menu / result screens to fit within the viewport height and width
+   * without distortion or clipping. Particularly on laptops (600-750px high viewports),
+   * this uniformly scales the panel down so all buttons (including Reset Best) and stats
+   * fit neatly inside the screen with zero scrollbar.
+   */
+  fitOverlayScreens() {
+    if (!this.overlay) return;
+    const screens = this.overlay.querySelectorAll(".menu-screen:not(.hidden)");
+    if (!screens || screens.length === 0) return;
+
+    const pad = 96;
+    const availH =
+      (window.innerHeight || document.documentElement.clientHeight || 800) -
+      pad;
+    const availW =
+      (window.innerWidth || document.documentElement.clientWidth || 1000) -
+      pad;
+
+    screens.forEach((screen) => {
+      screen.style.zoom = "";
+
+      const panel = screen.querySelector(".panel") || screen;
+      const naturalH = panel.scrollHeight || panel.offsetHeight;
+      const naturalW = panel.scrollWidth || panel.offsetWidth;
+
+      if (naturalH > 0 && naturalW > 0) {
+        const scaleY = naturalH > availH ? availH / naturalH : 1;
+        const scaleX = naturalW > availW ? availW / naturalW : 1;
+        const scale = Math.min(1, scaleY, scaleX);
+
+        if (scale < 0.999) {
+          screen.style.zoom = scale.toFixed(4);
+        } else {
+          screen.style.zoom = "";
+        }
+      }
+    });
+  }
+
   hideOverlay() {
     this.overlay.classList.add("hidden");
     this.pause?.classList.add("hidden");
@@ -536,6 +585,7 @@ export class UI {
       this.resultScreen.classList.remove("hidden");
     }
     this.overlay.classList.remove("hidden");
+    this.fitOverlayScreens();
     this.resultScreen
       ?.querySelector("#startBtn")
       ?.addEventListener("click", () =>

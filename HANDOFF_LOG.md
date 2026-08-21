@@ -93,11 +93,13 @@ following WAVE N banner) skips `updateTimers()` entirely — correct for holding
 jumped back to counting. Fix: the `transition` branch now increments `state.elapsed` directly
 with real frame time, independent of `updateTimers()`. Ran `npm run bump-version` after.
 **Files:** `js/systems/game.js`, `CHANGELOG.md`.
-**End-of-day test result:** `npm test` → **180 PASS / 0 FAIL / 0 WARN** (no new tests added —
-confirmed the fix with an ad-hoc headless repro against `tests/helpers/gameFactory.mjs`
-showing `state.elapsed` advancing ~1s over 60 simulated transition frames, then removed the
-scratch script; existing wave-flow tests don't assert on `elapsed` during transition so they
-didn't need changes).
+
+**Session 14 — Fix: Game-Over screen laptop scaling via zoom (user-reported: "ในโน๊ตบุ๊คยังไม่ได้ เพราะอะไร"):**
+The previous `transform: scale(...)` attempt failed on laptops because flexbox centers the unscaled layout bounds, pushing the transformed element's top and bottom out of the viewport. Replaced `transform` with `zoom` in `fitOverlayScreens()`. `zoom` properly shrinks the physical layout box, allowing the flexbox `#overlay` to flawlessly center the fully visible, shrunken panel exactly like a browser zoom. Also removed obsolete `max-height` and `overflow-y` constraints from `.menu-screen` in `css/main.css` to allow `scrollHeight` to calculate correctly without inner clipping. Follow-up: Increased `pad` calculation in `fitOverlayScreens()` from 24px to 96px to guarantee the scaled panel never visually touches the top/bottom edges of the browser, resolving "cut off" feelings on short windows.
+**Files:** `css/main.css`, `js/ui/ui.js`.
+**End-of-day test result:** `node ./tests/run-all.mjs` → **180 PASS / 0 FAIL / 0 WARN**.
+
+
 **For the next session:** Nothing pending. If a dedicated regression test for
 "elapsed keeps advancing through wavePhase transition" is wanted, `tests/integration/
 wave-flow.test.mjs` is the natural home (see its existing transition-timing tests for the

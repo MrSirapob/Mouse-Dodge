@@ -127,7 +127,7 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .hero-title-wrap h1 {margin: 0;color: #fff;font-size: clamp(42px,9vw,72px);line-height: .95;font-weight: 900;letter-spacing: clamp(2px,1vw,7px);text-shadow: 0 8px 30px rgba(0,0,0,.55),0 0 32px rgba(78,205,196,.12)}
 .hero-line {width: 54px;height: 2px;margin: 14px auto 11px;background: var(--accent);box-shadow: 0 0 12px rgba(78,205,196,.5)}
 .hero-title-wrap p {margin: 0;color: #8e95a8;font-size: 12px}
-.menu-screen {width: min(560px,92vw);max-height: calc(100dvh - 24px);overflow-y: auto;overflow-x: hidden;overscroll-behavior: contain;-webkit-overflow-scrolling: touch;padding: clamp(24px,5vw,42px) clamp(16px,5vw,32px);text-align: center}
+.menu-screen {width: min(560px,92vw);padding: clamp(24px,5vw,42px) clamp(16px,5vw,32px);text-align: center}
 .menu-screen.hidden {display: none !important}
 .hero-title-wrap {margin-bottom: 26px}
 
@@ -376,8 +376,9 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 #secret-dev-badge {top: auto !important;left: 10px !important;bottom: 10px !important;padding: 5px 8px !important;border-radius: 7px !important;font-size: 11px !important}
 
 /* RESULT SCREEN / SCORING */
-#overlay #resultScreen {box-sizing: border-box;width: min(620px,94vw);max-width: calc(100vw - 24px);max-height: calc(100dvh - 24px);padding: 0;margin: 0;overflow-y: auto;overflow-x: hidden;flex: 0 1 auto}
+#overlay #resultScreen {box-sizing: border-box;width: min(620px,94vw);max-width: none;max-height: none;padding: 0;margin: 0;overflow: visible;flex: 0 0 auto;transform-origin: center center}
 #overlay #resultScreen .panel {box-sizing: border-box;width: 100%;max-width: none;max-height: none;margin: 0}
+
 
 /* MENU / OVERLAY SCREENS */
 .skill-card-option {min-width: 0;border: 1px solid rgba(255,255,255,.09);border-radius: 9px;color: #fff;cursor: pointer;display: flex;flex-direction: column;align-items: center;justify-content: center;gap: 3px;text-align: center;transition: transform .12s,border-color .12s,background .12s,box-shadow .12s;position: relative;min-height: 104px;padding: 8px 7px 7px;overflow: hidden;background: radial-gradient(circle at 50% 18%,rgba(255,255,255,.06),transparent 45%),
@@ -510,7 +511,7 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
   .hud-card {padding: 6px 8px;min-width: 94px}
   .skill-card {min-width: 124px}
   .hud-label {font-size: 8px}
-  .menu-screen {width: min(560px,94vw);max-height: calc(100dvh - 12px);padding: 18px 9px}
+  .menu-screen {width: min(560px,94vw);padding: 18px 9px}
   .hero-title-wrap {margin-bottom: 20px}
   .mode-choice {min-height: 62px}
   .mode-choice strong {font-size: 15px}
@@ -538,7 +539,7 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
   .hud-zone .hud-label {font-size: 5px}
   .hud-zone .skill-head>b {font-size: 6px}
   .hud-zone .skill-status {font-size: 4px}
-  #overlay #resultScreen {width: calc(100vw - 16px);max-width: calc(100vw - 16px);max-height: calc(100dvh - 16px)}
+  #overlay #resultScreen {width: calc(100vw - 16px);max-width: calc(100vw - 16px)}
   #overlay #resultScreen .panel {width: 100%;padding: 20px 16px}
   .skill-card-option {min-height: 92px}
   .skill-card-icon {width: 48px;height: 48px}
