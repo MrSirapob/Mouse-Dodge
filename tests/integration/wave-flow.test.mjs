@@ -10,7 +10,7 @@
 
 import { TestSuite, assert, assertEqual } from '../helpers/assertions.mjs';
 import { createGame, jumpToWave, tick } from '../helpers/gameFactory.mjs';
-import { CONFIG } from '../../js/core/config.js?v=20260821-hp8v';
+import { CONFIG } from '../../js/core/config.js?v=20260821-tmlp';
 
 export async function run() {
   const s = new TestSuite('INTEGRATION: Wave Transition Flow');

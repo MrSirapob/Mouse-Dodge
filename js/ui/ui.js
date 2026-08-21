@@ -1,4 +1,4 @@
-import { CONFIG } from "../core/config.js?v=20260821-hp8v";
+import { CONFIG } from "../core/config.js?v=20260821-tmlp";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -107,6 +107,34 @@ const RANK_FX = {
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Small mechanic reminders shown on the Game Over screen — for details
+// like the "NO HIT" wave-clear bonus that only exist as a small in-run
+// banner and are easy to miss, or a #howto-tip a player never opened.
+// One is picked at random per run (never the same one twice in a row —
+// see lastTipIndex/getRunTip below, same no-immediate-repeat pattern as
+// getRankPhrase()). Solo-only tips are filtered out in coop.
+const RUN_TIPS = [
+  { text: `จบเวฟโดยไม่โดนดาเมจเลยสักครั้ง จะได้โบนัส <strong>NO HIT</strong> เพิ่มคะแนน (มากขึ้นเรื่อย ๆ ตามเวฟ)`, modes: ["solo", "coop"] },
+  { text: `เฉียดกระสุนแบบไม่โดน จะได้ <strong>Graze</strong> เพิ่มคะแนน แถมลดคูลดาวน์สกิลด้วย`, modes: ["solo", "coop"] },
+  { text: `ไอเทม <strong>Shield</strong> กันดาเมจให้ 1 ครั้งต่อ 1 ชาร์จ ไม่ใช่แค่กันชั่วคราว`, modes: ["solo", "coop"] },
+  { text: `ไอเทม <strong>Energy</strong> ทำให้สกิลพร้อมใช้ได้ทันที ไม่ต้องรอคูลดาวน์`, modes: ["solo", "coop"] },
+  { text: `ไอเทม <strong>Mystery Box</strong> มีโอกาส 50/50 ทั้งด้านดีและด้านเสี่ยง เก็บแล้วลุ้นได้เลย`, modes: ["solo", "coop"] },
+  { text: `หัวใจ (Heart) จะมีโอกาสออกบ่อยขึ้นเมื่อเลือดพร่อง ไม่ต้องกังวลว่าจะไม่มาตอนจำเป็น`, modes: ["solo", "coop"] },
+  { text: `เพื่อนร่วมทีมล้ม (DOWN) ให้เข้าไปใกล้ ๆ เพื่อช่วยปลุกให้ฟื้นกลับมาเล่นต่อได้`, modes: ["coop"] },
+];
+let lastTipIndex = -1;
+function getRunTip(mode) {
+  const pool = RUN_TIPS.filter((t) => t.modes.includes(mode));
+  if (pool.length === 0) return null;
+  if (pool.length === 1) return pool[0];
+  let index = Math.floor(Math.random() * pool.length);
+  if (pool[index] === RUN_TIPS[lastTipIndex]) {
+    index = (index + 1 + Math.floor(Math.random() * (pool.length - 1))) % pool.length;
+  }
+  lastTipIndex = RUN_TIPS.indexOf(pool[index]);
+  return pool[index];
 }
 
 function getScoreRank(score) {
@@ -547,6 +575,10 @@ export class UI {
 
     const rank = getScoreRank(finalScore);
     const rankPhrase = getRankPhrase(rank);
+    const runTip = getRunTip(mode);
+    const tipBlock = runTip
+      ? `<div class="howto-tip run-tip">💡 ${runTip.text}</div>`
+      : "";
 
     // A "New Best!" only counts if this run's score actually beat the
     // score that was on record before this run (see setBest() above) —
@@ -607,6 +639,7 @@ export class UI {
         </div>
 
         ${scoreRows}
+        ${tipBlock}
         <div class="result-actions">
           <button id="startBtn" class="start restart-btn" type="button"><span>↻</span> เล่นอีกครั้ง</button>
           <button id="menuBtn" class="menu-btn" type="button">กลับเมนู</button>

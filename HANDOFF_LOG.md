@@ -103,6 +103,22 @@ didn't need changes).
 wave-flow.test.mjs` is the natural home (see its existing transition-timing tests for the
 pattern).
 
+**Session 13 — New: random mechanic-reminder tip on Game Over screen (user-requested, "ผมเพิ่ม Tip ยังไงดี เช่น ถ้าผ่าน Wave โดนไม่โดนดาเมจ จะบวกแต้มเพิ่ม แต่ตอนนี้พวกรายละเอียดเล็กๆ น้อยๆ แบบนี้ ยังไม่ได้มีบอกคนเล่น" → offered How To Play-only / Pause / loading-screen / Game Over as placement options, user picked Game Over):**
+Full detail in the CHANGELOG.md entry at the top of the file. Short version: new
+`RUN_TIPS` array + `getRunTip(mode)` in `js/ui/ui.js`, 7 tips (NO HIT bonus, Graze +
+skill-cooldown refund, Shield, Energy, Mystery Box, Heart spawn boost, coop-only revive)
+picked at random per Game Over with no-immediate-repeat (same pattern as `getRankPhrase()`),
+rendered via a new `.run-tip` block (`.howto-tip` styling + left-align override) in the
+result screen template. Ran `npm run bump-version` after.
+**Files:** `js/ui/ui.js`, `css/main.css`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **180 PASS / 0 FAIL / 0 WARN** (no new automated
+tests — verified with an ad-hoc headless run against the real `UI` class with a mocked DOM,
+confirming rendered text, rotation-without-immediate-repeat, and the coop-only tip never
+leaking into solo; scratch script removed after).
+**For the next session:** Nothing blocking. Not yet visually verified in a browser
+(wrapping/line-length on narrow mobile widths, whether `.run-tip`'s left-align reads odd
+next to the otherwise-centered result screen).
+
 **Session 10 — Game-over rank reveal: build-up + per-tier pop/shake/particles (user-requested, "ทำระบบอะไรเพิ่มดี ขอว้าวๆ ไม่เอาระบบเสียง" → picked from a shortlist, then narrowed to the existing end-of-run RANK block after a live in-run version was rejected for covering the playfield):**
 Full detail in the CHANGELOG.md entry at the top of the file. Short version: `showGameOver()`'s
 static rank letter now cycles up from D to the actual rank (decelerating, ~0.9s for SSS,

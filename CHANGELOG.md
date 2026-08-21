@@ -1,5 +1,28 @@
 # Changelog
 
+## New: random mechanic-reminder tip on the Game Over screen (user-requested, "ผมเพิ่ม Tip ยังไงดี เช่น ถ้าผ่าน Wave โดนไม่โดนดาเมจ จะบวกแต้มเพิ่ม แต่ตอนนี้พวกรายละเอียดเล็กๆ น้อยๆ แบบนี้ ยังไม่ได้มีบอกคนเล่น" → considered adding to the existing How To Play screen / Pause / loading, user picked Game Over as more visible)
+- **New `RUN_TIPS` array + `getRunTip(mode)` in `js/ui/ui.js`:** 7 short
+  mechanic reminders (NO HIT bonus, Graze + its skill-cooldown refund,
+  Shield item, Energy item, Mystery Box, Heart spawn-weight boost when
+  hurt, and a coop-only "revive a downed ally" tip). One is picked at
+  random each time `showGameOver()` runs, never repeating the immediately
+  previous tip (same no-immediate-repeat pattern already used by
+  `getRankPhrase()`). The coop-only tip is filtered out of the pool in
+  solo so it can never appear there.
+- **Rendered via a new `.run-tip` block** (reuses the existing
+  `.howto-tip` look-and-feel from the How To Play screen — small
+  accent-left-border callout — with a `.run-tip` override that
+  left-aligns the text instead of inheriting `.panel`'s center-align,
+  since a full sentence reads better left-aligned than centered once it
+  wraps to two lines) inserted into the Game Over template between the
+  score breakdown and the Play Again / Menu buttons.
+- **Files:** `js/ui/ui.js`, `css/main.css`.
+- Verified with a headless run against the real `UI` class (DOM mocked):
+  confirmed the tip renders with the expected text, rotates across
+  repeated calls without an immediate repeat, and the coop-only tip only
+  ever appears in coop mode. Full suite still 180/180 PASS (unaffected —
+  no existing test asserts on Game Over's exact HTML).
+
 ## Fix: run timer (HUD clock) froze during the NO HIT / wave-transition banner (user-reported, "ตอนที่ขึ้น no hit ทำใมเวลาหยุดเดิน")
 - **Root cause:** `Game.update()` has an early-return branch for
   `state.wavePhase === 'transition'` (covers both the "NO HIT" banner and
