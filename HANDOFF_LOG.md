@@ -59,6 +59,28 @@ what changed, why, key numbers if any.
 
 ## 2026-08-21 — Claude (Sonnet 5, claude.ai)
 
+**Session 4 — Score frozen during wave-announcement banner (user-reported):**
+User asked whether it was correct that time/score kept moving normally while
+the "WAVE N" banner was up. Traced it: `startWave()` already holds spawning
+back correctly via negative `state.waveTime` (nothing queued fires until it
+counts up to 0 — see `runScheduledActions()`), but `updateScore()` had no
+such guard, so the passive `+100*dt` score tick and combo-timer decay ran
+the whole ~3s banner window regardless — ~300 free points/wave with nothing
+on screen to risk them against. Gave the user 3 options (skip score only,
+freeze the whole update during the banner, or keep it as an intentional
+grace bonus); they picked skipping score only. Added a one-line guard
+(`if (this.state.waveTime < 0) return;`) at the top of `updateScore()`.
+Player movement during the banner is deliberately unaffected — only score/
+combo now hold flat. See CHANGELOG.md for the write-up.
+**Files:** `js/systems/game.js`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **180 PASS / 0 FAIL / 0 WARN** (no new
+tests added — existing wave-flow/score suites already cover this path and
+passed unchanged).
+**For the next session:** Nothing pending. If a future change touches
+`updateScore()` or `startWave()`'s negative-`waveTime` banner-hold trick,
+keep this guard in mind — it depends on `waveTime` staying negative for the
+whole banner window.
+
 **Session 1 — Housekeeping for Session 14's W1-4 duration change + W10 formation count bump (user-requested):**
 Previous entry's Session 14 (W1-4 duration → 20/23/26/29s) was left uncommitted with no `CHANGELOG.md`
 entry and no version bump — added both retroactively (see CHANGELOG.md, two new entries). Note:

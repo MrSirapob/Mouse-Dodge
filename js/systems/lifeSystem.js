@@ -1,4 +1,4 @@
-import { CONFIG } from '../core/config.js?v=20260821-n4e8';
+import { CONFIG } from '../core/config.js?v=20260821-7eax';
 
 export class LifeSystem {
   constructor(game) { this.game = game; }

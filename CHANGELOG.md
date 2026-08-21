@@ -1,5 +1,19 @@
 # Changelog
 
+## Score no longer accrues during the wave-announcement banner (user-reported)
+- **`Game.updateScore()` ran unconditionally every frame, including while
+  `state.waveTime` is still negative** (the window `startWave()` uses to
+  hold spawning back until the "WAVE N" banner finishes — see
+  `bannerDisplayMs`, 3000ms). Spawning was correctly held off during that
+  window, but the passive `+100 * dt` score-per-second tick and combo-timer
+  decay were not, so every wave handed out ~300 risk-free points before a
+  single bullet existed.
+- Fix: `updateScore()` now returns immediately while `state.waveTime < 0`,
+  so score and combo stay flat for the banner's duration and resume the
+  instant spawning does. Player movement is untouched — you can still
+  reposition freely while the banner is up.
+- **Files:** `js/systems/game.js`.
+
 ## Shield item reworked to charge-based block (not timed invuln); heart item no longer gives score at max life (user-requested)
 - **Shield item was the same time-based full-invuln as the Shield skill**
   (`player.shieldTimer`, `canBeHit()` returns false for the whole window) —
