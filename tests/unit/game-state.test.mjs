@@ -8,8 +8,8 @@
 
 import { TestSuite, assert, assertEqual } from '../helpers/assertions.mjs';
 import { createGame, jumpToWave, tick } from '../helpers/gameFactory.mjs';
-import { GameState, GAME_STATES, GAME_MODES } from '../../js/core/gameState.js?v=20260821-vk7t';
-import { CONFIG } from '../../js/core/config.js?v=20260821-vk7t';
+import { GameState, GAME_STATES, GAME_MODES } from '../../js/core/gameState.js?v=20260821-dt9c';
+import { CONFIG } from '../../js/core/config.js?v=20260821-dt9c';
 
 export async function run() {
   const s = new TestSuite('LIFE / DEATH / RESTART / WAVE STATE');

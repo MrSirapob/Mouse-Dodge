@@ -59,6 +59,11 @@ what changed, why, key numbers if any.
 
 ## 2026-08-21 — Claude (Sonnet 5, claude.ai)
 
+**Session 13 — Skill balance tuning (Antigravity):**
+Changed `heal` skill cooldown from 10s to 30s. With a base wave duration of 30s and a max of 3 lives, a 10s cooldown allowed essentially unlimited sustain. Even at 20s, a player with heavy grazing (which can reduce cooldown by up to 60%) could heal 2-3 times per wave. 30s ensures a passive player gets at most 1 heal per wave, while highly skilled aggressive players (grazing heavily) can reduce it down to ~12s. This properly positions Heal as a high-value survival ultimate rather than a spammable skill.
+**Files:** `js/core/config.js`
+**Test result:** `npm.cmd test` — all 180 PASS, 0 FAIL.
+
 **Session 12 — Game Over Screen "Run Best" column fix (Antigravity):**
 Fixed the issue where achieving a new high score caused the Game Over screen's "Run Best" column to display the identical newly-updated record, preventing players from seeing the *previous* record they just beat. The `game.js` `gameOver()` method now captures `prevBest...` values before updating `localStorage` and passes them to `ui.showGameOver()`. The `ui.js` script was simplified to compare `finalScore > bestScore` directly, dropping its internal `this.priorBestScore` state.
 **Files:** `js/systems/game.js`, `js/ui/ui.js`

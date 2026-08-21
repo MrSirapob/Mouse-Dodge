@@ -32,7 +32,7 @@ export const CONFIG = {
     slow: { cooldown: 7, duration: 2.5, scale: 0.28 },
     nova: { cooldown: 7, radius: 210, invulnerability: 0.55 },
     timestop: { cooldown: 8, duration: 2.8 },
-    heal: { cooldown: 10 },
+    heal: { cooldown: 30 },
     repulse: { cooldown: 7, radius: 190, force: 14.0, minPush: 8.0 },
     phase: { cooldown: 7, duration: 2.5 },
   },
