@@ -116,13 +116,14 @@ function wait(ms) {
 // see lastTipIndex/getRunTip below, same no-immediate-repeat pattern as
 // getRankPhrase()). Solo-only tips are filtered out in coop.
 const RUN_TIPS = [
-  { text: `จบเวฟโดยไม่โดนดาเมจเลยสักครั้ง จะได้โบนัส <strong>NO HIT</strong> เพิ่มคะแนน (มากขึ้นเรื่อย ๆ ตามเวฟ)`, modes: ["solo", "coop"] },
+  { text: `จบเวฟโดยไม่โดนดาเมจเลยสักครั้ง จะได้คะแนนโบนัส เพิ่มคะแนน (มากขึ้นเรื่อย ๆ ตามเวฟ)`, modes: ["solo", "coop"] },
   { text: `เฉียดกระสุนแบบไม่โดน จะได้ <strong>Graze</strong> เพิ่มคะแนน แถมลดคูลดาวน์สกิลด้วย`, modes: ["solo", "coop"] },
-  { text: `ไอเทม <strong>Shield</strong> กันดาเมจให้ 1 ครั้งต่อ 1 ชาร์จ ไม่ใช่แค่กันชั่วคราว`, modes: ["solo", "coop"] },
-  { text: `ไอเทม <strong>Energy</strong> ทำให้สกิลพร้อมใช้ได้ทันที ไม่ต้องรอคูลดาวน์`, modes: ["solo", "coop"] },
   { text: `ไอเทม <strong>Mystery Box</strong> มีโอกาส 50/50 ทั้งด้านดีและด้านเสี่ยง เก็บแล้วลุ้นได้เลย`, modes: ["solo", "coop"] },
-  { text: `หัวใจ (Heart) จะมีโอกาสออกบ่อยขึ้นเมื่อเลือดพร่อง ไม่ต้องกังวลว่าจะไม่มาตอนจำเป็น`, modes: ["solo", "coop"] },
   { text: `เพื่อนร่วมทีมล้ม (DOWN) ให้เข้าไปใกล้ ๆ เพื่อช่วยปลุกให้ฟื้นกลับมาเล่นต่อได้`, modes: ["coop"] },
+  { text: `Graze คือ การเฉียดกระสุน`, modes: ["solo", "coop"] },
+  { text: `การอยู่ใกล้กระสุนไม่อันตรายเสมอไป แต่การไม่มีทางหนีต่างหากที่อันตราย`, modes: ["solo", "coop"] },
+
+
 ];
 let lastTipIndex = -1;
 function getRunTip(mode) {
