@@ -185,11 +185,6 @@ export class UI {
     this.onMenu = null;
     this.onResume = null;
     this.onResetBest = null;
-    // Tracks the best score as it stood *before* the most recent setBest()
-    // call, so showGameOver() can tell whether this run just beat it.
-    // (setBest() runs once on load with the saved value, then once per
-    // game-over with the possibly-updated value — see setBest() below.)
-    this.priorBestScore = 0;
     this.currentMode = "solo";
     this.currentSkill = "pulse";
     this.currentSkillP2 = "pulse";
@@ -631,13 +626,10 @@ export class UI {
       ? `<div class="howto-tip run-tip">💡 ${runTip.text}</div>`
       : "";
 
-    // A "New Best!" only counts if this run's score actually beat the
-    // score that was on record before this run (see setBest() above) —
-    // matches the strict `finalScore > this.bestScore` check in
-    // game.js's gameOver(), just evaluated from data already in the UI.
+    // A "New Best!" counts if this run's score actually beat the previous best.
     const isNewBestScore =
       Math.round(finalScore) > 0 &&
-      Math.round(finalScore) > this.priorBestScore;
+      Math.round(finalScore) > Math.round(bestScore);
 
     const newBestBadge = isNewBestScore
       ? `<style>
@@ -785,11 +777,6 @@ export class UI {
   // --- HUD setters -------------------------------------------------
 
   setBest(time, wave, score = 0) {
-    // Remember what the best score was *before* this update, so a later
-    // showGameOver() call can detect "New Best!" without touching game.js.
-    this.priorBestScore = this.lastBestScore ?? 0;
-    this.lastBestScore = Math.round(score) || 0;
-
     if (this.el.best) this.el.best.textContent = Number(time).toFixed(1);
     if (this.el.bestWave) this.el.bestWave.textContent = wave;
     if (this.el.bestScore)

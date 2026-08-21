@@ -59,6 +59,11 @@ what changed, why, key numbers if any.
 
 ## 2026-08-21 — Claude (Sonnet 5, claude.ai)
 
+**Session 12 — Game Over Screen "Run Best" column fix (Antigravity):**
+Fixed the issue where achieving a new high score caused the Game Over screen's "Run Best" column to display the identical newly-updated record, preventing players from seeing the *previous* record they just beat. The `game.js` `gameOver()` method now captures `prevBest...` values before updating `localStorage` and passes them to `ui.showGameOver()`. The `ui.js` script was simplified to compare `finalScore > bestScore` directly, dropping its internal `this.priorBestScore` state.
+**Files:** `js/systems/game.js`, `js/ui/ui.js`
+**Test result:** `npm.cmd test` — all 180 PASS, 0 FAIL.
+
 **Session 11 — New item: Mystery Box, 50/50 gamble pickup (user-requested, iterated over several turns: "เพิ่มอะไรอีกดี" → item brainstorm rejected twice → "Mystery Box แต่คุณต้องให้เท่าเทียมกันแบบ 50 50 สิ" → clarified 50/50 means *balanced magnitude*, not just probability, then explicitly chose the non-lethal version over a "true mirror" -1-life outcome):**
 Full detail in the CHANGELOG.md entry at the top of the file. Short version: new `mystery`
 item type (weight 12), resolved via `ItemSystem.resolveMysteryBox()` — a hard 50/50 roll

@@ -575,6 +575,12 @@ export class Game {
 
     const s = this.state;
     const finalScore = Math.round(this.teamScore());
+
+    const prevBestTime = this.bestTime;
+    const prevBestWave = this.bestWave;
+    const prevBestScore = this.bestScore;
+    const prevBestGraze = this.bestGraze;
+
     if (s.elapsed > this.bestTime) { this.bestTime = s.elapsed; localStorage.setItem(CONFIG.storage.bestTime, String(s.elapsed)); }
     if (s.wave > this.bestWave) { this.bestWave = s.wave; localStorage.setItem(CONFIG.storage.bestWave, String(s.wave)); }
     if (finalScore > this.bestScore) { this.bestScore = finalScore; localStorage.setItem(CONFIG.storage.bestScore, String(finalScore)); }
@@ -583,7 +589,7 @@ export class Game {
 
     clearTimeout(this.state.gameOverTimer);
     this.state.gameOverTimer = setTimeout(
-      () => this.ui.showGameOver(s.elapsed, s.wave, s.grazeCount, this.state.mode, this.players, finalScore, this.bestScore, this.bestTime, this.bestWave, this.bestGraze),
+      () => this.ui.showGameOver(s.elapsed, s.wave, s.grazeCount, this.state.mode, this.players, finalScore, prevBestScore, prevBestTime, prevBestWave, prevBestGraze),
       350
     );
   }
