@@ -1,5 +1,5 @@
-import { ITEM_COLORS } from '../systems/itemSystem.js?v=20260821-ukbr';
-import { CONFIG, actForWave } from '../core/config.js?v=20260821-ukbr';
+import { ITEM_COLORS } from '../systems/itemSystem.js?v=20260821-r5h8';
+import { CONFIG, actForWave } from '../core/config.js?v=20260821-r5h8';
 
 /**
  * One draw function per item type, keyed by `item.type` (mirrors the
@@ -1312,8 +1312,8 @@ export class Renderer {
       w / 2, h / 2, Math.min(w, h) * 0.38,
       w / 2, h / 2, Math.max(w, h) * 0.72
     );
-    grad.addColorStop(0, 'rgba(123,237,159,0)');
-    grad.addColorStop(1, `rgba(123,237,159,${alpha * 0.5})`);
+    grad.addColorStop(0, 'rgba(78,205,196,0)');
+    grad.addColorStop(1, `rgba(78,205,196,${alpha * 0.5})`);
     c.fillStyle = grad;
     c.fillRect(0, 0, w, h);
     c.restore();

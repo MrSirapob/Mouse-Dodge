@@ -1,4 +1,4 @@
-import { CONFIG } from '../core/config.js?v=20260821-ukbr';
+import { CONFIG } from '../core/config.js?v=20260821-r5h8';
 
 export class DevMode {
   // Selectable game-speed levels for the SPEED panel (spec: "เร่งความเร็ว

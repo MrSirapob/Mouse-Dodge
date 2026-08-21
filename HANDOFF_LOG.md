@@ -59,6 +59,18 @@ what changed, why, key numbers if any.
 
 ## 2026-08-21 — Claude (Sonnet 5, claude.ai)
 
+**Session 17 — UX Fixes: Skill-ready visual cues:**
+- Suppressed the skill-ready pop at the very start of a new game (elapsed < 0.5s) so it doesn't fire when starting with 0 cooldown.
+- Changed the skill-ready glow and screen flash color from green (`--graze`) to cyan (`--accent` / `#4ecdc4`) so it isn't confused with the Heal skill's green visual effects.
+**Files:** `js/ui/ui.js`, `css/main.css`, `js/rendering/renderer.js`
+**Test result:** `npm.cmd test` — all 180 PASS, 0 FAIL.
+
+**Session 16 — Skill ready visual/UI cues:**
+Added visual feedback for when a skill finishes cooling down and becomes ready to use (only triggering once on state change, not every frame):
+- Skill card pop & glow: The UI card scales up and glows green around the edges for ~0.55s.
+- Screen border flash: A faint green vignette flashes at the edges of the screen and decays over ~0.5-0.7s. This signals readiness via peripheral vision without obscuring the center of the playfield.
+**Files:** `js/entities/player.js`, `js/ui/ui.js`, `js/core/gameState.js`, `js/rendering/renderer.js`, `js/systems/game.js`, `css/main.css`
+
 **Session 15 — Per-stat "New Best" badges on Game Over screen (Antigravity):**
 Replaced the single `🏆 New Best!` badge (score-only) with four independent per-stat badges shown as a flex row. Each badge appears only if that stat was beaten: `🏆 Best Score!` (gold), `⏱ Best Time!` (cyan), `🌊 Best Wave!` (red), `✨ Best Graze!` (green). All use the same pop-in animation. No badge row is rendered at all if no stat improved.
 **Files:** `js/ui/ui.js`

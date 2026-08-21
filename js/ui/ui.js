@@ -1,4 +1,4 @@
-import { CONFIG } from "../core/config.js?v=20260821-ukbr";
+import { CONFIG } from "../core/config.js?v=20260821-r5h8";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -1052,8 +1052,13 @@ export class UI {
     // adds motion (chip pop) plus a peripheral screen-edge pulse that
     // doesn't cover the play area.
     if (ready && player._skillWasReady === false) {
-      this.pulseSkillReady(chipId);
-      if (s) s.skillReadyFlashAlpha = 1;
+      // Suppress the visual pop at the very start of the game (first 0.5s).
+      // The player already knows they start with a ready skill; flashing the
+      // screen immediately on game start is jarring and unnecessary.
+      if (!s || s.elapsed > 0.5) {
+        this.pulseSkillReady(chipId);
+        if (s) s.skillReadyFlashAlpha = 1;
+      }
     }
     player._skillWasReady = ready;
 
