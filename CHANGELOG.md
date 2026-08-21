@@ -898,6 +898,17 @@ between old and new files).
 - Verification: `npm test` => 179 PASS, 0 FAIL, 0 WARN.
 
 
+### 2026-08-21 — Skill-ready persistent color reverted to green
+- The persistent "ready" state on the skill card (READY status text +
+  progress bar fill) is back to green (`var(--graze)` / `#7bed9f` gradient)
+  instead of cyan.
+- Left the *notification* pop/flash effects as cyan (unchanged, per request):
+  the `skillReadyPop` scale/glow animation on the card, and the
+  `drawSkillReadyPulse()` screen-edge flash in `renderer.js`. Those are the
+  one-shot "hey, it's ready now" cues fired on the cooldown→ready edge, kept
+  distinct from Heal's green so the flash itself still reads clearly.
+- Verification: `npm test` => 180 PASS, 0 FAIL, 0 WARN.
+
 ### 2026-08-21 — Graze/hit particle colors
 - Graze spark burst now uses the grazing player's own color (`p.color`) instead
   of a fixed green (`#7bed9f`), so it visually matches whichever player earned it.

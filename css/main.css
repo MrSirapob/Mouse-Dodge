@@ -106,14 +106,14 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .skill-status span:last-child {color: #d8dbe5;font-variant-numeric: tabular-nums}
 
 /* MENU / OVERLAY SCREENS */
-.skill-card.ready .skill-status span:first-child {color: var(--accent)}
-.skill-card.ready .skill-status span:last-child {color: var(--accent)}
+.skill-card.ready .skill-status span:first-child {color: var(--graze)}
+.skill-card.ready .skill-status span:last-child {color: var(--graze)}
 
 /* GENERAL */
 .skill-bar i {display: block;height: 100%;width: 100%;background: linear-gradient(90deg,#ff9f43,#ffd166);border-radius: inherit;transition: width .08s linear}
 
 /* MENU / OVERLAY SCREENS */
-.skill-card.ready .skill-bar i {background: linear-gradient(90deg,#4ecdc4,#6ee7df)}
+.skill-card.ready .skill-bar i {background: linear-gradient(90deg,#7bed9f,#a8f5c1)}
 .skill-card:not(.ready) .skill-bar i {opacity: .9}
 
 /* Skill-ready callout: a quick scale/glow pop on the chip itself, fired

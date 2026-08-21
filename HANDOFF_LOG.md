@@ -59,6 +59,14 @@ what changed, why, key numbers if any.
 
 ## 2026-08-21 — Claude (Sonnet 5, claude.ai)
 
+**Session 19 — Skill-ready persistent color back to green, flash stays cyan:**
+- User wanted the *persistent* ready indicator green again (it was cyan since Session 17), but the *pop/flash notification* left as cyan.
+- `.skill-card.ready .skill-status span` (both spans) and `.skill-card.ready .skill-bar i` gradient switched from `var(--accent)`/cyan back to `var(--graze)`/green (`css/main.css`).
+- Deliberately did NOT touch: `@keyframes skillReadyPop` box-shadow (still `rgba(78,205,196,...)` cyan) and `Renderer.drawSkillReadyPulse()` in `js/rendering/renderer.js` (still cyan) — those are the one-shot cooldown→ready notification cues, which the user explicitly asked to leave as-is.
+**Files:** `css/main.css`, `CHANGELOG.md`.
+**Test result:** `npm test` — all 180 PASS, 0 FAIL, 0 WARN. Ran `npm run bump-version` after.
+**For the next session:** Nothing pending.
+
 **Session 18 — Graze spark uses player color; hit particles are now a blood effect:**
 - Graze spark burst (`game.js` graze branch) switched from a fixed green (`#7bed9f`) to the grazing player's own `p.color`.
 - Added `ParticleSystem.spawnBlood(x, y, count)` in `js/rendering/particles.js`: randomized dark/bright red palette, varied droplet radii, slight upward pop that arcs downward via a per-particle `gravity` field (new, opt-in — `update()` only applies it if `p.gravity` is set, so the plain `spawn()` particles are unaffected), and a slower fade (`fadeRate: 1.1` vs the default 1.5).
