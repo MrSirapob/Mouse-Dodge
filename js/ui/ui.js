@@ -626,30 +626,30 @@ export class UI {
       ? `<div class="howto-tip run-tip">💡 ${runTip.text}</div>`
       : "";
 
-    // Per-stat "New Best" badges — each compared against the pre-run record.
+    // Per-stat record breaks — each compared against the pre-run record.
     const isNewBestScore = Math.round(finalScore) > 0 && Math.round(finalScore) > Math.round(bestScore);
     const isNewBestTime  = time > bestTime;
     const isNewBestWave  = wave > bestWave;
     const isNewBestGraze = graze > bestGraze;
-    const anyNewBest = isNewBestScore || isNewBestTime || isNewBestWave || isNewBestGraze;
+    const isAllNewBest = isNewBestScore && isNewBestTime && isNewBestWave && isNewBestGraze;
 
-    const newBestBadge = anyNewBest
+    // When every single stat breaks its record, show one big "NEW SCORE"
+    // banner instead of decorating each row individually.
+    const newBestBadge = isAllNewBest
       ? `<style>
-           .new-best-badges{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px;justify-content:center}
-           .new-best-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:999px;font-size:11px;font-weight:900;letter-spacing:.4px;animation:new-best-pop .45s cubic-bezier(.2,.8,.2,1) both}
-           .new-best-badge.score{background:rgba(255,217,61,.12);border:1px solid rgba(255,217,61,.4);color:var(--gold)}
-           .new-best-badge.time{background:rgba(78,205,196,.12);border:1px solid rgba(78,205,196,.4);color:#4ecdc4}
-           .new-best-badge.wave{background:rgba(255,107,107,.12);border:1px solid rgba(255,107,107,.4);color:#ff6b6b}
-           .new-best-badge.graze{background:rgba(123,237,159,.12);border:1px solid rgba(123,237,159,.4);color:#7bed9f}
+           .new-score-banner{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 14px;padding:8px 16px;border-radius:999px;background:rgba(255,217,61,.12);border:1px solid rgba(255,217,61,.4);color:var(--gold);font-size:14px;font-weight:900;letter-spacing:1px;animation:new-best-pop .45s cubic-bezier(.2,.8,.2,1) both}
            @keyframes new-best-pop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
          </style>
-         <div class="new-best-badges">
-           ${isNewBestScore ? '<span class="new-best-badge score">🏆 Best Score!</span>' : ''}
-           ${isNewBestTime  ? '<span class="new-best-badge time">⏱ Best Time!</span>'   : ''}
-           ${isNewBestWave  ? '<span class="new-best-badge wave">🌊 Best Wave!</span>'  : ''}
-           ${isNewBestGraze ? '<span class="new-best-badge graze">✨ Best Graze!</span>' : ''}
-         </div>`
-      : "";
+         <div class="new-score-banner">🏆 NEW SCORE</div>`
+      : `<style>
+           .best-arrow{margin-left:4px;font-weight:900;color:var(--gold)}
+         </style>`;
+
+    // Small up-arrow next to an individual cell's latest value — only used
+    // when it's NOT the case that every stat broke its record (that case
+    // gets the banner above instead).
+    const arrow = (isNew) =>
+      isNew && !isAllNewBest ? '<span class="best-arrow">↑</span>' : "";
 
 
     this.showResultScreen(`
@@ -674,22 +674,22 @@ export class UI {
           </div>
           <div class="run-comparison-row">
             <div class="run-label">เวลา :</div>
-            <div class="run-value run-latest">${time.toFixed(1)}s</div>
+            <div class="run-value run-latest">${time.toFixed(1)}s${arrow(isNewBestTime)}</div>
             <div class="run-value run-best">${Number(bestTime).toFixed(1)}s</div>
           </div>
           <div class="run-comparison-row">
             <div class="run-label">Wave :</div>
-            <div class="run-value run-latest">${wave}</div>
+            <div class="run-value run-latest">${wave}${arrow(isNewBestWave)}</div>
             <div class="run-value run-best">${Number(bestWave)}</div>
           </div>
           <div class="run-comparison-row">
             <div class="run-label">Score :</div>
-            <div class="run-value run-latest">${Math.round(finalScore).toLocaleString()}</div>
+            <div class="run-value run-latest">${Math.round(finalScore).toLocaleString()}${arrow(isNewBestScore)}</div>
             <div class="run-value run-best">${Number(bestScore).toLocaleString()}</div>
           </div>
           <div class="run-comparison-row">
             <div class="run-label">Graze :</div>
-            <div class="run-value run-latest">${graze}</div>
+            <div class="run-value run-latest">${graze}${arrow(isNewBestGraze)}</div>
             <div class="run-value run-best">${Number(bestGraze)}</div>
           </div>
         </div>
