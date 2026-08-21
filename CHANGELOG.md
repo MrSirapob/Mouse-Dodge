@@ -1,5 +1,40 @@
 # Changelog
 
+## W10 boss `bossSpiral()` bursts replaced with a new `bossNova()` pattern (user-requested: W10 shouldn't reuse W5's signature gimmick)
+- **W10 reused W5's `bossSpiral()` verbatim** as its sustained-pressure filler
+  (added in the density pass documented in the entry directly below). That
+  meant the two bosses shared their signature attack, which cuts against
+  this project's own design intent ("Bosses carry the distinctive
+  gimmicks" — `WAVE_DESIGN_NOTES.md`).
+- **Added `PatternLibrary.bossNova(start, duration, pulses, count, speed,
+  color)`** (`js/patterns/patterns.js`): fires `pulses` telegraphed,
+  instantaneous full-ring shockwaves evenly spaced across `duration`
+  (`count` bullets per ring), each pulse a little faster than the last and
+  alternating pulses rotated by half a slice so consecutive rings don't
+  share a lane. This is a different shape from `bossSpiral()` (one
+  continuous stream of rotating arms) — same "fills the gaps between
+  phases" role, distinct silhouette.
+- **Swapped all 4 `bossSpiral()` calls in `buildBoss(10)` for `bossNova()`**,
+  keeping the same start times/windows (so the "never overlaps a Perimeter
+  telegraph-to-fire window" invariant from the density pass still holds):
+  Phase 1 (1.0s, 5.0s dur, 10 pulses × 22), Phase 2 (13.5s, 2.0s dur, 4 × 18),
+  Phase 4 (39.0s, 6.0s dur, 12 × 30 — the wave's busiest stretch), Phase 5
+  (55.0s, 3.0s dur, 6 × 22).
+- **`simulateWave(10)` before → after this swap:** peak active 372→357
+  (88.6%→85.0% of the 420 cap, close to the prior bossSpiral-based figure),
+  average active 112.0→96.6, spawned 1554→1478. Burst-style patterns
+  inherently read as periodic spikes rather than a sustained stream, so
+  average active is a bit lower for a similar total spawn count and a
+  comparable peak — an accepted trade-off for giving W10 its own identity
+  rather than nerfing it back toward W5-lite. `bossSpiral()` itself is
+  untouched and still used by W5/W15/the default boss case.
+- **Also added a `bossNova` entry to `tests/helpers/simulation.mjs`'s
+  `capturePatternPlan()` `durationFor` map** (same shape as `bossSpiral`'s)
+  so pattern-overlap tooling accounts for it, and to the `PATTERN GUIDE`
+  header comment in `js/systems/waveSystem.js`.
+- **Files:** `js/patterns/patterns.js`, `js/systems/waveSystem.js`,
+  `tests/helpers/simulation.mjs`.
+
 ## W10 boss density pass — added `bossSpiral()` layering (user-requested: playtester said W10 felt easier than W5)
 - **`simulateWave(10)` showed W10 was the least dense wave of W1-10**: peak
   155/420 (37%), average active 53.4, 694 total bullets spawned over the

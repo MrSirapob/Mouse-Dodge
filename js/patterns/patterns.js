@@ -616,6 +616,46 @@ export class PatternLibrary {
       });
     }
   }
+  /**
+   * Boss nova attack: `pulses` full-ring shockwaves fired outward from the
+   * boss at evenly-spaced intervals across `duration`. Unlike bossSpiral()
+   * (a single continuous stream of rotating arms), each pulse here is an
+   * instantaneous, telegraphed full circle of `count` bullets — alternating
+   * pulses are rotated by half a slice so consecutive rings don't share the
+   * same "lane", and each successive pulse is fired a little faster than
+   * the last (expanding-shockwave feel). Added so W10 has its own signature
+   * sustained-pressure tool instead of reusing W5's bossSpiral() — see
+   * waveSystem.js buildBoss() n===10 for why.
+   */
+  bossNova(start, duration, pulses, count, speed, color) {
+    const warnDuration = 0.5;
+    const pulseInterval = pulses > 1 ? duration / pulses : duration;
+
+    for (let i = 0; i < pulses; i++) {
+      const pulseStart = start + i * pulseInterval;
+      const pulseSpeed = speed * (1 + i * 0.06);
+
+      this.game.queue(Math.max(0, pulseStart - warnDuration), () => {
+        this.game.ringWarnings.push({
+          x: this.game.boss.x,
+          y: this.game.boss.y,
+          t: 0,
+          duration: warnDuration,
+          color,
+          radius: 64,
+          trackBoss: true
+        });
+      });
+
+      this.game.queue(pulseStart, () => {
+        const offset = (i % 2) * (Math.PI / count);
+        for (let a = 0; a < count; a++) {
+          const angle = offset + (Math.PI * 2 * a) / count;
+          this.spawnBossBullet(angle, pulseSpeed, 5, color);
+        }
+      });
+    }
+  }
   bossAimed(start, count, interval, speed, color) {
     for (let i = 0; i < count; i++) {
       this.game.queue(start + i * interval, () => {

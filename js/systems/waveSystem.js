@@ -26,6 +26,8 @@ import { CONFIG, actForWave } from "../core/config.js?v=20260821-xdqs";
  * bossAimed  = Boss version of AIMED; targets the player.
  * bossRing   = Boss version of RING; circular spread.
  * bossSpiral = Boss version of SPIRAL; rotating spiral spread.
+ * bossNova   = Series of telegraphed full-ring shockwave pulses fired
+ *              outward from the boss (not rotating, unlike bossSpiral).
  * bossHoming = Boss version of HOMING; tracking projectiles.
  *
  * DESIGN RULE FOR FUTURE AI:
@@ -515,21 +517,25 @@ export class WaveSystem {
       // W10 ง่ายกว่า W5"): simulateWave(10) showed W10 averaging only ~53
       // active bullets (peak 155/420, 37% density) versus W5's ~262 average
       // (peak 340/340, 100% density, 511 dropped spawns) — W10 was the
-      // least dense wave of W1-10 despite being the second boss. Root cause:
-      // W10 never used bossSpiral() at all, which is W5's main sustained-
-      // pressure tool (a fixed 20 steps/sec regardless of `duration`, so
-      // `arms` bullets/0.05s = arms*20 bullets/sec — e.g. 3 arms = 60/s).
-      // Added 4 bossSpiral bursts below, each timed to run in the
-      // "connective tissue" between/before the solo Perimeter windows
-      // (never overlapping a Perimeter telegraph-to-fire window) so the
-      // SOLO design intent for the signature formations is preserved.
+      // least dense wave of W1-10 despite being the second boss.
+      //
+      // A previous session closed that gap by adding bossSpiral() bursts
+      // (W5's main sustained-pressure tool), but that made W10 reuse W5's
+      // signature gimmick verbatim — every boss is supposed to carry its
+      // own distinctive attack (see WAVE_DESIGN_NOTES.md). Replaced those
+      // bursts with bossNova() below instead: telegraphed full-ring
+      // shockwave pulses fired outward from the boss, rather than
+      // bossSpiral's continuous rotating arms. Same role (fills the
+      // "connective tissue" between/before the solo Perimeter windows,
+      // never overlapping a Perimeter telegraph-to-fire window) and
+      // comparable density, but a visually distinct identity from W5.
 
       // PHASE 1 — THE GAZE
       this.p.bossAimed(0.0, 28, 0.22, 3.0, c1);
       this.p.bossRing(3.0, 54, 2.8, c2);
-      // Density pass: ambient spiral under the Phase 1 background, ends at
-      // 6.0 — well clear of the Perimeter telegraph starting at 8.0.
-      this.p.bossSpiral(1.0, 5.0, 3, 2.0, c2);
+      // Density pass: ambient nova pulses under the Phase 1 background, ends
+      // at 6.0 — well clear of the Perimeter telegraph starting at 8.0.
+      this.p.bossNova(1.0, 5.0, 10, 22, 2.0, c2);
       this.p.bossAimed(7.0, 30, 0.18, 3.2, c1);
 
       // PHASE 1 SIGNATURE: perimeter formation only.
@@ -537,9 +543,9 @@ export class WaveSystem {
 
       // PHASE 2
       this.p.bossRing(13.0, 62, 2.9, c2);
-      // Density pass: short spiral burst, ends at 15.5 — before the Phase 2
+      // Density pass: short nova burst, ends at 15.5 — before the Phase 2
       // Perimeter telegraph starts at 16.0.
-      this.p.bossSpiral(13.5, 2.0, 2, 2.15, c3);
+      this.p.bossNova(13.5, 2.0, 4, 18, 2.15, c3);
       this.p.edgeSplitter(15.0, 10, 0.32, 3.8, c3);
 
       // PHASE 2 SIGNATURE: perimeter formation only.
@@ -563,10 +569,10 @@ export class WaveSystem {
       this.p.machineGunTop(38.0, 52, 0.09, 5.2, 0.7, c1);
       // Density pass: this is the wave's busiest stretch already (machine
       // gun + moving sweep + edge splitter + ring) — layering the biggest
-      // spiral burst here (6s, 3 arms) matches W5's "no dead air, every
+      // nova burst here (6s, 12 pulses) matches W5's "no dead air, every
       // phase overlaps the previous pressure" philosophy for its own
       // busiest stretch.
-      this.p.bossSpiral(39.0, 6.0, 3, 2.2, c2);
+      this.p.bossNova(39.0, 6.0, 12, 30, 2.2, c2);
       this.p.movingSweep(41.0, 2, 0.0, 2.8, c2);
       this.p.machineGunTop(44.0, 58, 0.075, 5.5, 0.8, c1);
       this.p.edgeSplitter(47.0, 8, 0.3, 4.1, c3);
@@ -575,10 +581,10 @@ export class WaveSystem {
       // PHASE 5 — final perimeter formation, again SOLO.
       this.p.sineRain(50.0, 28, 0.13, 3.0, 145, 0.82, c3, true);
       this.p.bossPerimeterCrossfire(52.0, 5.0, 36, 0.36, 2.8, c1);
-      // Density pass: closing spiral burst after the Phase 5 Perimeter
+      // Density pass: closing nova burst after the Phase 5 Perimeter
       // fires (~55.0) through the final bossHoming, ending at 58.0 —
       // inside the 60s wave so it still fully resolves.
-      this.p.bossSpiral(55.0, 3.0, 2, 2.25, c3);
+      this.p.bossNova(55.0, 3.0, 6, 22, 2.25, c3);
       this.p.bossHoming(58.0, 18, 0.24, 2.55, c2);
 
       return "「บทที่สอง : เมื่อสวรรค์ถูกลากลงจากบัลลังก์」";

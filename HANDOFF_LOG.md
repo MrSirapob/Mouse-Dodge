@@ -59,6 +59,28 @@ what changed, why, key numbers if any.
 
 ## 2026-08-21 — Claude (Sonnet 5, claude.ai)
 
+**Session 7 — W10 boss: replaced `bossSpiral()` reuse with a new `bossNova()` pattern (user-requested: "W10 ได้ใช้ bossSpiral() เหมือน W5 ผมไม่อยากให้มันซ้ำ"):**
+User noticed Session 6's fix made W10 reuse W5's `bossSpiral()` verbatim as its filler
+pattern — two bosses sharing a signature move contradicts this project's own
+`WAVE_DESIGN_NOTES.md` ("Bosses carry the distinctive gimmicks"). Added
+`PatternLibrary.bossNova()` (`js/patterns/patterns.js`): telegraphed full-ring shockwave
+pulses fired outward from the boss (not rotating, unlike `bossSpiral`'s continuous arms).
+Swapped all 4 of W10's `bossSpiral()` calls for `bossNova()` at the same start times/windows,
+then tuned `pulses`/`count` args against live `simulateWave(10)` runs to land close to the
+prior density (peak 372→357, avg 112.0→96.6, spawned 1554→1478 — see CHANGELOG.md for the
+full before/after and exact call args). `bossSpiral()` itself is untouched; still used by
+W5/W15/default. Also added a `bossNova` entry to `tests/helpers/simulation.mjs`'s
+`capturePatternPlan()` `durationFor` map (same shape as `bossSpiral`'s) and to the `PATTERN
+GUIDE` header comment in `waveSystem.js`. Re-checked the Perimeter-solo invariant via
+`capturePatternPlan(10)` + a manual overlap sweep — same overlaps as pre-change (all
+pre-existing, none introduced by this swap).
+**Files:** `js/patterns/patterns.js`, `js/systems/waveSystem.js`,
+`tests/helpers/simulation.mjs`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **180 PASS / 0 FAIL / 0 WARN**.
+**For the next session:** Nothing pending. If W10's average density (96.6, vs W5's ~262)
+still feels soft, the 4 `bossNova()` calls' `pulses`/`count` args are the place to retune —
+see the CHANGELOG entry for which phase each sits in.
+
 **Session 6 — W10 boss density pass (user-requested: "อัดเพิ่ม W10 เพราะเพื่อนเทสแล้วบอกว่า W10 ง่ายกว่า W5"):**
 Followed up on the balance-question conversation from Session 5's simulation numbers. Root
 cause of W10 reading softer than W5: `buildBoss(10)` never used `bossSpiral()`, which is

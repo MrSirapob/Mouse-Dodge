@@ -147,6 +147,7 @@ export async function capturePatternPlan(n) {
     bossPerimeterCrossfire: (args) => args[1] ?? 3,
     bossRing: () => 1.1,
     bossSpiral: (args) => args[1] ?? 1,
+    bossNova: (args) => args[1] ?? 1, // args[1] is `duration`, same shape as bossSpiral
     bossAimed: (args) => (args[1] - 1) * (args[2] ?? 0.2),
     bossHoming: (args) => (args[1] - 1) * (args[2] ?? 0.3),
   };
