@@ -59,6 +59,11 @@ what changed, why, key numbers if any.
 
 ## 2026-08-21 — Claude (Sonnet 5, claude.ai)
 
+**Session 14 — Bug fix: "New Best" badge intermittently missing (Antigravity):**
+Root cause: `GameState.reset()` (called when the player hits "เล่นอีกครั้ง") simply nulled `this.gameOverTimer` without cancelling it first via `clearTimeout`. If the player restarted within the 350ms `setTimeout` window after dying, the timer kept running and fired `showGameOver()` into the new run's UI, overwriting or corrupting the screen — causing the New Best badge to either never appear or flash and disappear instantly. Fix: call `clearTimeout(this.gameOverTimer)` before nulling it in `GameState.reset()`.
+**Files:** `js/core/gameState.js`
+**Test result:** `npm.cmd test` — all 180 PASS, 0 FAIL.
+
 **Session 13 — Skill balance tuning (Antigravity):**
 Changed `heal` skill cooldown from 10s to 30s. With a base wave duration of 30s and a max of 3 lives, a 10s cooldown allowed essentially unlimited sustain. Even at 20s, a player with heavy grazing (which can reduce cooldown by up to 60%) could heal 2-3 times per wave. 30s ensures a passive player gets at most 1 heal per wave, while highly skilled aggressive players (grazing heavily) can reduce it down to ~12s. This properly positions Heal as a high-value survival ultimate rather than a spammable skill.
 **Files:** `js/core/config.js`

@@ -41,7 +41,9 @@ export class GameState {
     // Decays the same way flashAlpha does — see Game.draw().
     this.actFlashAlpha = 0;
     this.actFlashColor = '255,92,92';
+    clearTimeout(this.gameOverTimer);
     this.gameOverTimer = null;
+
   }
   isPlaying() { return this.state === GAME_STATES.PLAYING; }
 }
