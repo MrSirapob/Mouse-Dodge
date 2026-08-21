@@ -470,8 +470,14 @@ export class Game {
 
   beginWaveTransition(n, extraDelay = 0) {
     // Called only after the previous wave has fully drained.
+    // When a "NO HIT" banner is being shown, wait exactly as long as that
+    // banner stays on screen (extraDelay === CONFIG.noHit.displayMs/1000)
+    // so the next "WAVE N" banner appears the instant it's gone — no
+    // padding on top, which used to leave a blank, unexplained pause after
+    // the banner faded. Only use the base wave.transition "beat" when
+    // there's no banner at all to time against.
     this.state.wavePhase = 'transition';
-    this.state.waveTransition = CONFIG.wave.transition + extraDelay;
+    this.state.waveTransition = extraDelay > 0 ? extraDelay : CONFIG.wave.transition;
     this.state.transitionWave = n;
 }
 

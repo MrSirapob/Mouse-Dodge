@@ -318,10 +318,6 @@ const SKILL_EFFECT_DRAWERS = {
     c.beginPath();
     c.arc(0, 0, 10 + fx.maxRadius * ease, 0, Math.PI * 2);
     c.stroke();
-    c.font = 'bold 28px system-ui';
-    c.textAlign = 'center';
-    c.textBaseline = 'middle';
-    c.fillText('+♥', 0, -20 - ease * 18);
   },
   repulse(c, fx, p, ease, fade) {
     const r = 20 + fx.maxRadius * ease;
