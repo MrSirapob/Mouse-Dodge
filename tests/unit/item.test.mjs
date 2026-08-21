@@ -8,8 +8,8 @@
 import { TestSuite, assert, assertEqual, assertNoNaN } from '../helpers/assertions.mjs';
 import { createGame, jumpToWave } from '../helpers/gameFactory.mjs';
 import { withSeededRandom } from '../helpers/seededRandom.mjs';
-import { CONFIG } from '../../js/core/config.js?v=20260821-iylt';
-import { ITEM_COLORS } from '../../js/systems/itemSystem.js?v=20260821-iylt';
+import { CONFIG } from '../../js/core/config.js?v=20260821-n4e8';
+import { ITEM_COLORS } from '../../js/systems/itemSystem.js?v=20260821-n4e8';
 
 export async function run() {
   const s = new TestSuite('ITEMS');
@@ -92,7 +92,7 @@ export async function run() {
     });
   });
 
-  await s.testAsync("heart item restores 1 life below max, and falls back to score at max life", async () => {
+  await s.testAsync("heart item restores 1 life below max, and gives no score at max life", async () => {
     const { game } = await createGame();
     jumpToWave(game, 1);
     const player = game.players[0];
@@ -101,12 +101,13 @@ export async function run() {
     game.itemSystem.update(1 / 60);
     assertEqual(player.lives, CONFIG.lives.max, 'a heart item below max lives should restore exactly 1 life');
 
-    // Now at max lives: another heart should give score instead (per itemSystem.js collect()).
+    // Now at max lives: another heart should do nothing to score (score
+    // only comes from the dedicated 'score' item type).
     const scoreBefore = player.score;
     game.itemSystem.items.push({ x: player.x, y: player.y, type: 'heart', r: CONFIG.items.radius, age: 0, ttl: CONFIG.items.ttl, bob: 0 });
     game.itemSystem.update(1 / 60);
     assertEqual(player.lives, CONFIG.lives.max, 'lives must never exceed CONFIG.lives.max');
-    assert(player.score > scoreBefore, 'a heart collected at full life should fall back to bonus score', {
+    assertEqual(player.score, scoreBefore, 'a heart collected at full life must not award any score', {
       likely: 'js/systems/itemSystem.js collect() case "heart" else-branch',
     });
   });
@@ -123,22 +124,45 @@ export async function run() {
     });
   });
 
-  await s.testAsync('shield item grants shieldTimer (or extends it, never shortens it)', async () => {
+  await s.testAsync('shield item grants a shield charge, capped at shieldMaxCharges', async () => {
     const { game } = await createGame();
     jumpToWave(game, 1);
     const player = game.players[0];
-    player.shieldTimer = 0;
+    player.shieldCharges = 0;
     game.itemSystem.items.push({ x: player.x, y: player.y, type: 'shield', r: CONFIG.items.radius, age: 0, ttl: CONFIG.items.ttl, bob: 0 });
     game.itemSystem.update(1 / 60);
-    assertEqual(player.shieldTimer, CONFIG.items.shieldDuration, 'a shield item should set shieldTimer to CONFIG.items.shieldDuration');
+    assertEqual(player.shieldCharges, CONFIG.items.shieldHits, 'a shield item should grant CONFIG.items.shieldHits charge(s)');
 
-    // Longer existing shield should not be shortened by picking up another.
-    player.shieldTimer = CONFIG.items.shieldDuration + 10;
+    // Picking up another shield while already at the cap must not exceed it.
     game.itemSystem.items.push({ x: player.x, y: player.y, type: 'shield', r: CONFIG.items.radius, age: 0, ttl: CONFIG.items.ttl, bob: 0 });
     game.itemSystem.update(1 / 60);
-    assertEqual(player.shieldTimer, CONFIG.items.shieldDuration + 10, 'shield pickup must use Math.max and never shorten a longer existing shield', {
+    assertEqual(player.shieldCharges, CONFIG.items.shieldMaxCharges, 'shield charges must never exceed CONFIG.items.shieldMaxCharges', {
       likely: 'js/systems/itemSystem.js collect() case "shield"',
     });
+  });
+
+  await s.testAsync('a shield charge blocks exactly one hit (bullet still consumed), then reverts to normal damage', async () => {
+    const { game } = await createGame();
+    jumpToWave(game, 1);
+    const player = game.players[0];
+    player.shieldCharges = 1;
+    const livesBefore = player.lives;
+
+    const blocked = game.hitPlayer(player);
+    assert(blocked, 'a hit while shielded should still report as "handled" (bullet gets consumed)', {
+      likely: 'js/systems/lifeSystem.js hit() shieldCharges branch',
+    });
+    assertEqual(player.lives, livesBefore, 'a shielded hit must not cost a life');
+    assertEqual(player.shieldCharges, 0, 'the shield charge must be consumed by the hit');
+    assertEqual(player.tookHitThisWave, false, 'a shielded hit must not count against the "No Hit" wave bonus');
+
+    // Grace invuln from the shield block should prevent an immediate second
+    // hit; clear it to confirm the NEXT hit now costs a real life.
+    player.invulnerable = 0;
+    const damaged = game.hitPlayer(player);
+    assert(damaged, 'a hit with no shield charges left should be handled normally');
+    assertEqual(player.lives, livesBefore - 1, 'once the shield charge is spent, the next hit should cost a real life');
+    assertEqual(player.tookHitThisWave, true, 'a real (non-shielded) hit should count against the "No Hit" wave bonus');
   });
 
   await s.testAsync('items stop spawning during the wave-transition banner, but keep aging/collectible while draining', async () => {

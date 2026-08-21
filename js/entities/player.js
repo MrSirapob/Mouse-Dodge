@@ -1,4 +1,4 @@
-import { CONFIG } from '../core/config.js?v=20260821-iylt';
+import { CONFIG } from '../core/config.js?v=20260821-n4e8';
 
 export class Player {
   constructor(id, color) {
@@ -17,6 +17,12 @@ export class Player {
     this.skillBaseCooldown = 0;
     this.grazeCooldownReduced = 0;
     this.shieldTimer = 0;
+    // Charge-based shield from the Shield *item* pickup (distinct from the
+    // Shield *skill*, which still uses shieldTimer/canBeHit() for a timed
+    // full-invuln window). Each charge blocks exactly one incoming hit —
+    // see LifeSystem.hit() — then is consumed, so it reads as "a shield"
+    // rather than a few seconds of walking through bullets untouched.
+    this.shieldCharges = 0;
     this.down = false;
     this.reviveProgress = 0;
     this.score = 0;

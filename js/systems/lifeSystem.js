@@ -1,9 +1,21 @@
-import { CONFIG } from '../core/config.js?v=20260821-iylt';
+import { CONFIG } from '../core/config.js?v=20260821-n4e8';
 
 export class LifeSystem {
   constructor(game) { this.game = game; }
   hit(player) {
     if (!player.canBeHit()) return false;
+    if (player.shieldCharges > 0) {
+      // Shield *item* charge absorbs this hit instead of a life. Brief
+      // grace invuln (same value as a normal hit) so a cluster of
+      // overlapping bullets in one frame can't burn more than one charge
+      // at once. Lighter shake/no red flash so it visually reads as
+      // "blocked" rather than "damaged".
+      player.shieldCharges -= 1;
+      player.invulnerable = CONFIG.lives.hitInvulnerability;
+      this.game.state.shakeMag = Math.max(this.game.state.shakeMag, 5);
+      this.game.particles.spawn(player.x, player.y, '#7bed9f', 16);
+      return 'blocked';
+    }
     player.lives = Math.max(0, player.lives - 1);
     player.invulnerable = CONFIG.lives.hitInvulnerability;
     player.hitFlash = 0.30;

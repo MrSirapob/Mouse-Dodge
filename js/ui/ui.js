@@ -1,4 +1,4 @@
-import { CONFIG } from "../core/config.js?v=20260821-iylt";
+import { CONFIG } from "../core/config.js?v=20260821-n4e8";
 
 const SKILL_NAMES = {
   pulse: "PULSE",

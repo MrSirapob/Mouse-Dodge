@@ -1,16 +1,16 @@
-import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260821-iylt';
-import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260821-iylt';
-import { circleHit, circleNear } from '../core/collision.js?v=20260821-iylt';
-import { Player } from '../entities/player.js?v=20260821-iylt';
-import { BulletManager } from '../entities/bullet.js?v=20260821-iylt';
-import { Boss } from '../entities/boss.js?v=20260821-iylt';
-import { ParticleSystem } from '../rendering/particles.js?v=20260821-iylt';
-import { PatternLibrary } from '../patterns/patterns.js?v=20260821-iylt';
-import { WaveSystem } from './waveSystem.js?v=20260821-iylt';
-import { SkillSystem } from './skillSystem.js?v=20260821-iylt';
-import { LifeSystem } from './lifeSystem.js?v=20260821-iylt';
-import { DevMode } from './devMode.js?v=20260821-iylt';
-import { ItemSystem } from './itemSystem.js?v=20260821-iylt';
+import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260821-n4e8';
+import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260821-n4e8';
+import { circleHit, circleNear } from '../core/collision.js?v=20260821-n4e8';
+import { Player } from '../entities/player.js?v=20260821-n4e8';
+import { BulletManager } from '../entities/bullet.js?v=20260821-n4e8';
+import { Boss } from '../entities/boss.js?v=20260821-n4e8';
+import { ParticleSystem } from '../rendering/particles.js?v=20260821-n4e8';
+import { PatternLibrary } from '../patterns/patterns.js?v=20260821-n4e8';
+import { WaveSystem } from './waveSystem.js?v=20260821-n4e8';
+import { SkillSystem } from './skillSystem.js?v=20260821-n4e8';
+import { LifeSystem } from './lifeSystem.js?v=20260821-n4e8';
+import { DevMode } from './devMode.js?v=20260821-n4e8';
+import { ItemSystem } from './itemSystem.js?v=20260821-n4e8';
 
 /** Converts a "#rrggbb" hex string to an "r,g,b" string for use in
  * rgba(...) fill styles (see Renderer.flash()). */
@@ -498,9 +498,12 @@ export class Game {
 
   hitPlayer(player) {
     if (player.devInvulnerable) return false;
-    const hit = this.lifeSystem.hit(player);
-    if (hit) player.tookHitThisWave = true;
-    return hit;
+    const result = this.lifeSystem.hit(player);
+    // 'blocked' = a shield item charge absorbed it: bullet should still be
+    // consumed (handled by callers checking truthiness), but it wasn't
+    // real damage, so it shouldn't break a "No Hit" wave streak.
+    if (result === true) player.tookHitThisWave = true;
+    return !!result;
   }
 
   /** Score bonus for clearing wave `n` without taking a hit — grows with wave number. */

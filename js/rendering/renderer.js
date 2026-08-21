@@ -1,5 +1,5 @@
-import { ITEM_COLORS } from '../systems/itemSystem.js?v=20260821-iylt';
-import { CONFIG, actForWave } from '../core/config.js?v=20260821-iylt';
+import { ITEM_COLORS } from '../systems/itemSystem.js?v=20260821-n4e8';
+import { CONFIG, actForWave } from '../core/config.js?v=20260821-n4e8';
 
 /**
  * One draw function per item type, keyed by `item.type` (mirrors the
@@ -1179,7 +1179,7 @@ export class Renderer {
       c.restore();
     }
 
-    if (p.shieldTimer > 0) {
+    if (p.shieldTimer > 0 || p.shieldCharges > 0) {
       c.beginPath();
       c.arc(p.x, p.y, p.r + 10 + Math.sin(performance.now() / 100) * 2, 0, Math.PI * 2);
       c.strokeStyle = '#7bed9f';

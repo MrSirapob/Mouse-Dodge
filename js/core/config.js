@@ -130,10 +130,25 @@ export const CONFIG = {
     // Relative spawn weights. `heart` gets `heartWeightBoost` added on top
     // whenever any active player is missing a life, making heals more
     // likely to appear when they're actually needed.
-    weights: { heart: 35, energy: 25, shield: 15, score: 25 },
-    heartWeightBoost: 40,
+    // Tuned 2026-08-21 (user-requested, felt too frequent): with the
+    // avg ~12s roll between item-spawn attempts, heart:35/boost:40 meant
+    // hearts landed every ~34s at full life and ~22s once anyone was hurt
+    // (which is most of a bullet-hell run). heart:20/boost:25 -> ~51s at
+    // full life, ~29s once hurt — still noticeably faster when actually
+    // needed, just not constant. See CHANGELOG.md for the full math.
+    weights: { heart: 20, energy: 25, shield: 15, score: 25 },
+    heartWeightBoost: 25,
     scoreValue: 400,
-    shieldDuration: 3.0,
+    // Shield *item* pickup (2026-08-21, user-requested rework — old
+    // time-based version felt like temporary immortality, not a shield):
+    // grants `shieldHits` charge(s), capped at `shieldMaxCharges`. Each
+    // charge blocks exactly one incoming hit (bullet/laser) — consumed in
+    // LifeSystem.hit() — then is gone, rather than a multi-second window
+    // where every bullet simply passes through untouched. Separate from
+    // the Shield *skill* (CONFIG.skills.shield), which is still an
+    // intentional timed full-invuln burst and is unaffected by this.
+    shieldHits: 1,
+    shieldMaxCharges: 1,
   },
   storage: {
     bestTime: "waveDodgeBestTime",

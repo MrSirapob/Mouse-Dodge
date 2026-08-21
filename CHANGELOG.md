@@ -1,5 +1,53 @@
 # Changelog
 
+## Shield item reworked to charge-based block (not timed invuln); heart item no longer gives score at max life (user-requested)
+- **Shield item was the same time-based full-invuln as the Shield skill**
+  (`player.shieldTimer`, `canBeHit()` returns false for the whole window) —
+  for a few seconds every bullet simply passed through the player untouched,
+  which read as "immortal" rather than "shielded." Gave the item its own
+  mechanic, separate from the skill:
+  - New `player.shieldCharges` (int, default 0, persists across waves until
+    used — not reset per-wave like `tookHitThisWave`).
+  - `CONFIG.items.shieldHits` (1) / `shieldMaxCharges` (1) replace the old
+    `CONFIG.items.shieldDuration`. `CONFIG.skills.shield` (the skill) is
+    untouched — still a deliberate timed invuln burst on a 6s cooldown.
+  - `canBeHit()` was **not** changed to check `shieldCharges` — collision
+    still needs to register so the shield has something to block. Instead
+    `LifeSystem.hit()` checks `shieldCharges` first: if > 0, consumes one
+    charge, grants the normal brief grace invuln (`CONFIG.lives.hitInvulnerability`)
+    so a cluster of overlapping bullets can't burn more than one charge in
+    the same frame, does a lighter shake + green particle burst (no red
+    damage flash), and returns `'blocked'` instead of `true`.
+  - `Game.hitPlayer()` now only sets `tookHitThisWave = true` on a real
+    (`true`) hit — a `'blocked'` shield-absorb still returns truthy (so the
+    bullet gets consumed/removed like normal) but doesn't break a "No Hit"
+    wave streak.
+  - `Renderer`'s shield ring (drawn around the player each frame) now shows
+    on `shieldTimer > 0 || shieldCharges > 0` so the charge-based version
+    still gets a visual "I'm shielded" indicator, just without the ring
+    fading over a multi-second timer.
+- **Heart item at max life no longer awards bonus score** — previously fell
+  back to `player.score += cfg.scoreValue` (same as the dedicated score
+  item). Now shows a neutral "เต็มแล้ว!" popup and does nothing else; score
+  only comes from the `score` item type going forward.
+- **Files:** `js/entities/player.js`, `js/core/config.js`,
+  `js/systems/itemSystem.js`, `js/systems/lifeSystem.js`,
+  `js/systems/game.js`, `js/rendering/renderer.js`,
+  `tests/unit/item.test.mjs`.
+
+## Item drops: reduced heart spawn frequency (user-requested — "felt too frequent")
+- **`CONFIG.items.weights.heart`**: 35 → 20. **`CONFIG.items.heartWeightBoost`**: 40 → 25.
+  `energy`/`shield`/`score` weights and `spawnMin`/`spawnMax` (9-15s, ~12s avg roll between
+  item-spawn attempts) all unchanged — only heart's odds moved.
+- **The math:** expected time between hearts = (avg seconds per spawn-attempt roll) ÷
+  P(heart). At full life: `12 / (20/85) ≈ 51.0s` (was `12 / (35/100) ≈ 34.3s`). Once any
+  active player is below max life (`heartWeightBoost` applies): `12 / (45/110) ≈ 29.3s`
+  (was `12 / (75/140) ≈ 22.4s`). The old boost effectively doubled heart odds (35%→53.6%)
+  the instant anyone took damage — in a bullet-hell run that's most of the playtime, which is
+  why hearts read as near-constant. New values keep the same "heals show up faster when
+  actually needed" behavior, just less aggressively.
+- **Files:** `js/core/config.js`.
+
 ## W10 boss: perimeter-formation ("square") bullet count +20 per occurrence (user-requested)
 - **`WaveSystem.buildBoss(10)`** — all four `bossPerimeterCrossfire()` calls
   (the rectangle-outline formation attack, one per boss phase) had their

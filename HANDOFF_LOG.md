@@ -76,6 +76,39 @@ Ran `npm run bump-version` after all edits (new tag — see `check-versions` out
 **For the next session:** Nothing pending. If W10 Phase 5's formation count or start time changes again,
 recheck the fire-time-vs-60s-cap margin noted in CHANGELOG.md.
 
+**Session 2 — Heart item spawn frequency reduced (user-requested, "felt too frequent"):**
+Walked the user through the spawn-timer math (avg ~12s between item-spawn attempts ÷ P(heart))
+before changing anything, per their preference. They picked "adjust heart weight/boost only, leave
+other item timing alone." Changed `CONFIG.items.weights.heart` 35→20 and `heartWeightBoost` 40→25:
+full-life heart interval ~34.3s→~51.0s, hurt-state interval ~22.4s→~29.3s. See CHANGELOG.md for the
+full math. Ran `npm run bump-version` after.
+**Files:** `js/core/config.js`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **179 PASS / 0 FAIL / 0 WARN**.
+**For the next session:** Nothing pending. If the new heart cadence still feels off in either
+direction, the two knobs to revisit are `weights.heart` (baseline rate) and `heartWeightBoost`
+(how much faster it gets once someone's hurt) — see the CHANGELOG math to re-derive target seconds.
+
+**Session 3 — Shield item reworked to 1-hit-block charge; heart item no longer gives score at max life (user-requested):**
+Shield item used to set `player.shieldTimer` — same mechanic as the Shield *skill*, full
+`canBeHit()`-false invuln for `CONFIG.items.shieldDuration` (3s), so every bullet passed straight
+through untouched for the whole window. User said it felt like temporary immortality, not a shield.
+Reworked to a charge system: `player.shieldCharges` (new field, persists across waves), consumed
+one-at-a-time in `LifeSystem.hit()` when > 0 (grants normal grace invuln so a burst doesn't eat
+multiple charges in one frame, green particle burst instead of red damage flash, returns `'blocked'`
+not `true` so it doesn't break "No Hit" wave streak but still consumes the bullet). Skill's shield
+(`CONFIG.skills.shield`) is untouched — still a deliberate timed full-invuln burst, separate config
+key. Also: heart item at max life used to fall back to bonus score (same as the score item) — user
+wanted score to come ONLY from the dedicated score item, so that fallback is gone (now just a neutral
+"เต็มแล้ว!" popup, no score). Added/updated 4 tests in `tests/unit/item.test.mjs`. Ran
+`npm run bump-version` after.
+**Files:** `js/entities/player.js`, `js/core/config.js`, `js/systems/itemSystem.js`,
+`js/systems/lifeSystem.js`, `js/systems/game.js`, `js/rendering/renderer.js`, `CHANGELOG.md`,
+`tests/unit/item.test.mjs`.
+**End-of-day test result:** `npm test` → **180 PASS / 0 FAIL / 0 WARN** (179 + 1 new shield-block test).
+**For the next session:** Nothing pending. Note `shieldCharges` deliberately is NOT part of
+`canBeHit()` — that's intentional so collision still registers and `LifeSystem.hit()` gets a chance
+to consume the charge. Don't "fix" that without re-reading this entry first.
+
 ---
 
 ## 2026-08-20 — Claude (Sonnet 5, claude.ai)

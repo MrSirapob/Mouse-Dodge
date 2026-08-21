@@ -1,4 +1,4 @@
-import { CONFIG } from '../core/config.js?v=20260821-iylt';
+import { CONFIG } from '../core/config.js?v=20260821-n4e8';
 
 export const ITEM_COLORS = {
   heart: '#ff5c8a',
@@ -144,8 +144,10 @@ export class ItemSystem {
           game.addSkillEffect('heal', player, 0.9, { maxRadius: 58 });
           game.spawnScorePopup(item.x, item.y, 0, color, '+1 ชีวิต');
         } else {
-          player.score += cfg.scoreValue;
-          game.spawnScorePopup(item.x, item.y, cfg.scoreValue, color);
+          // Already at max lives: no score fallback (score item is the only
+          // thing that should award score) — just a "wasted" pickup with a
+          // neutral popup so it's clear something happened.
+          game.spawnScorePopup(item.x, item.y, 0, color, 'เต็มแล้ว!');
         }
         break;
       case 'energy':
@@ -153,8 +155,8 @@ export class ItemSystem {
         game.spawnScorePopup(item.x, item.y, 0, color, 'สกิลพร้อม!');
         break;
       case 'shield':
-        player.shieldTimer = Math.max(player.shieldTimer, cfg.shieldDuration);
-        game.addSkillEffect('shield', player, cfg.shieldDuration, { maxRadius: 32 });
+        player.shieldCharges = Math.min(cfg.shieldMaxCharges, player.shieldCharges + cfg.shieldHits);
+        game.addSkillEffect('shield', player, 0.6, { maxRadius: 32 });
         game.spawnScorePopup(item.x, item.y, 0, color, 'โล่!');
         break;
       case 'score':
