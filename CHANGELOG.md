@@ -1,5 +1,46 @@
 # Changelog
 
+## Game-over rank reveal: slot-style build-up + per-tier landing pop/shake/particles (user-requested, "ขอว้าวๆ ไม่เอาระบบเสียง" → narrowed down to the existing end-of-run RANK block)
+- **Before:** `showGameOver()` in `js/ui/ui.js` computed the run's rank
+  (`getScoreRank()`, D through SSS off `CONFIG.rank.thresholds`) and printed
+  it straight into the result screen as static text — same treatment for a
+  D as an SSS, no build-up, no tier-based payoff.
+- **Added a 3-part reveal, gated entirely to the already-static Game Over
+  screen (no canvas/`game.js` changes, so it can't interfere with live
+  dodging):**
+  1. **Slot-style build-up** — `animateRankReveal()` cycles the rank letter
+     up from D to the run's actual rank, one step at a time, with each
+     step's delay growing (`55 + i*35`ms) so it decelerates into the
+     landing. A D result barely cycles (lands immediately); an SSS result
+     climbs through all 7 tiers over ~0.9s.
+  2. **Per-tier landing pop + panel shake** — `RANK_FX` (new lookup, keyed
+     by rank) drives `--rank-shake-amp`/`--rank-pop-scale` CSS custom
+     properties set inline by `landRank()`; D/C are near-silent (0-1px
+     shake), SSS is the strongest (10px shake, 1.32x pop) — see
+     `@keyframes rank-shake`/`rank-pop-scale` in `main.css`.
+  3. **Per-tier particle burst** — `spawnRankParticles()` scatters 0
+     (D) to 26 (SSS) small DOM dots outward from the rank letter via
+     `@keyframes rank-particle-fly`, colored from `RANK_FX[rank].colors`.
+     SSS additionally gets a looping gold/pink gradient shimmer on the
+     letter itself (`rank-shimmer` keyframe, text painted via
+     `background-clip: text`).
+  - Rank phrase (`RANK_PHRASES`) now fades in only after landing
+    (`.rank-phrase-visible`) instead of appearing simultaneously with
+    everything else.
+- **Why DOM-only, not the canvas `ParticleSystem`/camera shake:** the
+  canvas is a game-loop concept tied to live play; the result screen is a
+  static overlay drawn after the loop stops. Reusing canvas shake/particles
+  would've meant reaching back into `game.js` state for a screen that isn't
+  even guaranteed to have the canvas visible. A self-contained DOM/CSS
+  version keeps this entirely inside `ui.js` + `main.css`, matching how the
+  existing "New Best!" badge is already implemented.
+- **Iterated with the user before landing on this scope:** first pass
+  considered a live in-run rank-up popup, rejected for covering the
+  dodge playfield ("ถ้าโชวระหว่างเล่นมันจะบังเอานะ") even with an
+  edge/corner placement; settled on enhancing the existing end-of-run
+  reveal instead, which sidesteps the overlap problem entirely.
+- **Files:** `js/ui/ui.js`, `css/main.css`.
+
 ## Mobile HUD: WAVE stat hidden behind the player HUD on narrow phones (e.g. iPhone XR) — fixed a dead-CSS structural bug in `main.css` (user-reported)
 - **Symptom:** on narrow phone widths, the WAVE stat in the center HUD
   (`#hudCenter`) appeared to vanish/get covered by the player 1 (and, in

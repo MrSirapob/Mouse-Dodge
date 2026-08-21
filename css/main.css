@@ -191,10 +191,11 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .p2-score b {color: #fff}
 
 /* RESULT SCREEN / SCORING */
-.rank-result {margin: 18px auto 14px;padding: 14px 16px 16px;border: 1px solid rgba(255,255,255,.12);border-radius: 12px;background: linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));text-align: center;box-shadow: 0 8px 28px rgba(0,0,0,.22)}
+.rank-result {position: relative;margin: 18px auto 14px;padding: 14px 16px 16px;border: 1px solid rgba(255,255,255,.12);border-radius: 12px;background: linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));text-align: center;box-shadow: 0 8px 28px rgba(0,0,0,.22);overflow: visible}
 .rank-kicker {font-size: 10px;font-weight: 900;letter-spacing: 4px;color: #8e95a8}
-.rank-letter {margin: 1px 0 -2px;font-size: clamp(54px,12vw,76px);line-height: 1;font-weight: 1000;letter-spacing: 2px;text-shadow: 0 6px 22px rgba(255,255,255,.10);animation: rank-reveal .5s cubic-bezier(.2,.8,.2,1) both}
-.rank-phrase {font-size: 13px;line-height: 1.5;color: #d8dbe4;font-weight: 700;letter-spacing: .3px}
+.rank-letter {position: relative;margin: 1px 0 -2px;font-size: clamp(54px,12vw,76px);line-height: 1;font-weight: 1000;letter-spacing: 2px;text-shadow: 0 6px 22px rgba(255,255,255,.10);animation: rank-reveal .35s cubic-bezier(.2,.8,.2,1) both}
+.rank-phrase {font-size: 13px;line-height: 1.5;color: #d8dbe4;font-weight: 700;letter-spacing: .3px;opacity: 0;transition: opacity .5s ease}
+.rank-phrase.rank-phrase-visible {opacity: 1}
 .rank-s .rank-letter {color: var(--gold)}
 .rank-ss .rank-letter {color: var(--gold)}
 .rank-sss .rank-letter {color: var(--gold)}
@@ -204,6 +205,22 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .rank-d .rank-letter {color: #8e95a8}
 .rank-sss {border-color: rgba(255,217,61,.34);background: linear-gradient(180deg,rgba(255,217,61,.09),rgba(255,255,255,.018))}
 .rank-ss {border-color: rgba(255,217,61,.24)}
+
+/* Rank reveal: build-up cycle lands here — pop scale + shake, both scaled
+   per-tier via --rank-pop-scale / --rank-shake-amp set inline by ui.js. */
+.rank-letter.rank-pop {animation: rank-pop-scale .5s cubic-bezier(.2,.8,.2,1)}
+.rank-result.rank-landed {animation: rank-shake .4s ease}
+.rank-sss .rank-letter.rank-pop {
+  background: linear-gradient(90deg,#ffd93d,#fff6cf,#ffb347,#ffd93d);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: rank-pop-scale .5s cubic-bezier(.2,.8,.2,1), rank-shimmer 1.6s linear .5s infinite;
+}
+
+.rank-particles {position: absolute;inset: 0;pointer-events: none;overflow: visible}
+.rank-particle {position: absolute;left: 50%;top: 38%;width: 6px;height: 6px;border-radius: 50%;opacity: 0;background: var(--rp-color, var(--gold));animation: rank-particle-fly .75s ease-out forwards;animation-delay: var(--rp-delay, 0s)}
 
 /* GENERAL */
 .run-comparison {margin: 18px 0 14px;border: 1px solid rgba(255,255,255,.10);border-radius: 12px;overflow: hidden;background: rgba(255,255,255,.025)}
@@ -659,6 +676,40 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 @keyframes rank-reveal {
   from {opacity: 0;transform: scale(.72) translateY(8px);filter: blur(5px)}
   to {opacity: 1;transform: scale(1) translateY(0);filter: blur(0)}
+}
+
+/* Animation: @keyframes rank-pop-scale — final-landing punch, amplitude set
+   per-tier via --rank-pop-scale (defaults to a barely-there pop). */
+@keyframes rank-pop-scale {
+  0% {transform: scale(1)}
+  45% {transform: scale(var(--rank-pop-scale, 1.05))}
+  100% {transform: scale(1)}
+}
+
+/* Animation: @keyframes rank-shake — panel shake on landing, amplitude set
+   per-tier via --rank-shake-amp (px, defaults to 0 = no shake). */
+@keyframes rank-shake {
+  0%, 100% {transform: translateX(0)}
+  15% {transform: translateX(calc(var(--rank-shake-amp, 0px) * -1))}
+  30% {transform: translateX(var(--rank-shake-amp, 0px))}
+  45% {transform: translateX(calc(var(--rank-shake-amp, 0px) * -0.7))}
+  60% {transform: translateX(calc(var(--rank-shake-amp, 0px) * 0.7))}
+  75% {transform: translateX(calc(var(--rank-shake-amp, 0px) * -0.35))}
+  90% {transform: translateX(calc(var(--rank-shake-amp, 0px) * 0.35))}
+}
+
+/* Animation: @keyframes rank-shimmer — gold gradient sweep, SSS only. */
+@keyframes rank-shimmer {
+  from {background-position: 0 center}
+  to {background-position: -220% center}
+}
+
+/* Animation: @keyframes rank-particle-fly — burst dot flying outward from
+   the rank letter, direction/distance set per-particle via --rp-x/--rp-y. */
+@keyframes rank-particle-fly {
+  0% {opacity: 0;transform: translate(-50%,-50%) scale(.4)}
+  15% {opacity: 1}
+  100% {opacity: 0;transform: translate(calc(-50% + var(--rp-x,0px)),calc(-50% + var(--rp-y,0px))) scale(1)}
 }
 
 /* Animation: @keyframes down-pulse */

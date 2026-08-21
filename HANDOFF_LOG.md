@@ -59,6 +59,25 @@ what changed, why, key numbers if any.
 
 ## 2026-08-21 — Claude (Sonnet 5, claude.ai)
 
+**Session 10 — Game-over rank reveal: build-up + per-tier pop/shake/particles (user-requested, "ทำระบบอะไรเพิ่มดี ขอว้าวๆ ไม่เอาระบบเสียง" → picked from a shortlist, then narrowed to the existing end-of-run RANK block after a live in-run version was rejected for covering the playfield):**
+Full detail in the CHANGELOG.md entry at the top of the file. Short version: `showGameOver()`'s
+static rank letter now cycles up from D to the actual rank (decelerating, ~0.9s for SSS,
+near-instant for D) via `animateRankReveal()`, then lands with a per-tier pop/shake
+(`RANK_FX` lookup → `--rank-shake-amp`/`--rank-pop-scale` CSS vars) and a DOM particle burst
+(`spawnRankParticles()`, 0 particles for D up to 26 for SSS); SSS also gets a looping gold/pink
+gradient shimmer on the letter. Rank phrase now fades in only after landing. Deliberately kept
+entirely inside `ui.js`/`main.css` (DOM/CSS-driven) rather than reaching into `game.js`'s canvas
+`ParticleSystem`/camera-shake state, since the result screen is a static post-loop overlay, not
+part of live gameplay — same pattern the existing "New Best!" badge already uses.
+**Files:** `js/ui/ui.js`, `css/main.css`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **180 PASS / 0 FAIL / 0 WARN** (unaffected; change is
+scoped to the post-game-over result screen, not touched by any existing test). Manually verified
+`node --check js/ui/ui.js` (syntax) and CSS brace balance; not yet visually verified in a browser
+across all 7 rank tiers.
+**For the next session:** Nothing blocking, but worth an actual browser pass through a few
+ranks (at least D, S, and SSS) to eyeball timing/intensity feel — this was built and
+logic-verified but not visually spot-checked live, same gap flagged for CSS work in Session 9.
+
 **Session 9 — Mobile HUD fix: WAVE stat hidden on iPhone XR (user-reported, "wave ui หายอ่ะ เหมือนมันทับกันกับ ui ของผู้เล่น"):**
 Root cause: **every `@media` block in `css/main.css` sat before the unconditional base
 `#hud` rule** in source order, so the later base rule (desktop-sized 82px lives-card /

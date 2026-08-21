@@ -87,6 +87,28 @@ const RANK_PHRASES = {
 
 let lastRankPhrase = {};
 
+// Rank reveal build-up: lowest to highest, used to drive the slot-style
+// cycle in animateRankReveal() below (D always starts the cycle, landing
+// stops at the run's actual rank).
+const RANK_ORDER = ["D", "C", "B", "A", "S", "SS", "SSS"];
+
+// Per-tier landing intensity: shake (px), particle burst count/color, and
+// pop-scale amplitude. Low ranks stay quiet on purpose — the escalation
+// itself is what sells the high ranks as special.
+const RANK_FX = {
+  D: { shake: 0, particles: 0, pop: 1.03, colors: [] },
+  C: { shake: 1, particles: 4, pop: 1.05, colors: ["#a7ac86"] },
+  B: { shake: 2, particles: 6, pop: 1.07, colors: ["#7fd8c8", "var(--accent)"] },
+  A: { shake: 3, particles: 9, pop: 1.1, colors: ["var(--accent)", "#7fd8c8"] },
+  S: { shake: 5, particles: 13, pop: 1.16, colors: ["var(--gold)", "#fff6cf"] },
+  SS: { shake: 7, particles: 18, pop: 1.22, colors: ["var(--gold)", "#fff6cf", "#ffb347"] },
+  SSS: { shake: 10, particles: 26, pop: 1.32, colors: ["var(--gold)", "#fff6cf", "#ffb347", "#ff5cc0"] },
+};
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function getScoreRank(score) {
   const value = Math.max(0, Number(score) || 0);
   const thresholds = CONFIG.rank?.thresholds || [];
@@ -550,8 +572,9 @@ export class UI {
 
         <div class="rank-result rank-${rank.toLowerCase()}">
           <div class="rank-kicker">RANK</div>
-          <div class="rank-letter">${rank}</div>
-          <div class="rank-phrase">${rankPhrase}</div>
+          <div class="rank-letter" id="rankLetterEl"></div>
+          <div class="rank-particles" id="rankParticlesEl"></div>
+          <div class="rank-phrase" id="rankPhraseEl">${rankPhrase}</div>
         </div>
 
         ${newBestBadge}
@@ -598,6 +621,77 @@ export class UI {
     this.resultScreen
       ?.querySelector("#resetBestBtn")
       ?.addEventListener("click", () => this.onResetBest?.());
+
+    this.animateRankReveal(rank);
+  }
+
+  /**
+   * Slot-machine style rank reveal for the game-over screen: cycles the
+   * rank letter up from D to the run's actual rank (skipped/instant for D
+   * itself), decelerating on each step, then "lands" with a per-tier pop,
+   * shake, and particle burst (see RANK_FX). Runs after showResultScreen()
+   * has already inserted the placeholder elements into the DOM.
+   */
+  async animateRankReveal(rank) {
+    const letterEl = this.resultScreen?.querySelector("#rankLetterEl");
+    if (!letterEl) return;
+
+    const targetIndex = Math.max(0, RANK_ORDER.indexOf(rank));
+    const sequence = RANK_ORDER.slice(0, targetIndex + 1);
+    const revealToken = (this.rankRevealToken = (this.rankRevealToken || 0) + 1);
+
+    for (let i = 0; i < sequence.length; i++) {
+      letterEl.textContent = sequence[i];
+      const isLast = i === sequence.length - 1;
+      if (isLast) break;
+      await wait(55 + i * 35);
+      if (revealToken !== this.rankRevealToken) return; // superseded by a new run
+    }
+
+    this.landRank(rank);
+  }
+
+  /** Applies the landing pop/shake/particles for `rank` once the reveal cycle stops. */
+  landRank(rank) {
+    const resultEl = this.resultScreen?.querySelector(".rank-result");
+    const letterEl = this.resultScreen?.querySelector("#rankLetterEl");
+    const particlesEl = this.resultScreen?.querySelector("#rankParticlesEl");
+    const phraseEl = this.resultScreen?.querySelector("#rankPhraseEl");
+    if (!resultEl || !letterEl) return;
+
+    const fx = RANK_FX[rank] || RANK_FX.D;
+    resultEl.style.setProperty("--rank-shake-amp", `${fx.shake}px`);
+    resultEl.style.setProperty("--rank-pop-scale", fx.pop);
+
+    letterEl.classList.remove("rank-pop");
+    resultEl.classList.remove("rank-landed");
+    // Force reflow so the animation restarts if a rank was just re-landed.
+    void letterEl.offsetWidth;
+    letterEl.classList.add("rank-pop");
+    resultEl.classList.add("rank-landed");
+
+    if (fx.particles > 0 && particlesEl) {
+      this.spawnRankParticles(particlesEl, fx);
+    }
+    phraseEl?.classList.add("rank-phrase-visible");
+  }
+
+  /** Spawns a short-lived DOM particle burst inside `container`, colored per RANK_FX entry. */
+  spawnRankParticles(container, fx) {
+    container.innerHTML = "";
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < fx.particles; i++) {
+      const dot = document.createElement("span");
+      dot.className = "rank-particle";
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 40 + Math.random() * 70;
+      dot.style.setProperty("--rp-x", `${Math.cos(angle) * dist}px`);
+      dot.style.setProperty("--rp-y", `${Math.sin(angle) * dist}px`);
+      dot.style.setProperty("--rp-delay", `${Math.random() * 0.12}s`);
+      dot.style.setProperty("--rp-color", fx.colors[i % fx.colors.length]);
+      frag.appendChild(dot);
+    }
+    container.appendChild(frag);
   }
 
   showPause(v) {
