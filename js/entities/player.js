@@ -3,13 +3,15 @@ import { CONFIG } from '../core/config.js?v=20260821-xdqs';
 export class Player {
   constructor(id, color) {
     this.id = id;
-    this.r = CONFIG.player.radius;
+    this.baseR = CONFIG.player.radius;
+    this.r = this.baseR;
     this.color = color;
     this.trail = [];
     this.reset(640, 360);
   }
   reset(x, y) {
     this.x = x; this.y = y;
+    this.r = this.baseR;
     this.lives = CONFIG.lives.max;
     this.invulnerable = 0;
     this.hitFlash = 0;
@@ -34,6 +36,13 @@ export class Player {
     this.combo = 0;
     this.comboTimer = 0;
     this.trail = [];
+    // Mystery Box bad-outcome timers (see ItemSystem.collect() case
+    // 'mystery'): hitboxTimer temporarily grows `r` past `baseR`;
+    // controlDebuffTimer/controlDebuffMult temporarily slows mouse/keyboard
+    // response. Both are no-ops (1/0) outside an active Mystery Box effect.
+    this.hitboxTimer = 0;
+    this.controlDebuffTimer = 0;
+    this.controlDebuffMult = 1;
   }
   updateMouse(targetX, targetY, dt, direct = false, sensitivity = 1) {
     // Touch input is positioned above the finger, so do not add mouse-style
@@ -42,7 +51,7 @@ export class Player {
       this.x = targetX;
       this.y = targetY;
     } else {
-      const response = Math.min(0.99, Math.max(0.01, CONFIG.player.followLerp * sensitivity));
+      const response = Math.min(0.99, Math.max(0.01, CONFIG.player.followLerp * sensitivity * this.controlDebuffMult));
       const k = 1 - Math.pow(1 - response, dt * 60);
       this.x += (targetX - this.x) * k;
       this.y += (targetY - this.y) * k;
@@ -52,7 +61,7 @@ export class Player {
   }
   updateKeyboard(dir, dt) {
     const len = Math.hypot(dir.x, dir.y) || 1;
-    const speed = 360;
+    const speed = 360 * this.controlDebuffMult;
     this.x += dir.x / len * speed * dt;
     this.y += dir.y / len * speed * dt;
     this.trail.push({ x: this.x, y: this.y });
@@ -72,6 +81,14 @@ export class Player {
     this.hitFlash = Math.max(0, this.hitFlash - rawDt);
     this.skillCooldown = Math.max(0, this.skillCooldown - rawDt);
     this.shieldTimer = Math.max(0, this.shieldTimer - rawDt);
+    if (this.hitboxTimer > 0) {
+      this.hitboxTimer = Math.max(0, this.hitboxTimer - rawDt);
+      if (this.hitboxTimer === 0) this.r = this.baseR;
+    }
+    if (this.controlDebuffTimer > 0) {
+      this.controlDebuffTimer = Math.max(0, this.controlDebuffTimer - rawDt);
+      if (this.controlDebuffTimer === 0) this.controlDebuffMult = 1;
+    }
   }
   canBeHit() { return !this.down && this.invulnerable <= 0 && this.shieldTimer <= 0; }
   isAlive() { return !this.down && this.lives > 0; }

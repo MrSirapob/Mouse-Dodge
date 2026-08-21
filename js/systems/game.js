@@ -678,6 +678,7 @@ export class Game {
     const s = this.state;
     if (s.slowMoRemaining > 0) s.slowMoRemaining -= rawDt;
     if (s.timeStopRemaining > 0) s.timeStopRemaining -= rawDt;
+    if (s.staticRemaining > 0) s.staticRemaining = Math.max(0, s.staticRemaining - rawDt);
 
     const scale = s.slowMoRemaining > 0 ? s.slowScale : 1;
     const dt = rawDt * scale;
@@ -1009,6 +1010,7 @@ export class Game {
     this.renderer.flash(this.state.actFlashAlpha, this.state.actFlashColor);
     this.state.actFlashAlpha *= 0.9;
     this.renderer.drawLowLifeVignette(this.activePlayers());
+    this.renderer.drawStatic(this.state.staticRemaining);
   }
 
   loop(now) {

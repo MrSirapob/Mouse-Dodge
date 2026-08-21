@@ -1,5 +1,51 @@
 # Changelog
 
+## New item: Mystery Box — 50/50 gamble pickup (user-requested, "Mystery Box แต่คุณต้องให้เท่าเทียมกันแบบ 50 50 สิ")
+- **New `mystery` item type**, added at weight 12 alongside the existing
+  heart/energy/shield/score in `CONFIG.items.weights`. Distinct from every
+  other pickup: instead of always helping, it's a coin flip.
+- **Resolution (`ItemSystem.resolveMysteryBox()`, new):** a hard
+  `Math.random() < 0.5` decides good vs. bad **independent of
+  `CONFIG.items.weights`** (that only controls how often a Mystery Box
+  itself spawns, not what it does once opened) — this was a deliberate
+  correction mid-conversation: an earlier draft reused the weighted-roll
+  pattern the other item types use, which the user pointed out doesn't
+  actually guarantee 50/50. A second, equally-weighted roll (25% each)
+  then picks one of that side's 4 sub-effects:
+  - **Good** (reuses existing item effects, one at above-normal strength):
+    heal 1 life, clear skill cooldown, +1 shield charge, or a score bonus
+    at `CONFIG.items.mystery.scoreMultiplier` (2x) the normal `score` item.
+  - **Bad** (all temporary, all non-lethal by design — see below):
+    hitbox grows to `hitboxScale` (1.6x) for `hitboxDuration` (3.5s) via
+    new `player.baseR`/`player.hitboxTimer` fields; mouse/keyboard
+    response drops to `controlDebuffMult` (0.4x) for `controlDebuffDuration`
+    (3.5s) via new `player.controlDebuffMult`/`controlDebuffTimer` fields
+    (applied inside `Player.updateMouse()`/`updateKeyboard()`, so it
+    affects both P1 mouse and P2 keyboard in Co-op); the current skill's
+    cooldown resets to full (only if it had one — a never-used skill is
+    unaffected); or a `staticDuration` (1.2s) screen-noise overlay via new
+    `state.staticRemaining` + `Renderer.drawStatic()` (grain + glitch bars,
+    same screen-space-overlay pattern as `flash()`/`drawLowLifeVignette()`).
+- **Deliberately does NOT include a `-1 life` bad outcome.** That was
+  discussed as the "true mirror" of the good side's `+1 life` (proposed,
+  then explicitly walked back) — it would've meant a Mystery Box could
+  outright kill a player on 1 life with zero counterplay, unlike every
+  other threat in the game (which at least has an invulnerability window
+  or a dodge opportunity). The shipped bad outcomes are all "harder to
+  play for a few seconds", never "loses progress/health directly".
+- **Verified 50/50 + per-side uniformity empirically** (20,000 simulated
+  `resolveMysteryBox()` calls, `player.lives`/`score`/`shieldCharges`
+  reset between runs): all 8 outcomes landed within ~2,400-2,590 (expected
+  2,500 each), confirming no directional bias.
+- **New icon:** `mystery` entry in `ITEM_ICON_DRAWERS` (`renderer.js`) — a
+  stroked "?" glyph, drawn as vector paths like every other item icon (no
+  new asset file needed, unlike a new skill icon would require).
+- **Files:** `js/systems/itemSystem.js`, `js/core/config.js`,
+  `js/entities/player.js`, `js/core/gameState.js`, `js/systems/game.js`,
+  `js/rendering/renderer.js`, `tests/unit/item.test.mjs` (updated 3 stale
+  hardcoded item-type allow-lists to include `mystery` — pre-existing
+  tests, not weakened, just no longer stale).
+
 ## Game-over rank reveal: slot-style build-up + per-tier landing pop/shake/particles (user-requested, "ขอว้าวๆ ไม่เอาระบบเสียง" → narrowed down to the existing end-of-run RANK block)
 - **Before:** `showGameOver()` in `js/ui/ui.js` computed the run's rank
   (`getScoreRank()`, D through SSS off `CONFIG.rank.thresholds`) and printed

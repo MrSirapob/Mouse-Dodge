@@ -59,6 +59,29 @@ what changed, why, key numbers if any.
 
 ## 2026-08-21 — Claude (Sonnet 5, claude.ai)
 
+**Session 11 — New item: Mystery Box, 50/50 gamble pickup (user-requested, iterated over several turns: "เพิ่มอะไรอีกดี" → item brainstorm rejected twice → "Mystery Box แต่คุณต้องให้เท่าเทียมกันแบบ 50 50 สิ" → clarified 50/50 means *balanced magnitude*, not just probability, then explicitly chose the non-lethal version over a "true mirror" -1-life outcome):**
+Full detail in the CHANGELOG.md entry at the top of the file. Short version: new `mystery`
+item type (weight 12), resolved via `ItemSystem.resolveMysteryBox()` — a hard 50/50 roll
+(NOT the weighted-roll pattern the other item types use, since that doesn't guarantee an
+even split) picks good vs. bad, then a uniform 25%-each roll picks 1 of 4 sub-effects per
+side. Good: heal/energy/shield/2x-score (reuses existing item effects). Bad (all temporary,
+none touch lives): hitbox growth, mouse+keyboard response slowdown, skill cooldown reset,
+or a screen-static overlay. New player fields (`baseR`, `hitboxTimer`, `controlDebuffMult`,
+`controlDebuffTimer`) and a new `state.staticRemaining` + `Renderer.drawStatic()` overlay.
+Verified the 50/50 + per-side uniformity with a 20k-sample empirical check (all 8 outcomes
+landed within ~2,400-2,590 of an expected 2,500) rather than just eyeballing the logic.
+**Files:** `js/systems/itemSystem.js`, `js/core/config.js`, `js/entities/player.js`,
+`js/core/gameState.js`, `js/systems/game.js`, `js/rendering/renderer.js`,
+`tests/unit/item.test.mjs`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **180 PASS / 0 FAIL / 0 WARN**. Had to update 3
+hardcoded item-type allow-lists in `tests/unit/item.test.mjs` (pre-existing tests that
+enumerated `['heart','energy','shield','score']` literally) to add `'mystery'` — those were
+stale-by-construction the moment any new item type gets added, not specific to this item.
+**For the next session:** Nothing blocking. Not yet visually verified in a browser (icon
+legibility at item.r scale, static-overlay readability, whether the control-slowdown bad
+outcome feels fair vs. frustrating in an actual dodge situation) — same "logic-verified,
+not eyeballed live" gap as Session 10's rank reveal work.
+
 **Session 10 — Game-over rank reveal: build-up + per-tier pop/shake/particles (user-requested, "ทำระบบอะไรเพิ่มดี ขอว้าวๆ ไม่เอาระบบเสียง" → picked from a shortlist, then narrowed to the existing end-of-run RANK block after a live in-run version was rejected for covering the playfield):**
 Full detail in the CHANGELOG.md entry at the top of the file. Short version: `showGameOver()`'s
 static rank letter now cycles up from D to the actual rank (decelerating, ~0.9s for SSS,

@@ -136,7 +136,7 @@ export const CONFIG = {
     // (which is most of a bullet-hell run). heart:20/boost:25 -> ~51s at
     // full life, ~29s once hurt — still noticeably faster when actually
     // needed, just not constant. See CHANGELOG.md for the full math.
-    weights: { heart: 20, energy: 25, shield: 15, score: 25 },
+    weights: { heart: 20, energy: 25, shield: 15, score: 25, mystery: 12 },
     heartWeightBoost: 25,
     scoreValue: 400,
     // Shield *item* pickup (2026-08-21, user-requested rework — old
@@ -149,6 +149,21 @@ export const CONFIG = {
     // intentional timed full-invuln burst and is unaffected by this.
     shieldHits: 1,
     shieldMaxCharges: 1,
+    // Mystery Box pickup (2026-08-21, user-requested — "50/50 balanced"
+    // gamble item): exactly 50% chance of a good outcome / 50% chance of a
+    // bad one (see ItemSystem.collect() case 'mystery'), each side then
+    // picking uniformly among 4 sub-effects. Good outcomes reuse the other
+    // items' effects at (or above) their normal strength; bad outcomes are
+    // all temporary and non-lethal (never remove a life or force a hit) so
+    // the gamble stays "annoying if unlucky", not "instant death".
+    mystery: {
+      scoreMultiplier: 2, // good/score: cfg.scoreValue * this
+      hitboxScale: 1.6, // bad/hitboxUp: player.r *= this, temporarily
+      hitboxDuration: 3.5,
+      controlDebuffMult: 0.4, // bad/controlSlow: mouse+keyboard response *= this
+      controlDebuffDuration: 3.5,
+      staticDuration: 1.2, // bad/static: screen-noise overlay duration
+    },
   },
   storage: {
     bestTime: "waveDodgeBestTime",

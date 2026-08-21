@@ -4,7 +4,8 @@ export const ITEM_COLORS = {
   heart: '#ff5c8a',
   energy: '#ffd166',
   shield: '#7bed9f',
-  score: '#54a0ff'
+  score: '#54a0ff',
+  mystery: '#a29bfe'
 };
 
 /**
@@ -15,10 +16,15 @@ export const ITEM_COLORS = {
  * during the 'transition' banner, when players are frozen as well.
  *
  * Types:
- *  - heart  : restores 1 life (falls back to bonus score if already at max)
- *  - energy : instantly clears the current skill cooldown
- *  - shield : grants a few seconds of shield (same as the Shield skill)
- *  - score  : flat bonus score
+ *  - heart   : restores 1 life (falls back to bonus score if already at max)
+ *  - energy  : instantly clears the current skill cooldown
+ *  - shield  : grants a few seconds of shield (same as the Shield skill)
+ *  - score   : flat bonus score
+ *  - mystery : 50/50 gamble — good outcome (heal/energy/shield/big score,
+ *              picked uniformly among those 4) or bad outcome (temporary
+ *              hitbox growth, control slow, skill cooldown reset, or a
+ *              screen-static overlay, picked uniformly among those 4).
+ *              See collect() below; bad outcomes are always non-lethal.
  */
 export class ItemSystem {
   constructor(game) {
@@ -160,10 +166,78 @@ export class ItemSystem {
         game.spawnScorePopup(item.x, item.y, 0, color, 'โล่!');
         break;
       case 'score':
+        player.score += cfg.scoreValue;
+        game.spawnScorePopup(item.x, item.y, cfg.scoreValue, color);
+        break;
+      case 'mystery':
+        this.resolveMysteryBox(item, player);
+        break;
       default:
         player.score += cfg.scoreValue;
         game.spawnScorePopup(item.x, item.y, cfg.scoreValue, color);
         break;
+    }
+  }
+
+  /**
+   * Mystery Box resolution (user-requested "50/50 balanced" gamble item):
+   * a hard 50/50 roll picks the good/bad side first — independent of
+   * `CONFIG.items.weights`, which only controls how often a Mystery Box
+   * itself appears, not what it does once opened — then a second, equally
+   * weighted roll (25% each) picks one of that side's 4 sub-effects. See
+   * `CONFIG.items.mystery` for every magnitude/duration used below.
+   */
+  resolveMysteryBox(item, player) {
+    const game = this.game;
+    const cfg = CONFIG.items;
+    const mcfg = cfg.mystery;
+    const good = Math.random() < 0.5;
+    const color = ITEM_COLORS.mystery;
+
+    game.particles.spawn(item.x, item.y, color, 30);
+    game.state.shakeMag = Math.max(game.state.shakeMag, good ? 4 : 6);
+
+    if (good) {
+      const roll = Math.floor(Math.random() * 4);
+      if (roll === 0) {
+        if (player.lives < CONFIG.lives.max) {
+          player.lives = Math.min(CONFIG.lives.max, player.lives + 1);
+          player.invulnerable = Math.max(player.invulnerable, 0.35);
+          game.addSkillEffect('heal', player, 0.9, { maxRadius: 58 });
+          game.spawnScorePopup(item.x, item.y, 0, color, '🎁 +1 ชีวิต!');
+        } else {
+          game.spawnScorePopup(item.x, item.y, 0, color, '🎁 เต็มแล้ว!');
+        }
+      } else if (roll === 1) {
+        player.skillCooldown = 0;
+        game.spawnScorePopup(item.x, item.y, 0, color, '🎁 สกิลพร้อม!');
+      } else if (roll === 2) {
+        player.shieldCharges = Math.min(cfg.shieldMaxCharges, player.shieldCharges + cfg.shieldHits);
+        game.addSkillEffect('shield', player, 0.6, { maxRadius: 32 });
+        game.spawnScorePopup(item.x, item.y, 0, color, '🎁 โล่!');
+      } else {
+        const bonus = cfg.scoreValue * mcfg.scoreMultiplier;
+        player.score += bonus;
+        game.spawnScorePopup(item.x, item.y, bonus, color, '🎁');
+      }
+      return;
+    }
+
+    const roll = Math.floor(Math.random() * 4);
+    if (roll === 0) {
+      player.r = player.baseR * mcfg.hitboxScale;
+      player.hitboxTimer = mcfg.hitboxDuration;
+      game.spawnScorePopup(item.x, item.y, 0, color, '💀 ตัวใหญ่ขึ้น!');
+    } else if (roll === 1) {
+      player.controlDebuffMult = mcfg.controlDebuffMult;
+      player.controlDebuffTimer = mcfg.controlDebuffDuration;
+      game.spawnScorePopup(item.x, item.y, 0, color, '💀 ควบคุมหน่วง!');
+    } else if (roll === 2) {
+      if (player.skillBaseCooldown > 0) player.skillCooldown = player.skillBaseCooldown;
+      game.spawnScorePopup(item.x, item.y, 0, color, '💀 คูลดาวน์เต็ม!');
+    } else {
+      game.state.staticRemaining = Math.max(game.state.staticRemaining, mcfg.staticDuration);
+      game.spawnScorePopup(item.x, item.y, 0, color, '💀 สัญญาณรบกวน!');
     }
   }
 }

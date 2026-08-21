@@ -15,7 +15,7 @@ export async function run() {
   const s = new TestSuite('ITEMS');
 
   s.test('ITEM_COLORS defines a color for every documented item type', () => {
-    for (const type of ['heart', 'energy', 'shield', 'score']) {
+    for (const type of ['heart', 'energy', 'shield', 'score', 'mystery']) {
       assert(typeof ITEM_COLORS[type] === 'string', `ITEM_COLORS.${type} is missing`, {
         likely: 'js/systems/itemSystem.js ITEM_COLORS',
       });
@@ -32,7 +32,7 @@ export async function run() {
     assertNoNaN(item.y, 'item.y');
     assert(item.x >= 0 && item.x <= CONFIG.world.width, 'item.x should be within the arena');
     assert(item.y >= 0 && item.y <= CONFIG.world.height, 'item.y should be within the arena');
-    assert(['heart', 'energy', 'shield', 'score'].includes(item.type), `item.type "${item.type}" is not a recognized type`, {
+    assert(['heart', 'energy', 'shield', 'score', 'mystery'].includes(item.type), `item.type "${item.type}" is not a recognized type`, {
       likely: 'js/systems/itemSystem.js pickType()',
     });
     assertEqual(item.age, 0, 'a freshly spawned item should start at age 0');
@@ -195,7 +195,7 @@ export async function run() {
       for (let i = 0; i < 500; i++) seen.add(game.itemSystem.pickType());
     });
     for (const type of seen) {
-      assert(['heart', 'energy', 'shield', 'score'].includes(type), `pickType() produced an unrecognized type "${type}"`, {
+      assert(['heart', 'energy', 'shield', 'score', 'mystery'].includes(type), `pickType() produced an unrecognized type "${type}"`, {
         likely: 'js/systems/itemSystem.js pickType()',
       });
     }

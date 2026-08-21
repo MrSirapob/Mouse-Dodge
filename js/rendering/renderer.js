@@ -64,6 +64,18 @@ const ITEM_ICON_DRAWERS = {
     c.lineTo(0, s);
     c.globalAlpha *= 0.5;
     c.stroke();
+  },
+  mystery(c, s) {
+    // "?" glyph, drawn as strokes (matches this table's stroke/fill style
+    // rather than relying on canvas text metrics/fonts).
+    c.beginPath();
+    c.arc(0, -s * 0.35, s * 0.45, Math.PI * 1.15, Math.PI * 2.55, false);
+    c.moveTo(0, -s * 0.35 + s * 0.45);
+    c.lineTo(0, s * 0.15);
+    c.stroke();
+    c.beginPath();
+    c.arc(0, s * 0.62, s * 0.12, 0, Math.PI * 2);
+    c.fill();
   }
 };
 
@@ -1281,6 +1293,47 @@ export class Renderer {
     grad.addColorStop(1, `rgba(200,0,0,${alpha})`);
     c.fillStyle = grad;
     c.fillRect(0, 0, w, h);
+    c.restore();
+  }
+
+  /**
+   * Screen-space visual-noise overlay for the Mystery Box item's "static"
+   * bad outcome — random flickering bars + grain, fading out over its
+   * remaining duration. `remaining` is seconds left (state.staticRemaining);
+   * draws nothing once it hits 0. Purely visual, same pattern as flash()/
+   * drawLowLifeVignette() — never touches gameplay state.
+   */
+  drawStatic(remaining) {
+    if (remaining <= 0) return;
+    const c = this.ctx;
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+    // Fade the whole effect out over its last 0.4s so it doesn't just
+    // snap off.
+    const fade = Math.min(1, remaining / 0.4);
+
+    c.save();
+    c.setTransform(1, 0, 0, 1, 0, 0);
+
+    // Grain: small random dark/light flecks redrawn every frame.
+    c.globalAlpha = 0.5 * fade;
+    for (let i = 0; i < 70; i++) {
+      const x = Math.random() * w;
+      const y = Math.random() * h;
+      const size = 1 + Math.random() * 2;
+      c.fillStyle = Math.random() < 0.5 ? '#ffffff' : '#000000';
+      c.fillRect(x, y, size, size);
+    }
+
+    // A couple of horizontal glitch bars that jump position each frame.
+    c.globalAlpha = 0.22 * fade;
+    c.fillStyle = '#ffffff';
+    for (let i = 0; i < 2; i++) {
+      const y = Math.random() * h;
+      const barH = 2 + Math.random() * 6;
+      c.fillRect(0, y, w, barH);
+    }
+
     c.restore();
   }
 }
