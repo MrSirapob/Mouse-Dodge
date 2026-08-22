@@ -676,6 +676,561 @@ export class PatternLibrary {
       });
     }
   }
+
+  // ================================================================
+  // W11-15 NEW ACT PATTERNS
+  // These patterns are intentionally different from the W1-10 toolkit:
+  // VOID = attraction/black-hole geometry, GRAVITY = altered trajectories,
+  // SHADOW = replay of recent player positions, COLLAPSE = shrinking lanes.
+  // ================================================================
+
+  voidWell(start, count, interval, x, y, speed, pull, color) {
+    for (let i = 0; i < count; i++) {
+      this.game.queue(start + i * interval, () => {
+        const a = (Math.PI * 2 * i) / Math.max(1, count);
+        const r = 250 + (i % 3) * 70;
+        const sx = x + Math.cos(a) * r;
+        const sy = y + Math.sin(a) * r;
+        const angle = Math.atan2(sy - y, sx - x);
+        this.game.spawnBullet(sx, sy, Math.cos(angle) * speed, Math.sin(angle) * speed, 5, color, {
+          maxAge: 8, trajectory: 'gravityWell', gravityX: x, gravityY: y, gravityStrength: pull
+        });
+      });
+    }
+  }
+
+  voidPulse(start, pulses, interval, x, y, count, speed, pull, color) {
+    for (let p = 0; p < pulses; p++) {
+      this.game.queue(start + p * interval, () => {
+        for (let i = 0; i < count; i++) {
+          const a = Math.PI * 2 * i / count + (p % 2) * Math.PI / count;
+          const r = 45;
+          const sx = x + Math.cos(a) * r;
+          const sy = y + Math.sin(a) * r;
+          this.game.spawnBullet(sx, sy, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, {
+            maxAge: 8, trajectory: 'gravityWell', gravityX: x, gravityY: y, gravityStrength: pull
+          });
+        }
+      });
+    }
+  }
+
+  gravityRain(start, count, interval, speed, gx, gy, strength, color) {
+    for (let i = 0; i < count; i++) {
+      this.game.queue(start + i * interval, () => {
+        const x = 70 + ((i * 173) % 1140);
+        const y = -20;
+        const angle = Math.atan2(gy - y, gx - x);
+        this.game.spawnBullet(x, y, Math.cos(angle) * speed, Math.sin(angle) * speed, 5, color, {
+          maxAge: 8, trajectory: 'gravityWell', gravityX: gx, gravityY: gy, gravityStrength: strength
+        });
+      });
+    }
+  }
+
+  gravityFlip(start, count, interval, speed, flipAfter, color) {
+    for (let i = 0; i < count; i++) {
+      this.game.queue(start + i * interval, () => {
+        const x = 60 + ((i * 197) % 1160);
+        this.game.spawnBullet(x, -24, 0, speed, 5, color, {
+          maxAge: 8, trajectory: 'gravityFlip', dir: 1, flipAfter
+        });
+      });
+    }
+  }
+
+  gravityCross(start, bursts, interval, count, speed, strength, color) {
+    for (let b = 0; b < bursts; b++) {
+      this.game.queue(start + b * interval, () => {
+        const gx = b % 2 ? 980 : 300;
+        const gy = b % 2 ? 500 : 220;
+        for (let i = 0; i < count; i++) {
+          const side = i % 4;
+          let x, y;
+          if (side === 0) { x = -20; y = 70 + (i * 83) % 580; }
+          else if (side === 1) { x = 1300; y = 70 + (i * 97) % 580; }
+          else if (side === 2) { x = 70 + (i * 113) % 1140; y = -20; }
+          else { x = 70 + (i * 127) % 1140; y = 740; }
+          const a = Math.atan2(gy - y, gx - x);
+          this.game.spawnBullet(x, y, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, {
+            maxAge: 8, trajectory: 'gravityWell', gravityX: gx, gravityY: gy, gravityStrength: strength
+          });
+        }
+      });
+    }
+  }
+
+  shadowEcho(start, duration, interval, delaySteps, speed, color) {
+    const steps = Math.floor(duration / interval);
+    for (let i = 0; i < steps; i++) {
+      this.game.queue(start + i * interval, () => {
+        for (const p of this.game.activePlayers()) {
+          const trail = p.trail || [];
+          const idx = Math.max(0, trail.length - 1 - delaySteps);
+          const pos = trail.length ? trail[idx] : { x: p.x, y: p.y };
+          const a = Math.atan2(pos.y - WORLD.height / 2, pos.x - WORLD.width / 2);
+          const sx = Math.max(18, Math.min(WORLD.width - 18, pos.x + Math.cos(a) * 110));
+          const sy = Math.max(18, Math.min(WORLD.height - 18, pos.y + Math.sin(a) * 110));
+          const target = this.targetPlayer(sx, sy);
+          const fireAngle = Math.atan2(target.y - sy, target.x - sx);
+          this.game.spawnBullet(sx, sy, Math.cos(fireAngle) * speed, Math.sin(fireAngle) * speed, 5, color, { maxAge: 6 });
+        }
+      });
+    }
+  }
+
+  shadowTrail(start, count, interval, speed, color) {
+    for (let i = 0; i < count; i++) {
+      this.game.queue(start + i * interval, () => {
+        for (const p of this.game.activePlayers()) {
+          const trail = p.trail || [];
+          const pos = trail.length ? trail[Math.max(0, trail.length - 1 - (i % 10))] : { x: p.x, y: p.y };
+          const a = (i % 2 ? Math.PI / 2 : -Math.PI / 2) + ((i % 5) - 2) * 0.08;
+          const sx = Math.max(18, Math.min(WORLD.width - 18, pos.x + Math.cos(a) * 95));
+          const sy = Math.max(18, Math.min(WORLD.height - 18, pos.y + Math.sin(a) * 95));
+          this.game.spawnBullet(sx, sy, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 6 });
+        }
+      });
+    }
+  }
+
+  shadowCross(start, count, interval, speed, color) {
+    for (let i = 0; i < count; i++) {
+      this.game.queue(start + i * interval, () => {
+        for (const p of this.game.activePlayers()) {
+          const trail = p.trail || [];
+          const pos = trail.length ? trail[Math.max(0, trail.length - 1 - ((i + 5) % 12))] : { x: p.x, y: p.y };
+          const mirrorX = WORLD.width - pos.x;
+          const mirrorY = WORLD.height - pos.y;
+          const a = Math.atan2(mirrorY - pos.y, mirrorX - pos.x);
+          const sx = Math.max(18, Math.min(WORLD.width - 18, pos.x + Math.cos(a) * 120));
+          const sy = Math.max(18, Math.min(WORLD.height - 18, pos.y + Math.sin(a) * 120));
+          this.game.spawnBullet(sx, sy, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 6 });
+        }
+      });
+    }
+  }
+
+  closingLanes(start, count, interval, speed, color) {
+    for (let i = 0; i < count; i++) {
+      this.game.queue(start + i * interval, () => {
+        const inset = 18 + i * 9;
+        const gap = 90 - Math.min(45, i * 4);
+        const mid = WORLD.height * (0.3 + (i % 5) * 0.1);
+        for (let y = inset; y < WORLD.height - inset; y += 24) {
+          if (Math.abs(y - mid) < gap) continue;
+          this.game.spawnBullet(-10 - inset, y, speed, 0, 5, color, { maxAge: 2.8, wall: true });
+          this.game.spawnBullet(WORLD.width + 10 + inset, y, -speed, 0, 5, color, { maxAge: 2.8, wall: true });
+        }
+      });
+    }
+  }
+
+  collapseCross(start, pulses, interval, speed, color) {
+    for (let i = 0; i < pulses; i++) {
+      this.game.queue(start + i * interval, () => {
+        const inset = 35 + i * 22;
+        for (let x = inset; x <= WORLD.width - inset; x += 28) {
+          this.game.spawnBullet(x, -10, 0, speed, 5, color, { maxAge: 2.8, wall: true });
+          this.game.spawnBullet(x, WORLD.height + 10, 0, -speed, 5, color, { maxAge: 2.8, wall: true });
+        }
+        for (let y = inset; y <= WORLD.height - inset; y += 28) {
+          this.game.spawnBullet(-10, y, speed, 0, 5, color, { maxAge: 2.8, wall: true });
+          this.game.spawnBullet(WORLD.width + 10, y, -speed, 0, 5, color, { maxAge: 2.8, wall: true });
+        }
+      });
+    }
+  }
+
+  movingSafeGap(start, count, interval, speed, color) {
+    const gaps = [0.25, 0.48, 0.72, 0.38, 0.62, 0.82];
+    for (let i = 0; i < count; i++) {
+      this.game.queue(start + i * interval, () => {
+        const gapX = WORLD.width * gaps[i % gaps.length];
+        for (let y = 0; y <= WORLD.height; y += 24) {
+          if (Math.abs(y - WORLD.height * 0.5) < 52) {
+            const x = gapX + (y - WORLD.height * 0.5) * 0.35;
+            this.game.spawnBullet(x, y, 0, speed, 5, color, { maxAge: 2.8, wall: true });
+            continue;
+          }
+          this.game.spawnBullet(-8, y, speed, 0, 5, color, { maxAge: 2.8, wall: true });
+        }
+      });
+    }
+  }
+
+  ritualRing(start, count, speed, gapAngle, color) {
+    const warnDuration = 0.8;
+    this.game.queue(Math.max(0, start - warnDuration), () => {
+      this.game.ringWarnings.push({ x: this.game.boss?.x ?? WORLD.width/2, y: this.game.boss?.y ?? WORLD.height/2, t: 0, duration: warnDuration, color, radius: 86, trackBoss: true, gapAngle, gapWidth: 0.2 });
+    });
+    this.game.queue(start, () => {
+      const cx = this.game.boss?.x ?? WORLD.width/2;
+      const cy = this.game.boss?.y ?? WORLD.height/2;
+      for (let i = 0; i < count; i++) {
+        const a = Math.PI * 2 * i / count;
+        const delta = Math.atan2(Math.sin(a - gapAngle), Math.cos(a - gapAngle));
+        if (Math.abs(delta) < 0.2) continue;
+        this.spawnBossBullet(a, speed, 5, color);
+      }
+    });
+  }
+
+  ritualSeal(start, seals, interval, count, speed, color) {
+    for (let s = 0; s < seals; s++) {
+      this.game.queue(start + s * interval, () => {
+        const a0 = s * Math.PI * 2 / seals;
+        const x = WORLD.width/2 + Math.cos(a0) * 220;
+        const y = WORLD.height/2 + Math.sin(a0) * 220;
+        for (let i = 0; i < count; i++) {
+          const a = a0 + (i - count/2) * 0.045;
+          this.game.spawnBullet(x, y, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 8 });
+        }
+      });
+    }
+  }
+
+  // ================================================================
+  // W11-15 SUPPORT PATTERNS — second pass: five distinct signatures per wave.
+  // These deliberately do not reuse the W1-10 signature families.
+  // ================================================================
+
+  voidLane(start, bursts, interval, count, speed, color) {
+    for (let b = 0; b < bursts; b++) {
+      this.game.queue(start + b * interval, () => {
+        const cy = WORLD.height * (0.22 + (b % 4) * 0.18);
+        for (let i = 0; i < count; i++) {
+          const y = cy + (i - count / 2) * 12;
+          const x = i % 2 ? WORLD.width + 20 : -20;
+          const dir = x < 0 ? 1 : -1;
+          this.game.spawnBullet(x, y, dir * speed, 0, 5, color, {
+            maxAge: 7, trajectory: 'gravityWell', gravityX: WORLD.width / 2, gravityY: cy, gravityStrength: 0.035
+          });
+        }
+      });
+    }
+  }
+
+  voidCollapse(start, pulses, interval, count, speed, x, y, color) {
+    for (let p = 0; p < pulses; p++) {
+      this.game.queue(start + p * interval, () => {
+        for (let i = 0; i < count; i++) {
+          const a = (Math.PI * 2 * i) / count + (p % 2) * 0.08;
+          const sx = x + Math.cos(a) * 330;
+          const sy = y + Math.sin(a) * 330;
+          const angle = Math.atan2(y - sy, x - sx);
+          this.game.spawnBullet(sx, sy, Math.cos(angle) * speed, Math.sin(angle) * speed, 5, color, {
+            maxAge: 7, trajectory: 'gravityWell', gravityX: x, gravityY: y, gravityStrength: 0.065
+          });
+        }
+      });
+    }
+  }
+
+  voidSplit(start, bursts, interval, count, speed, color) {
+    for (let b = 0; b < bursts; b++) {
+      this.game.queue(start + b * interval, () => {
+        const centers = [[300, 180], [980, 540]];
+        for (let c = 0; c < centers.length; c++) {
+          const [x, y] = centers[c];
+          for (let i = 0; i < count; i++) {
+            const a = Math.atan2(WORLD.height / 2 - y, WORLD.width / 2 - x) + (i - count / 2) * 0.055;
+            this.game.spawnBullet(x, y, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, {
+              maxAge: 7, trajectory: 'gravityWell', gravityX: WORLD.width / 2, gravityY: WORLD.height / 2, gravityStrength: 0.045
+            });
+          }
+        }
+      });
+    }
+  }
+
+  voidBlackout(start, pulses, interval, count, speed, color) {
+    for (let p = 0; p < pulses; p++) {
+      this.game.queue(start + p * interval, () => {
+        const cx = WORLD.width / 2, cy = WORLD.height / 2;
+        const gap = (p % 4) * (Math.PI / 2);
+        for (let i = 0; i < count; i++) {
+          const a = Math.PI * 2 * i / count;
+          const d = Math.atan2(Math.sin(a - gap), Math.cos(a - gap));
+          if (Math.abs(d) < 0.32) continue;
+          this.game.spawnBullet(cx, cy, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 7 });
+        }
+      });
+    }
+  }
+
+  gravitySnap(start, bursts, interval, count, speed, flipAfter, color) {
+    for (let b = 0; b < bursts; b++) {
+      this.game.queue(start + b * interval, () => {
+        const y = b % 2 ? WORLD.height + 20 : -20;
+        const dir = y < 0 ? 1 : -1;
+        for (let i = 0; i < count; i++) {
+          const x = 60 + ((i * 151 + b * 83) % 1160);
+          this.game.spawnBullet(x, y, 0, dir * speed, 5, color, {
+            maxAge: 8, trajectory: 'gravityFlip', flipAfter: flipAfter
+          });
+        }
+      });
+    }
+  }
+
+  gravityExchange(start, bursts, interval, count, speed, color) {
+    for (let b = 0; b < bursts; b++) {
+      this.game.queue(start + b * interval, () => {
+        for (let i = 0; i < count; i++) {
+          const fromTop = (i + b) % 2 === 0;
+          const x = 40 + ((i * 97 + b * 61) % 1200);
+          const y = fromTop ? -18 : WORLD.height + 18;
+          const dir = fromTop ? 1 : -1;
+          const gx = WORLD.width * (0.25 + ((i + b) % 3) * 0.25);
+          this.game.spawnBullet(x, y, 0, dir * speed, 5, color, {
+            maxAge: 8, trajectory: 'gravityWell', gravityX: gx, gravityY: WORLD.height / 2, gravityStrength: 0.075
+          });
+        }
+      });
+    }
+  }
+
+  gravitySnapLine(start, bursts, interval, count, speed, color) {
+    for (let b = 0; b < bursts; b++) {
+      this.game.queue(start + b * interval, () => {
+        const x = WORLD.width * (0.18 + (b % 5) * 0.16);
+        for (let i = 0; i < count; i++) {
+          const y = 40 + i * ((WORLD.height - 80) / Math.max(1, count - 1));
+          const dir = i % 2 ? -1 : 1;
+          this.game.spawnBullet(x, y, dir * speed, 0, 5, color, {
+            maxAge: 8, trajectory: 'gravityFlip', flipAfter: 0.9 + (b % 3) * 0.25
+          });
+        }
+      });
+    }
+  }
+
+  gravityWellChain(start, bursts, interval, count, speed, color) {
+    for (let b = 0; b < bursts; b++) {
+      this.game.queue(start + b * interval, () => {
+        const gx = 180 + (b % 5) * 230;
+        const gy = b % 2 ? 520 : 200;
+        for (let i = 0; i < count; i++) {
+          const y = 60 + (i * 113) % 600;
+          const x = i % 2 ? WORLD.width + 20 : -20;
+          const a = Math.atan2(gy - y, gx - x);
+          this.game.spawnBullet(x, y, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, {
+            maxAge: 8, trajectory: 'gravityWell', gravityX: gx, gravityY: gy, gravityStrength: 0.06
+          });
+        }
+      });
+    }
+  }
+
+  shadowFreeze(start, pulses, interval, count, speed, color) {
+    for (let b = 0; b < pulses; b++) {
+      this.game.queue(start + b * interval, () => {
+        for (const p of this.game.players.filter(Boolean)) {
+          const sx = p.x, sy = p.y;
+          for (let i = 0; i < count; i++) {
+            const a = Math.PI * 2 * i / count;
+            this.game.spawnBullet(sx, sy, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 6 });
+          }
+        }
+      });
+    }
+  }
+
+  shadowChase(start, count, interval, speed, delay, color) {
+    for (let i = 0; i < count; i++) {
+      this.game.queue(start + i * interval, () => {
+        for (const p of this.game.players.filter(Boolean)) {
+          const trail = p.trail || [];
+          const pos = trail.length ? trail[Math.max(0, trail.length - 1 - delay)] : { x: p.x, y: p.y };
+          const target = this.targetPlayer(pos.x, pos.y);
+          const a = Math.atan2(target.y - pos.y, target.x - pos.x);
+          this.game.spawnBullet(pos.x, pos.y, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 7 });
+        }
+      });
+    }
+  }
+
+  shadowMemory(start, pulses, interval, count, speed, color) {
+    for (let b = 0; b < pulses; b++) {
+      this.game.queue(start + b * interval, () => {
+        for (const p of this.game.players.filter(Boolean)) {
+          const trail = p.trail || [];
+          for (let i = 0; i < count; i++) {
+            const pos = trail.length ? trail[Math.max(0, trail.length - 1 - ((b * 7 + i * 3) % Math.max(1, trail.length)))] : { x: p.x, y: p.y };
+            const a = Math.atan2(p.y - pos.y, p.x - pos.x) + (i - count / 2) * 0.04;
+            this.game.spawnBullet(pos.x, pos.y, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 7 });
+          }
+        }
+      });
+    }
+  }
+
+  shadowMirror(start, pulses, interval, count, speed, color) {
+    for (let b = 0; b < pulses; b++) {
+      this.game.queue(start + b * interval, () => {
+        for (const p of this.game.players.filter(Boolean)) {
+          const mx = WORLD.width - p.x;
+          const my = WORLD.height - p.y;
+          for (let i = 0; i < count; i++) {
+            const a = Math.atan2(my - WORLD.height / 2, mx - WORLD.width / 2) + (i - count / 2) * 0.055;
+            this.game.spawnBullet(mx, my, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 7 });
+          }
+        }
+      });
+    }
+  }
+
+  collapseCurtain(start, bursts, interval, count, speed, color) {
+    for (let b = 0; b < bursts; b++) {
+      this.game.queue(start + b * interval, () => {
+        const gap = 100 - Math.min(45, b * 5);
+        const mid = 120 + (b % 6) * 90;
+        for (let i = 0; i < count; i++) {
+          const y = 20 + (i * (WORLD.height - 40)) / Math.max(1, count - 1);
+          if (Math.abs(y - mid) < gap) continue;
+          const left = i % 2 === 0;
+          const x = left ? -18 : WORLD.width + 18;
+          this.game.spawnBullet(x, y, left ? speed : -speed, 0, 5, color, { maxAge: 7 });
+        }
+      });
+    }
+  }
+
+  collapseCorners(start, bursts, interval, count, speed, color) {
+    for (let b = 0; b < bursts; b++) {
+      this.game.queue(start + b * interval, () => {
+        const corners = [[-20, -20], [WORLD.width + 20, -20], [-20, WORLD.height + 20], [WORLD.width + 20, WORLD.height + 20]];
+        for (let c = 0; c < corners.length; c++) {
+          const [x, y] = corners[c];
+          for (let i = 0; i < count; i++) {
+            const a = Math.atan2(WORLD.height / 2 - y, WORLD.width / 2 - x) + (i - count / 2) * 0.035;
+            this.game.spawnBullet(x, y, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 7 });
+          }
+        }
+      });
+    }
+  }
+
+  collapseCircle(start, pulses, interval, count, speed, color) {
+    for (let p = 0; p < pulses; p++) {
+      this.game.queue(start + p * interval, () => {
+        const radius = 370 - p * 35;
+        const cx = WORLD.width / 2, cy = WORLD.height / 2;
+        for (let i = 0; i < count; i++) {
+          const a = Math.PI * 2 * i / count;
+          const x = cx + Math.cos(a) * radius;
+          const y = cy + Math.sin(a) * radius;
+          const inward = Math.atan2(cy - y, cx - x);
+          this.game.spawnBullet(x, y, Math.cos(inward) * speed, Math.sin(inward) * speed, 5, color, { maxAge: 7 });
+        }
+      });
+    }
+  }
+
+  collapseChambers(start, bursts, interval, count, speed, color) {
+    for (let b = 0; b < bursts; b++) {
+      this.game.queue(start + b * interval, () => {
+        const vertical = b % 2 === 0;
+        for (let i = 0; i < count; i++) {
+          if (vertical) {
+            const x = 160 + (i % 7) * 160;
+            const y = i % 2 ? -18 : WORLD.height + 18;
+            this.game.spawnBullet(x, y, 0, y < 0 ? speed : -speed, 5, color, { maxAge: 7 });
+          } else {
+            const y = 100 + (i % 5) * 130;
+            const x = i % 2 ? -18 : WORLD.width + 18;
+            this.game.spawnBullet(x, y, x < 0 ? speed : -speed, 0, 5, color, { maxAge: 7 });
+          }
+        }
+      });
+    }
+  }
+
+  collapseSweep(start, bursts, interval, count, speed, color) {
+    for (let b = 0; b < bursts; b++) {
+      this.game.queue(start + b * interval, () => {
+        const y = 80 + (b % 6) * 105;
+        for (let i = 0; i < count; i++) {
+          const x = i % 2 ? WORLD.width + 20 : -20;
+          const dir = x < 0 ? 1 : -1;
+          const vy = (i - count / 2) * 0.018;
+          this.game.spawnBullet(x, y, dir * speed, vy, 5, color, { maxAge: 7 });
+        }
+      });
+    }
+  }
+
+  judgmentLine(start, pulses, interval, count, speed, color) {
+    for (let p = 0; p < pulses; p++) {
+      this.game.queue(start + p * interval, () => {
+        const vertical = p % 2 === 0;
+        const lane = vertical ? 180 + (p % 4) * 250 : 110 + (p % 5) * 120;
+        for (let i = 0; i < count; i++) {
+          const t = i / Math.max(1, count - 1);
+          const x = vertical ? lane : -18 + t * (WORLD.width + 36);
+          const y = vertical ? -18 + t * (WORLD.height + 36) : lane;
+          const vx = vertical ? 0 : (p % 2 ? -speed : speed);
+          const vy = vertical ? (p % 3 ? -speed : speed) : 0;
+          this.game.spawnBullet(x, y, vx, vy, 5, color, { maxAge: 7 });
+        }
+      });
+    }
+  }
+
+  judgmentCross(start, pulses, interval, count, speed, color) {
+    for (let p = 0; p < pulses; p++) {
+      this.game.queue(start + p * interval, () => {
+        const cx = WORLD.width / 2, cy = WORLD.height / 2;
+        for (let i = 0; i < count; i++) {
+          const a = (Math.PI * 2 * i) / count + (p % 2) * 0.08;
+          const x = cx + Math.cos(a) * 620;
+          const y = cy + Math.sin(a) * 360;
+          this.spawnBossBullet(Math.atan2(cy - y, cx - x), speed, 5, color);
+        }
+      });
+    }
+  }
+
+  ritualClock(start, pulses, interval, count, speed, color) {
+    for (let p = 0; p < pulses; p++) {
+      this.game.queue(start + p * interval, () => {
+        const offset = p * 0.42;
+        for (let i = 0; i < count; i++) {
+          const a = Math.PI * 2 * i / count + offset;
+          this.spawnBossBullet(a, speed + p * 0.04, 5, color);
+        }
+      });
+    }
+  }
+
+  threeJudgments(start, cycles, interval, count, speed, color) {
+    for (let c = 0; c < cycles; c++) {
+      for (let phase = 0; phase < 3; phase++) {
+        this.game.queue(start + (c * 3 + phase) * interval, () => {
+          const target = this.targetPlayer(WORLD.width / 2, WORLD.height / 2);
+          const base = Math.atan2(target.y - WORLD.height / 2, target.x - WORLD.width / 2);
+          for (let i = 0; i < count; i++) {
+            const a = base + (i - count / 2) * 0.045 + phase * 0.55;
+            this.spawnBossBullet(a, speed + phase * 0.08, 5, color);
+          }
+        });
+      }
+    }
+  }
+
+  finalEclipse(start, count, speed, color) {
+    this.game.queue(start, () => {
+      const gap = Math.PI / 4;
+      for (let i = 0; i < count; i++) {
+        const a = Math.PI * 2 * i / count;
+        const d = Math.atan2(Math.sin(a), Math.cos(a));
+        if (Math.abs(d) < gap) continue;
+        this.spawnBossBullet(a, speed, 5, color);
+      }
+    });
+  }
+
   // ================================================================
   // W6 NEW PATTERNS
   //

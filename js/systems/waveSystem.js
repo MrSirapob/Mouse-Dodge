@@ -364,49 +364,52 @@ export class WaveSystem {
         break;
 
       case 11:
-        cross(0.0, 13, 2.55, c1);
-        wall(4.0, 2.75, c2, true, 0.055);
-        aimed(7.0, 42, 0.21, 2.6, c1);
-        ring(12.0, 640, 360, 40, 2.55, c2);
-        splitter(17.0, 8, 0.75, 2.0, c1);
-        wall(22.0, 2.8, c2, false, 0.05);
-        homing(27.0, 10, 0.38, 1.95, c1);
-        spiral(32.0, 10.0, 4, 2.0, c2);
-        aimed(37.0, 44, 0.19, 2.65, c1);
+        // W11 — VOID: five unique patterns, layered into sustained 420-cap pressure.
+        this.p.voidWell(0.4, 42, 0.10, 420, 300, 2.35, 0.060, c1);
+        this.p.voidPulse(2.5, 8, 0.85, 860, 430, 34, 2.55, 0.075, c2);
+        this.p.voidLane(5.0, 6, 1.0, 48, 2.7, c3);
+        this.p.voidCollapse(9.0, 5, 1.0, 48, 2.65, 640, 360, c1);
+        this.p.voidSplit(13.5, 4, 1.15, 30, 2.7, c2);
+        this.p.voidBlackout(18.0, 6, 1.0, 72, 2.8, c3);
+        this.p.voidWell(21.0, 60, 0.09, 300, 470, 2.75, 0.070, c1);
+        this.p.voidLane(25.0, 5, 0.8, 60, 2.9, c2);
+        this.p.voidCollapse(28.0, 3, 0.65, 64, 2.95, 640, 360, c3);
         break;
       case 12:
-        aimed(0.0, 44, 0.2, 2.65);
-        wall(4.0, 2.8, c1, false, 0.05);
-        spiral(8.0, 10.0, 4, 2.0, c2);
-        homing(12.0, 10, 0.38, 2.0, c1);
-        ring(17.0, 640, 360, 42, 2.6, c2);
-        laser(22.0, 5, 0.85, c3);
-        wall(27.0, 2.85, c1, true, 0.05);
-        aimed(32.0, 46, 0.18, 2.7, c2);
-        ring(37.0, 640, 360, 44, 2.65, c1);
+        // W12 — GRAVITY: five unique patterns, trajectory pressure ramps to cap.
+        this.p.gravityFlip(0.3, 64, 0.09, 2.75, 0.95, c1);
+        this.p.gravityRain(2.0, 60, 0.10, 2.65, 900, 420, 0.075, c2);
+        this.p.gravityCross(5.0, 6, 0.95, 34, 2.7, 0.065, c3);
+        this.p.gravitySnap(9.0, 6, 0.9, 54, 2.8, 0.85, c1);
+        this.p.gravityExchange(14.0, 6, 0.85, 52, 2.75, c2);
+        this.p.gravitySnapLine(18.0, 5, 0.9, 56, 2.85, c3);
+        this.p.gravityWellChain(22.0, 6, 0.75, 50, 2.9, c1);
+        this.p.gravityFlip(26.0, 54, 0.08, 2.95, 0.72, c2);
+        this.p.gravityCross(28.0, 5, 0.65, 38, 3.0, 0.075, c3);
         break;
       case 13:
-        wall(0.5, 2.85, c1, true, 0.05);
-        aimed(2.0, 44, 0.19, 2.7, c2);
-        splitter(6.0, 10, 0.7, 2.05, c1);
-        spiral(11.0, 11.0, 4, 2.05, c2);
-        cross(16.0, 14, 2.65, c1);
-        ring(21.0, 640, 360, 44, 2.65, c2);
-        homing(26.0, 11, 0.35, 2.0, c1);
-        wall(31.0, 2.9, c2, false, 0.045);
-        aimed(36.0, 48, 0.17, 2.75, c1);
+        // W13 — SHADOW: five unique memory/replay patterns.
+        this.p.shadowEcho(0.5, 9.0, 0.10, 8, 2.65, c1);
+        this.p.shadowTrail(2.0, 70, 0.09, 2.7, c2);
+        this.p.shadowCross(6.0, 60, 0.09, 2.75, c3);
+        this.p.shadowFreeze(10.0, 5, 0.9, 68, 2.6, c1);
+        this.p.shadowChase(14.0, 80, 0.08, 2.8, 12, c2);
+        this.p.shadowMemory(18.0, 5, 0.8, 56, 2.85, c3);
+        this.p.shadowMirror(22.0, 5, 0.85, 48, 2.9, c1);
+        this.p.shadowEcho(26.0, 6.0, 0.08, 12, 2.95, c2);
+        this.p.shadowFreeze(28.0, 4, 0.65, 72, 3.0, c3);
         break;
       case 14:
-        ring(0.5, 360, 360, 44, 2.65, c1);
-        wall(4.0, 2.9, c2, true, 0.045);
-        homing(7.0, 12, 0.34, 2.0, c1);
-        laser(11.0, 6, 0.8, c3);
-        spiral(15.0, 11.0, 4, 2.1, c2);
-        wall(20.0, 2.95, c1, false, 0.04);
-        bouncer(24.0, 9, 0.62, 2.1, c2);
-        ring(29.0, 920, 380, 46, 2.7, c1);
-        aimed(34.0, 50, 0.17, 2.8, c2);
-        wall(38.0, 3.0, c1, true, 0.04);
+        // W14 — COLLAPSE: five unique arena-pressure patterns, no wall bypass.
+        this.p.collapseCurtain(0.4, 7, 0.8, 72, 2.75, c1);
+        this.p.collapseCorners(3.0, 5, 1.0, 34, 2.8, c2);
+        this.p.collapseCircle(7.0, 6, 0.85, 72, 2.85, c3);
+        this.p.collapseChambers(12.0, 7, 0.75, 68, 2.9, c1);
+        this.p.collapseSweep(16.0, 8, 0.7, 60, 3.0, c2);
+        this.p.collapseCurtain(20.0, 7, 0.65, 78, 3.0, c3);
+        this.p.collapseCorners(23.0, 5, 0.75, 40, 3.05, c1);
+        this.p.collapseCircle(26.0, 5, 0.7, 82, 3.1, c2);
+        this.p.collapseChambers(28.0, 4, 0.55, 76, 3.15, c3);
         break;
 
       case 16:
@@ -591,13 +594,22 @@ export class WaveSystem {
     }
 
     if (n === 15) {
-      this.p.bossSpiral(1, 14, 3, 2.0, c3);
-      this.p.bossRing(10, 28, 2.55, c2);
-      this.p.bossHoming(20, 12, 0.4, 1.95, c1);
-      this.p.bossAimed(30, 24, 0.23, 2.65, c2);
-      this.p.bossRing(39, 30, 2.7, c1);
-      this.p.bossSpiral(47, 13, 4, 2.2, c3);
-      this.p.bossHoming(53, 10, 0.35, 2.0, c2);
+      // W15 BOSS — THE RITUAL: five new signature patterns and 500-bullet boss cap.
+      this.p.ritualRing(1.0, 112, 2.55, 0.0, c1);
+      this.p.ritualSeal(3.0, 5, 0.55, 22, 2.45, c2);
+      this.p.judgmentLine(6.0, 5, 0.75, 70, 2.7, c3);
+      this.p.judgmentCross(10.0, 4, 0.85, 72, 2.75, c1);
+      this.p.ritualClock(14.0, 6, 0.7, 82, 2.8, c2);
+      this.p.threeJudgments(18.0, 3, 0.7, 34, 2.85, c3);
+      this.p.ritualRing(24.0, 120, 2.9, Math.PI * 0.5, c1);
+      this.p.ritualSeal(26.0, 6, 0.48, 24, 2.75, c2);
+      this.p.judgmentLine(30.0, 6, 0.65, 78, 2.95, c3);
+      this.p.judgmentCross(34.0, 5, 0.65, 80, 3.0, c1);
+      this.p.ritualClock(38.0, 7, 0.58, 88, 3.0, c2);
+      this.p.threeJudgments(43.0, 3, 0.6, 38, 3.05, c3);
+      this.p.ritualClock(46.0, 5, 0.5, 100, 3.1, c2);
+      this.p.ritualRing(49.0, 128, 3.05, Math.PI, c1);
+      this.p.finalEclipse(54.0, 160, 3.15, c3);
       return "「บทที่สาม : พิธีกรรมคืนโลกสู่ความว่างเปล่า」";
     }
 

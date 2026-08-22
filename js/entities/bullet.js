@@ -39,6 +39,11 @@ export class BulletManager{
       orbitSpeed: opts.orbitSpeed,
       skipNormalMove: false,
       curve: opts.curve || 0,
+      gravityX: opts.gravityX,
+      gravityY: opts.gravityY,
+      gravityStrength: opts.gravityStrength || 0,
+      flipAfter: opts.flipAfter ?? null,
+      gravityFlipped: false,
       splitDelay: opts.splitDelay,
       splitCount: opts.splitCount,
       // If set, split children use this speed instead of deriving from vx/vy.

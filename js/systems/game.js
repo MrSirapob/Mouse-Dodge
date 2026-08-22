@@ -5,7 +5,7 @@ import { Player } from '../entities/player.js?v=20260821-o0ui';
 import { BulletManager } from '../entities/bullet.js?v=20260821-o0ui';
 import { Boss } from '../entities/boss.js?v=20260821-o0ui';
 import { ParticleSystem } from '../rendering/particles.js?v=20260821-o0ui';
-import { PatternLibrary } from '../patterns/patterns.js?v=20260821-o0ui';
+import { PatternLibrary } from '../patterns/patterns.js?v=20260822-w1115';
 import { WaveSystem } from './waveSystem.js?v=20260821-o0ui';
 import { SkillSystem } from './skillSystem.js?v=20260821-o0ui';
 import { LifeSystem } from './lifeSystem.js?v=20260821-o0ui';
@@ -912,6 +912,24 @@ export class Game {
           b.x = b.centerX + Math.cos(b.angle) * b.radius;
           b.y = b.centerY + Math.sin(b.angle) * b.radius;
           b.skipNormalMove = true;
+        } else if (b.trajectory === 'gravityWell') {
+          const dx = (b.gravityX ?? 640) - b.x;
+          const dy = (b.gravityY ?? 360) - b.y;
+          const dist = Math.hypot(dx, dy) || 1;
+          const strength = b.gravityStrength || 0;
+          b.vx += (dx / dist) * strength * dt * 60;
+          b.vy += (dy / dist) * strength * dt * 60;
+          const maxSpeed = 7.0;
+          const speed = Math.hypot(b.vx, b.vy);
+          if (speed > maxSpeed) {
+            b.vx *= maxSpeed / speed;
+            b.vy *= maxSpeed / speed;
+          }
+        } else if (b.trajectory === 'gravityFlip') {
+          if (!b.gravityFlipped && b.trajAge >= (b.flipAfter ?? 1.0)) {
+            b.vy = -b.vy;
+            b.gravityFlipped = true;
+          }
         }
       }
       if (b.curve) {
