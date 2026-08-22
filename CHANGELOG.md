@@ -1,5 +1,37 @@
 # Changelog
 
+## Fix: item pickups and the "No Hit" wave-clear bonus didn't visibly add score on the HUD (user-reported, "item ที่เก็บแล้ว + คะแนน มันไม่ได้ + คะแนน" / "No hit ไม่ได้ + คะแนนจริง")
+- **Root cause:** `Game.updateScore()` early-returned its ENTIRE body
+  whenever `state.waveTime < 0` (added in an earlier session to hold the
+  passive `+100*dt` time-trickle and combo decay flat during the wave-
+  announcement banner). That early return also skipped the lines that
+  refresh `state.teamScore`/`state.score`/`state.grazeCount`/`state.combo`
+  — the only fields `ui.js` `updateScores()` actually reads for the HUD's
+  SCORE display. `player.score` itself was always correct (item pickups
+  in `ItemSystem.collect()` and the No Hit bonus in `awardNoHitBonuses()`
+  both add to it directly), but the visible number wouldn't move until
+  `waveTime` caught back up to `>= 0` — reading as "collecting an item
+  doesn't add score" or "No Hit doesn't actually add score." Made worse
+  for the No Hit bonus specifically, since it's awarded the instant a wave
+  clears and the game immediately enters the `'transition'` phase, whose
+  branch of `Game.update()` never called `updateScore()` at all — so the
+  HUD stayed frozen for the entire "NO HIT" banner, not just the moment
+  waveTime happened to be negative.
+- **Fix:** split `updateScore()` so only the passive tick/combo-decay is
+  gated behind `waveTime >= 0`; the HUD sync now always runs, factored out
+  into a new `syncScoreDisplay()` method. Also call `syncScoreDisplay()`
+  from the `'transition'` phase branch (every banner frame) and right
+  after `awardNoHitBonuses()`, so the displayed score is never more than
+  one frame stale regardless of wave phase.
+- **Files:** `js/systems/game.js`, `tests/unit/score.test.mjs`.
+- Added 2 regression tests: one picks up a score item while `waveTime` is
+  negative and checks `state.teamScore` updates immediately; the other
+  clears a wave with no damage taken and checks `state.teamScore` reflects
+  the No Hit bonus on every frame of the following transition banner
+  (verified both tests actually fail against the pre-fix code before
+  confirming the fix). Full suite now 181/181 PASS (180 previous + 2 new,
+  minus the 1 pre-existing unrelated WARN).
+
 ## New: random mechanic-reminder tip on the Game Over screen (user-requested, "ผมเพิ่ม Tip ยังไงดี เช่น ถ้าผ่าน Wave โดนไม่โดนดาเมจ จะบวกแต้มเพิ่ม แต่ตอนนี้พวกรายละเอียดเล็กๆ น้อยๆ แบบนี้ ยังไม่ได้มีบอกคนเล่น" → considered adding to the existing How To Play screen / Pause / loading, user picked Game Over as more visible)
 - **New `RUN_TIPS` array + `getRunTip(mode)` in `js/ui/ui.js`:** 7 short
   mechanic reminders (NO HIT bonus, Graze + its skill-cooldown refund,

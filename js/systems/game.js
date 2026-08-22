@@ -1,16 +1,16 @@
-import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260821-o0ui';
-import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260821-o0ui';
-import { circleHit, circleNear } from '../core/collision.js?v=20260821-o0ui';
-import { Player } from '../entities/player.js?v=20260821-o0ui';
-import { BulletManager } from '../entities/bullet.js?v=20260821-o0ui';
-import { Boss } from '../entities/boss.js?v=20260821-o0ui';
-import { ParticleSystem } from '../rendering/particles.js?v=20260821-o0ui';
-import { PatternLibrary } from '../patterns/patterns.js?v=20260822-w1115';
-import { WaveSystem } from './waveSystem.js?v=20260821-o0ui';
-import { SkillSystem } from './skillSystem.js?v=20260821-o0ui';
-import { LifeSystem } from './lifeSystem.js?v=20260821-o0ui';
-import { DevMode } from './devMode.js?v=20260821-o0ui';
-import { ItemSystem } from './itemSystem.js?v=20260821-o0ui';
+import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260822-zyio';
+import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260822-zyio';
+import { circleHit, circleNear } from '../core/collision.js?v=20260822-zyio';
+import { Player } from '../entities/player.js?v=20260822-zyio';
+import { BulletManager } from '../entities/bullet.js?v=20260822-zyio';
+import { Boss } from '../entities/boss.js?v=20260822-zyio';
+import { ParticleSystem } from '../rendering/particles.js?v=20260822-zyio';
+import { PatternLibrary } from '../patterns/patterns.js?v=20260822-zyio';
+import { WaveSystem } from './waveSystem.js?v=20260822-zyio';
+import { SkillSystem } from './skillSystem.js?v=20260822-zyio';
+import { LifeSystem } from './lifeSystem.js?v=20260822-zyio';
+import { DevMode } from './devMode.js?v=20260822-zyio';
+import { ItemSystem } from './itemSystem.js?v=20260822-zyio';
 
 /** Converts a "#rrggbb" hex string to an "r,g,b" string for use in
  * rgba(...) fill styles (see Renderer.flash()). */
@@ -636,6 +636,11 @@ export class Game {
       s.waveTransition = Math.max(0, s.waveTransition - rawDt);
       this.particles.update(rawDt);
       this.updateScorePopups(rawDt);
+      // Keep the HUD's score totals in sync during the banner too — this is
+      // where the "No Hit" bonus (awarded the instant a wave clears, right
+      // as this transition phase begins) needs to actually show up, not
+      // wait for the next wave's spawning to resume.
+      this.syncScoreDisplay();
       this.ui.update(s, this.players, this.state.mode);
 
       if (s.waveTransition <= 0) {
@@ -670,6 +675,7 @@ export class Game {
     // naturally left/finished.
     if (s.wavePhase === 'draining' && this.isWaveClear()) {
       const showedNoHit = this.awardNoHitBonuses(s.wave);
+      this.syncScoreDisplay();
       if (s.wave >= 20) {
         this.gameOver();
         return;
@@ -713,16 +719,34 @@ export class Game {
   updateScore(dt) {
     // waveTime is negative while the wave-announcement banner is still
     // showing (see startWave()) — nothing is spawned yet, so there's no
-    // risk to reward. Hold score/combo flat until it clears rather than
-    // handing out free points for waiting.
-    if (this.state.waveTime < 0) return;
-    for (const p of this.activePlayers()) {
-      p.score += 100 * dt;
-      if (p.comboTimer > 0) {
-        p.comboTimer -= dt;
-        if (p.comboTimer <= 0) { p.comboTimer = 0; p.combo = 0; }
+    // risk to reward. Hold ONLY the passive time-trickle score/combo decay
+    // flat during that window rather than handing out free points for
+    // waiting.
+    //
+    // NOTE: this must NOT early-return the whole function (that was the
+    // bug) — item pickups (ItemSystem.collect()) and the "No Hit" wave-
+    // clear bonus (awardNoHitBonuses()) both add directly to `player.score`
+    // and can land while waveTime is negative (e.g. right as the next
+    // wave's banner starts). The HUD only ever reads `state.teamScore`/
+    // `state.score`/`state.grazeCount`/`state.combo` (see ui.js
+    // updateScores()), so if syncScoreDisplay() below is skipped those
+    // real gains become invisible until waveTime catches back up to >= 0 —
+    // looking like the item/bonus "didn't add score" even though
+    // player.score was actually correct the whole time.
+    if (this.state.waveTime >= 0) {
+      for (const p of this.activePlayers()) {
+        p.score += 100 * dt;
+        if (p.comboTimer > 0) {
+          p.comboTimer -= dt;
+          if (p.comboTimer <= 0) { p.comboTimer = 0; p.combo = 0; }
+        }
       }
     }
+    this.syncScoreDisplay();
+  }
+
+  /** Refreshes the HUD-facing score/graze/combo totals from each player's real state. Always safe to call — cheap, and idempotent if nothing changed. */
+  syncScoreDisplay() {
     this.state.teamScore = this.teamScore();
     this.state.score = this.state.teamScore;
     this.state.grazeCount = this.players.reduce((sum, p) => sum + p.grazeCount, 0);

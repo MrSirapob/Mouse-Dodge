@@ -57,6 +57,39 @@ what changed, why, key numbers if any.
 
 ---
 
+## 2026-08-22 — Claude (Sonnet 5, claude.ai)
+
+**Session 1 — Item pickups & "No Hit" bonus not showing on the score HUD (user-reported, "item ที่เก็บแล้ว + คะแนน มันไม่ได้ + คะแนน" / "No hit ไม่ได้ + คะแนนจริง"):**
+Traced to `updateScore()`'s `if (this.state.waveTime < 0) return;` guard (added
+Session 4, 2026-08-21) — it was meant to hold only the passive `+100*dt` tick/
+combo decay flat during the wave-announcement banner, but returning early also
+skipped the `state.teamScore`/`state.score`/`state.grazeCount`/`state.combo`
+sync that the HUD (`ui.js` `updateScores()`) actually reads. `player.score`
+itself was always correct (`ItemSystem.collect()` and `awardNoHitBonuses()`
+both add to it directly) — only the *displayed* number lagged until `waveTime`
+next reached `>= 0`. Worse for No Hit specifically: it's awarded the instant a
+wave clears and the game enters `'transition'` phase, whose branch of
+`Game.update()` never called `updateScore()` at all, so the HUD stayed frozen
+for the whole "NO HIT" banner. Fixed by splitting the passive-tick gate from
+the HUD sync (factored the sync into a new `syncScoreDisplay()`), and calling
+that sync every `'transition'`-phase frame plus right after
+`awardNoHitBonuses()`. See `CHANGELOG.md` for the full write-up. Added 2
+regression tests to `tests/unit/score.test.mjs`; confirmed both fail against
+the pre-fix code before verifying the fix. Ran `npm run bump-version` after.
+**Files:** `js/systems/game.js`, `tests/unit/score.test.mjs`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **181 PASS / 0 FAIL / 1 WARN** (180
+prior + 2 new regression tests, minus 1 pre-existing unrelated WARN — see
+Session 5/2026-08-21 entry, "W6+ ... empty banner subtitle", still open/
+intentional and unrelated to this fix).
+**For the next session:** Nothing pending. If a future change touches
+`updateScore()` or the `'transition'`-phase branch of `Game.update()` again,
+keep in mind the HUD only ever reads `state.teamScore`/`state.score`/
+`state.grazeCount`/`state.combo` — any code path that changes
+`player.score`/`player.grazeCount`/`player.combo` needs a `syncScoreDisplay()`
+call to actually become visible.
+
+---
+
 ## 2026-08-21 — Claude (Sonnet 5, claude.ai)
 
 **Session 19 — Skill-ready persistent color back to green, flash stays cyan:**

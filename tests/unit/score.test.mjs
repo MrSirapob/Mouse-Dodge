@@ -6,7 +6,7 @@
 
 import { TestSuite, assert, assertEqual, assertNoNaN, assertClose } from '../helpers/assertions.mjs';
 import { createGame, jumpToWave, tick } from '../helpers/gameFactory.mjs';
-import { CONFIG, GRAZE_REWARD } from '../../js/core/config.js?v=20260821-o0ui';
+import { CONFIG, GRAZE_REWARD } from '../../js/core/config.js?v=20260822-zyio';
 
 export async function run() {
   const s = new TestSuite('COMBAT: Score / Graze / Combo');
@@ -192,6 +192,72 @@ export async function run() {
     assertEqual(player.grazeCount, grazeBefore, 'a bullet that lands a direct hit must not also count as a graze on the same frame', {
       likely: 'js/systems/game.js updateBullets() hit/graze ordering (break after damage)',
     });
+  });
+
+  await s.testAsync('state.teamScore reflects a real score gain even while waveTime is negative (wave-banner window)', async () => {
+    // Regression test: updateScore() used to early-return its ENTIRE body
+    // (including the state.teamScore/state.score HUD sync) whenever
+    // waveTime < 0, not just the passive time-trickle it was meant to gate.
+    // That made real score gains from item pickups (ItemSystem.collect())
+    // invisible on the HUD until waveTime caught back up to >= 0.
+    const { game } = await createGame();
+    jumpToWave(game, 1);
+    game.actionQueue = [];
+    const player = game.players[0];
+
+    game.state.waveTime = -1; // simulate the wave-announcement banner window
+    const scoreBefore = game.state.teamScore;
+    player.score += CONFIG.items.scoreValue; // simulate a score-item pickup landing during the banner
+    tick(game, 1);
+
+    assertEqual(
+      game.state.teamScore,
+      scoreBefore + CONFIG.items.scoreValue,
+      'state.teamScore (what the HUD renders) must pick up a real score gain while waveTime is negative, not just once waveTime >= 0 again',
+      { likely: 'js/systems/game.js updateScore() early-return' },
+    );
+  });
+
+  await s.testAsync('the "No Hit" wave-clear bonus is reflected in state.teamScore during the following transition banner', async () => {
+    // Regression test: awardNoHitBonuses() adds to player.score, but the
+    // 'transition' phase branch of Game.update() never called updateScore()
+    // at all, so state.teamScore stayed stale through the entire "NO HIT"
+    // banner and only jumped once the next wave started spawning.
+    const { game } = await createGame();
+    jumpToWave(game, 1);
+    game.actionQueue = [];
+    const player = game.players[0];
+
+    const scoreBeforeBonus = player.score;
+    const bonus = game.noHitBonus(game.state.wave);
+    game.state.wavePhase = 'draining';
+    game.bullets.items.length = 0;
+    game.ringWarnings.length = 0;
+    game.lasers.length = 0;
+
+    tick(game, 1); // wave clears with no hit taken -> awards bonus, enters 'transition'
+
+    // >= rather than an exact equality: this same tick's passive time-trickle
+    // (100*dt) may also land before the wave-clear check runs, on top of the bonus.
+    assert(player.score >= scoreBeforeBonus + bonus - 1e-6, 'precondition: No Hit bonus should be added to player.score', {
+      expected: `>= ${scoreBeforeBonus + bonus}`,
+      actual: player.score,
+    });
+    assertEqual(game.state.wavePhase, 'transition', 'precondition: wave should have entered the transition/banner phase');
+    assertEqual(
+      game.state.teamScore,
+      game.teamScore(),
+      'state.teamScore must reflect the No Hit bonus immediately, including during the transition banner',
+      { likely: "js/systems/game.js update() 'transition' phase branch missing a score sync" },
+    );
+
+    tick(game, 1); // still inside the transition banner
+    assertEqual(
+      game.state.teamScore,
+      game.teamScore(),
+      'state.teamScore must stay in sync on subsequent transition-phase frames too',
+      { likely: "js/systems/game.js update() 'transition' phase branch missing a score sync" },
+    );
   });
 
   return s;
