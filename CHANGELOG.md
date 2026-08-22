@@ -1,5 +1,44 @@
 # Changelog
 
+## Fix: W11 VOID patterns — some attacks were trivially avoidable, one was inescapable if the player was already inside it (user-reported)
+Two separate reports about `case 11` in `waveSystem.js`:
+1. "บาง pattern มาจ่อตรงกลาง ผู้เล่นแค่ไปหลบข้างๆ ก็รอดแล้ว" (some patterns
+   aim at a fixed spot — the player just steps aside and survives).
+2. "วงกลมที่เกิดมาล้อมตรงกลางแล้วหุบบีบ มันไม่มีทางออก ถ้าผู้เล่นอยู่ข้างใน"
+   (the ring that closes in around the center has no way out if the player
+   is inside it).
+
+- **Root cause 1 — `voidWell`/`voidPulse`:** both anchored their swirl/burst
+  on a hardcoded `(x, y)` passed from `waveSystem.js` (e.g. `(420, 300)`,
+  `(860, 430)`) that has nothing to do with where the player actually is.
+  A player who simply stayed on the opposite side of the arena never had to
+  engage with the attack at all — the entire multi-second pattern was
+  optional.
+- **Root cause 2 — `voidCollapse`:** span a full 360° ring of bullets at
+  radius 330 around a fixed center (both wave-11 calls use the exact arena
+  center, `640, 360`) that collapses inward with **no gap**, unlike every
+  other radial burst in the game (`ring()`, `ritualRing()`, `voidBlackout()`
+  all leave a gap toward the player). If the player was standing near
+  center when it fired, there was no possible escape route — a guaranteed
+  hit purely by position, not by misplay.
+- **Fix:**
+  - `voidWell`/`voidPulse` now lock their center on the nearest player (via
+    `targetPlayer()` + the existing `enforceMinPlayerDistance()` helper)
+    once when the pattern opens (`voidWell`) or fresh each pulse
+    (`voidPulse`, with its own short telegraph), instead of a fixed
+    map coordinate. The player still has to react and can still dodge away
+    once it's told them where it is — but can no longer ignore it by
+    standing somewhere unrelated to the fight.
+  - `voidCollapse` now telegraphs (reusing `ringWarnings`, same as
+    `ring()`) 0.6s before it fires and leaves a `0.5` rad gap locked onto
+    the nearest player's angle from center — same contract as every other
+    radial pattern. There is always an open lane out before the ring
+    finishes closing.
+  - `npm test` (all 185 checks) still passes unchanged after these edits;
+    the simulation-helper duration estimates for these patterns
+    (`tests/helpers/simulation.mjs`) key off `count`/`interval` argument
+    positions only, which were left untouched.
+
 ## Fix: W11/W13 SHADOW+VOID patterns could spawn bullets effectively on top of the player, no time to react (user-reported, "บางกระสุนมันเกิดตรงผู้เล่น หลบไม่ทัน")
 - **Root cause, found via a new dodge-AI simulation audit** (temporary
   scratch script, not part of `npm test`) run against the fresh W11-14

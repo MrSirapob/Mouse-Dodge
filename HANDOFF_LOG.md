@@ -59,6 +59,32 @@ what changed, why, key numbers if any.
 
 ## 2026-08-22 — Claude (Sonnet 5, claude.ai)
 
+**Session 4 — W11 VOID pattern fairness/difficulty fix, answers Session 3's open question (user-reported, two issues: "บาง pattern มาจ่อตรงกลาง ผู้เล่นแค่ไปหลบข้างๆ ก็รอดแล้ว" and "วงกลมที่เกิดมาล้อมตรงกลางแล้วหุบบีบ มันไม่มีทางออก ถ้าผู้เล่นอยู่ข้างใน"):**
+This is the specific answer to the "which pattern felt too easy" question
+Session 3 left open — user named `case 11` directly this time. Two distinct
+`waveSystem.js` case-11 calls, two distinct root causes: (1) `voidWell`/
+`voidPulse` anchored on a hardcoded map coordinate unrelated to the player
+(e.g. `(420, 300)`), so standing elsewhere made the whole attack optional;
+(2) `voidCollapse` closed a full 360° ring on the exact arena center with
+zero gap — unlike every other radial pattern in the codebase
+(`ring`/`ritualRing`/`voidBlackout` all leave a player-tracking gap), so a
+player caught near center had no possible dodge. Fixed both: `voidWell`/
+`voidPulse` now lock onto the nearest player via `targetPlayer()` +
+`enforceMinPlayerDistance()` (the same helper Session 3 added) instead of
+the fixed coordinate; `voidCollapse` now telegraphs via `ringWarnings` and
+leaves a `0.5` rad gap locked to the nearest player's angle, same contract
+as `ring()`. Full detail in `CHANGELOG.md`. Ran `npm test` before and after
+— all 185 (184 PASS/1 pre-existing WARN) passed unchanged both times, since
+`tests/helpers/simulation.mjs`'s duration estimates only read the
+`count`/`interval` argument positions, which weren't touched. Ran
+`npm run bump-version` after.
+**Files:** `js/patterns/patterns.js`, `CHANGELOG.md`.
+**Test result:** `npm test` → 184 PASS / 0 FAIL / 1 WARN (same pre-existing
+WARN as prior sessions, unrelated).
+**For the next session:** Nothing pending on this specific report. The
+broader "some patterns are too easy" question from Session 3 is otherwise
+still open beyond W11 — no other wave/pattern has been named yet.
+
 **Session 3 — W11/W13 "bullet spawns on player" fairness fix (user-reported, "บางกระสุนมันเกิดตรงผู้เล่น หลบไม่ทัน"), pattern-difficulty pass not yet started:**
 Built a temporary (not committed) dodge-AI simulation script to audit the
 W11-15 pattern set added earlier today. Confirmed the report: `shadowFreeze`

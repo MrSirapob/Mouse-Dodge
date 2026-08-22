@@ -711,31 +711,59 @@ export class PatternLibrary {
   // SHADOW = replay of recent player positions, COLLAPSE = shrinking lanes.
   // ================================================================
 
+  // `x`/`y` are only the *fallback* anchor (used before any player exists).
+  // The vortex is actually re-centered on the nearest player once when it
+  // opens, so the swirl always sits somewhere the player has to deal with —
+  // previously it sat at a fixed point unrelated to the player, and a player
+  // who simply stayed away from that one spot never had to interact with it
+  // at all.
   voidWell(start, count, interval, x, y, speed, pull, color) {
+    let cx = x, cy = y, locked = false;
     for (let i = 0; i < count; i++) {
       this.game.queue(start + i * interval, () => {
+        if (!locked) {
+          locked = true;
+          const target = this.targetPlayer(x, y);
+          // Offset away from the arena center so the vortex forms just to
+          // one side of the player (reactable) instead of on top of them.
+          const ax = target.x - WORLD.width / 2, ay = target.y - WORLD.height / 2;
+          const am = Math.hypot(ax, ay) || 1;
+          [cx, cy] = this.enforceMinPlayerDistance(
+            target.x + (ax / am) * 200, target.y + (ay / am) * 200, 150
+          );
+        }
         const a = (Math.PI * 2 * i) / Math.max(1, count);
         const r = 250 + (i % 3) * 70;
-        const sx = x + Math.cos(a) * r;
-        const sy = y + Math.sin(a) * r;
-        const angle = Math.atan2(sy - y, sx - x);
+        const sx = cx + Math.cos(a) * r;
+        const sy = cy + Math.sin(a) * r;
+        const angle = Math.atan2(sy - cy, sx - cx);
         this.game.spawnBullet(sx, sy, Math.cos(angle) * speed, Math.sin(angle) * speed, 5, color, {
-          maxAge: 8, trajectory: 'gravityWell', gravityX: x, gravityY: y, gravityStrength: pull
+          maxAge: 8, trajectory: 'gravityWell', gravityX: cx, gravityY: cy, gravityStrength: pull
         });
       });
     }
   }
 
+  // Same fix as voidWell: each pulse re-centers on the nearest player (with
+  // a short telegraph) instead of bursting at a fixed point the player can
+  // just stand far away from.
   voidPulse(start, pulses, interval, x, y, count, speed, pull, color) {
+    const warnDuration = 0.35;
     for (let p = 0; p < pulses; p++) {
+      let px = x, py = y;
+      this.game.queue(start + p * interval - warnDuration, () => {
+        const target = this.targetPlayer(x, y);
+        [px, py] = this.enforceMinPlayerDistance(target.x, target.y, 90);
+        this.game.ringWarnings.push({ x: px, y: py, t: 0, duration: warnDuration, color, radius: 45 });
+      });
       this.game.queue(start + p * interval, () => {
         for (let i = 0; i < count; i++) {
           const a = Math.PI * 2 * i / count + (p % 2) * Math.PI / count;
           const r = 45;
-          const sx = x + Math.cos(a) * r;
-          const sy = y + Math.sin(a) * r;
+          const sx = px + Math.cos(a) * r;
+          const sy = py + Math.sin(a) * r;
           this.game.spawnBullet(sx, sy, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, {
-            maxAge: 8, trajectory: 'gravityWell', gravityX: x, gravityY: y, gravityStrength: pull
+            maxAge: 8, trajectory: 'gravityWell', gravityX: px, gravityY: py, gravityStrength: pull
           });
         }
       });
@@ -935,11 +963,28 @@ export class PatternLibrary {
     }
   }
 
+  // A ring of bullets spawns on the arena rim around (x, y) and collapses
+  // inward on that same point. If a player is standing near (x, y) when it
+  // closes there was previously no gap anywhere in the ring — an
+  // unavoidable hit. Now, same contract as ring()/voidBlackout(): telegraph
+  // the ring shortly before it fires and leave a gap locked onto whichever
+  // direction the nearest player is standing in, so there's always an open
+  // lane out before the ring finishes closing.
   voidCollapse(start, pulses, interval, count, speed, x, y, color) {
+    const warnDuration = 0.6;
+    const gapWidth = 0.5;
     for (let p = 0; p < pulses; p++) {
+      let gapAngle = 0;
+      this.game.queue(start + p * interval - warnDuration, () => {
+        const target = this.targetPlayer(x, y);
+        gapAngle = Math.atan2(target.y - y, target.x - x);
+        this.game.ringWarnings.push({ x, y, t: 0, duration: warnDuration, color, radius: 330, gapAngle, gapWidth });
+      });
       this.game.queue(start + p * interval, () => {
         for (let i = 0; i < count; i++) {
           const a = (Math.PI * 2 * i) / count + (p % 2) * 0.08;
+          const delta = Math.atan2(Math.sin(a - gapAngle), Math.cos(a - gapAngle));
+          if (Math.abs(delta) < gapWidth) continue; // leave an escape lane toward the player
           const sx = x + Math.cos(a) * 330;
           const sy = y + Math.sin(a) * 330;
           const angle = Math.atan2(y - sy, x - sx);
