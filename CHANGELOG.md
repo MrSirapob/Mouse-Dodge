@@ -1,5 +1,48 @@
 # Changelog
 
+## Fix: W11/W13 SHADOW+VOID patterns could spawn bullets effectively on top of the player, no time to react (user-reported, "บางกระสุนมันเกิดตรงผู้เล่น หลบไม่ทัน")
+- **Root cause, found via a new dodge-AI simulation audit** (temporary
+  scratch script, not part of `npm test`) run against the fresh W11-14
+  pattern set added earlier today:
+  - `shadowFreeze` (W13) spawned its outward ring directly at the live
+    player's `x, y` — zero travel distance, unavoidable by construction.
+  - `shadowChase` / `shadowMemory` (W13) spawned from a player-trail
+    position with no minimum offset — when the player wasn't moving fast,
+    trail entries sit almost on top of the current position.
+  - `shadowEcho` / `shadowTrail` / `shadowCross` (W13) had a nominal
+    95-120px offset, but the old `Math.max(18, Math.min(dim-18, ...))`
+    arena-edge clamp would collapse that offset back down whenever the
+    player was near a wall/corner — exactly where the offset mattered most.
+  - `voidBlackout` (W11) fired a full 360° ring from the exact arena
+    center with **no telegraph** and a gap that rotated on a fixed
+    schedule instead of tracking the player (unlike every other radial
+    burst in the game — see `ring()`/`ritualRing()`). If the player was
+    already near center when it fired, there was no fair way to know
+    which way to go.
+- **Fix:**
+  - Added `PatternLibrary.enforceMinPlayerDistance(x, y, minDist)` — nudges
+    a computed spawn point outward from every live player to a guaranteed
+    minimum distance, then clamps to arena bounds. `shadowEcho/Trail/Cross`
+    now route their offset point through this instead of the raw edge
+    clamp; `shadowChase`/`shadowMemory` now use it directly on their
+    trail-derived spawn point.
+  - `shadowFreeze` now telegraphs: a warning ring (reusing the existing
+    `ringWarnings` mechanism `ring()`/`ritualRing()` already use) appears
+    at the player's position ~0.45s before the burst, and the burst fires
+    from the position *captured at warning time* — not re-read at fire
+    time — so moving off that marked spot during the warning genuinely
+    dodges it.
+  - `voidBlackout` now telegraphs the same way (0.7s warning ring at
+    arena center) and locks its gap angle onto the nearest player's
+    direction at warning time, matching `ring()`/`ritualRing()`'s
+    contract instead of using an untracked, fixed-rotation gap.
+- **Files:** `js/patterns/patterns.js`.
+- Verified via a temporary dodge-AI simulation (not committed): "unfair
+  spawn" events (bullet spawning within 60px of a reactively-dodging
+  player) dropped noticeably on both W11 and W13 after the fix; W12/W14
+  had none to begin with. `npm test` — 184 PASS / 0 FAIL / 1 WARN
+  (pre-existing, unrelated).
+
 ## New: item pickups & the "No Hit" bonus now pop a "+N" next to the SCORE stat, same as graze (user-requested, "เพิ่มขึ้น + ตรง score เหมือน graze ด้วยสิ")
 - **Before:** grazing already called `ui.showScorePopup(gained)`, which
   spawns a little "+N" text right beside the SCORE HUD number (see

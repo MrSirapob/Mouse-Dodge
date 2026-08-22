@@ -1,7 +1,7 @@
-import { Renderer } from './rendering/renderer.js?v=20260822-dqro';
-import { InputManager } from './core/input.js?v=20260822-dqro';
-import { UI } from './ui/ui.js?v=20260822-dqro';
-import { Game } from './systems/game.js?v=20260822-dqro';
+import { Renderer } from './rendering/renderer.js?v=20260822-tcye';
+import { InputManager } from './core/input.js?v=20260822-tcye';
+import { UI } from './ui/ui.js?v=20260822-tcye';
+import { Game } from './systems/game.js?v=20260822-tcye';
 
 const canvas = document.getElementById('game');
 const renderer = new Renderer(canvas);

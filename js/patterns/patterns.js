@@ -26,6 +26,33 @@ export class PatternLibrary {
   }
 
   /**
+   * Nudges a spawn point (x, y) outward so it stays at least `minDist` away
+   * from every currently alive player, then clamps to the arena bounds.
+   * Used by patterns whose spawn point is intentionally derived from a
+   * player's own position (SHADOW family) or a fixed point players can end
+   * up standing on top of (e.g. VOID center-bursts) — without this, those
+   * patterns can spawn a bullet effectively on top of the player with zero
+   * travel time to react. Preserves the pattern's original direction from
+   * the player when possible; if the point exactly coincides with a player,
+   * falls back to a fixed offset direction so the nudge is still visible.
+   */
+  enforceMinPlayerDistance(x, y, minDist = 110) {
+    for (const p of this.game.activePlayers()) {
+      if (!p.isAlive()) continue;
+      let dx = x - p.x;
+      let dy = y - p.y;
+      let d = Math.hypot(dx, dy);
+      if (d < minDist) {
+        if (d < 0.01) { dx = 1; dy = 0; d = 1; }
+        const k = minDist / d;
+        x = p.x + dx * k;
+        y = p.y + dy * k;
+      }
+    }
+    return [Math.max(18, Math.min(WORLD.width - 18, x)), Math.max(18, Math.min(WORLD.height - 18, y))];
+  }
+
+  /**
    * Spawns a boss projectile from the visible core edge instead of the boss
    * center. The boss position remains the single source of truth, while the
    * projectile starts just outside the core along its travel direction.
@@ -769,8 +796,7 @@ export class PatternLibrary {
           const idx = Math.max(0, trail.length - 1 - delaySteps);
           const pos = trail.length ? trail[idx] : { x: p.x, y: p.y };
           const a = Math.atan2(pos.y - WORLD.height / 2, pos.x - WORLD.width / 2);
-          const sx = Math.max(18, Math.min(WORLD.width - 18, pos.x + Math.cos(a) * 110));
-          const sy = Math.max(18, Math.min(WORLD.height - 18, pos.y + Math.sin(a) * 110));
+          const [sx, sy] = this.enforceMinPlayerDistance(pos.x + Math.cos(a) * 110, pos.y + Math.sin(a) * 110, 110);
           const target = this.targetPlayer(sx, sy);
           const fireAngle = Math.atan2(target.y - sy, target.x - sx);
           this.game.spawnBullet(sx, sy, Math.cos(fireAngle) * speed, Math.sin(fireAngle) * speed, 5, color, { maxAge: 6 });
@@ -786,8 +812,7 @@ export class PatternLibrary {
           const trail = p.trail || [];
           const pos = trail.length ? trail[Math.max(0, trail.length - 1 - (i % 10))] : { x: p.x, y: p.y };
           const a = (i % 2 ? Math.PI / 2 : -Math.PI / 2) + ((i % 5) - 2) * 0.08;
-          const sx = Math.max(18, Math.min(WORLD.width - 18, pos.x + Math.cos(a) * 95));
-          const sy = Math.max(18, Math.min(WORLD.height - 18, pos.y + Math.sin(a) * 95));
+          const [sx, sy] = this.enforceMinPlayerDistance(pos.x + Math.cos(a) * 95, pos.y + Math.sin(a) * 95, 95);
           this.game.spawnBullet(sx, sy, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 6 });
         }
       });
@@ -803,8 +828,7 @@ export class PatternLibrary {
           const mirrorX = WORLD.width - pos.x;
           const mirrorY = WORLD.height - pos.y;
           const a = Math.atan2(mirrorY - pos.y, mirrorX - pos.x);
-          const sx = Math.max(18, Math.min(WORLD.width - 18, pos.x + Math.cos(a) * 120));
-          const sy = Math.max(18, Math.min(WORLD.height - 18, pos.y + Math.sin(a) * 120));
+          const [sx, sy] = this.enforceMinPlayerDistance(pos.x + Math.cos(a) * 120, pos.y + Math.sin(a) * 120, 120);
           this.game.spawnBullet(sx, sy, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 6 });
         }
       });
@@ -945,10 +969,21 @@ export class PatternLibrary {
   }
 
   voidBlackout(start, pulses, interval, count, speed, color) {
+    // Rays originate at the exact arena center — if a player happens to be
+    // standing there when this fires, an untelegraphed, un-aimed gap makes
+    // it a coin-flip whether they're even facing the right way in time.
+    // Telegraph it and lock the gap onto the nearest player's direction at
+    // warning time, same contract as ring()/ritualRing().
+    const warnDuration = 0.7;
+    const cx = WORLD.width / 2, cy = WORLD.height / 2;
     for (let p = 0; p < pulses; p++) {
+      let gap = (p % 4) * (Math.PI / 2);
+      this.game.queue(start + p * interval - warnDuration, () => {
+        const target = this.targetPlayer(cx, cy);
+        gap = Math.atan2(target.y - cy, target.x - cx);
+        this.game.ringWarnings.push({ x: cx, y: cy, t: 0, duration: warnDuration, color, radius: 90, gapAngle: gap, gapWidth: 0.32 });
+      });
       this.game.queue(start + p * interval, () => {
-        const cx = WORLD.width / 2, cy = WORLD.height / 2;
-        const gap = (p % 4) * (Math.PI / 2);
         for (let i = 0; i < count; i++) {
           const a = Math.PI * 2 * i / count;
           const d = Math.atan2(Math.sin(a - gap), Math.cos(a - gap));
@@ -1024,13 +1059,26 @@ export class PatternLibrary {
   }
 
   shadowFreeze(start, pulses, interval, count, speed, color) {
+    // Bursts outward from wherever the player was standing at telegraph
+    // time — fair because the burst point is *locked in* when the warning
+    // ring appears (not re-read at fire time), so moving away from that
+    // marked spot during `warnDuration` genuinely dodges it, the same
+    // contract ring()/ritualRing() already use for their telegraphs.
+    const warnDuration = Math.min(0.45, interval * 0.5);
     for (let b = 0; b < pulses; b++) {
-      this.game.queue(start + b * interval, () => {
+      const locked = new Map(); // playerId -> {x, y} captured at telegraph time
+      this.game.queue(start + b * interval - warnDuration, () => {
         for (const p of this.game.players.filter(Boolean)) {
-          const sx = p.x, sy = p.y;
+          if (!p.isAlive()) continue;
+          locked.set(p.id, { x: p.x, y: p.y });
+          this.game.ringWarnings.push({ x: p.x, y: p.y, t: 0, duration: warnDuration, color, radius: 46 });
+        }
+      });
+      this.game.queue(start + b * interval, () => {
+        for (const [, pos] of locked) {
           for (let i = 0; i < count; i++) {
             const a = Math.PI * 2 * i / count;
-            this.game.spawnBullet(sx, sy, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 6 });
+            this.game.spawnBullet(pos.x, pos.y, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 6 });
           }
         }
       });
@@ -1045,7 +1093,8 @@ export class PatternLibrary {
           const pos = trail.length ? trail[Math.max(0, trail.length - 1 - delay)] : { x: p.x, y: p.y };
           const target = this.targetPlayer(pos.x, pos.y);
           const a = Math.atan2(target.y - pos.y, target.x - pos.x);
-          this.game.spawnBullet(pos.x, pos.y, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 7 });
+          const [sx, sy] = this.enforceMinPlayerDistance(pos.x, pos.y, 100);
+          this.game.spawnBullet(sx, sy, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 7 });
         }
       });
     }
@@ -1059,7 +1108,8 @@ export class PatternLibrary {
           for (let i = 0; i < count; i++) {
             const pos = trail.length ? trail[Math.max(0, trail.length - 1 - ((b * 7 + i * 3) % Math.max(1, trail.length)))] : { x: p.x, y: p.y };
             const a = Math.atan2(p.y - pos.y, p.x - pos.x) + (i - count / 2) * 0.04;
-            this.game.spawnBullet(pos.x, pos.y, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 7 });
+            const [sx, sy] = this.enforceMinPlayerDistance(pos.x, pos.y, 100);
+            this.game.spawnBullet(sx, sy, Math.cos(a) * speed, Math.sin(a) * speed, 5, color, { maxAge: 7 });
           }
         }
       });

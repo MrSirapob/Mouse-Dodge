@@ -59,6 +59,41 @@ what changed, why, key numbers if any.
 
 ## 2026-08-22 — Claude (Sonnet 5, claude.ai)
 
+**Session 3 — W11/W13 "bullet spawns on player" fairness fix (user-reported, "บางกระสุนมันเกิดตรงผู้เล่น หลบไม่ทัน"), pattern-difficulty pass not yet started:**
+Built a temporary (not committed) dodge-AI simulation script to audit the
+W11-15 pattern set added earlier today. Confirmed the report: `shadowFreeze`
+(W13) spawned its ring literally at the player's live x/y; `shadowChase`/
+`shadowMemory` (W13) spawned from trail positions with no minimum offset;
+`shadowEcho`/`shadowTrail`/`shadowCross` (W13) had a nominal 95-120px
+offset but an arena-edge clamp collapsed it back near the player at
+walls/corners; `voidBlackout` (W11) fired an untelegraphed 360° ring from
+the exact arena center with a gap that didn't track the player (unlike
+every other radial burst in the game). Fixed all five: added
+`PatternLibrary.enforceMinPlayerDistance()` and applied it to the SHADOW
+offset patterns; added a telegraph (reusing `ringWarnings`, same mechanism
+as `ring()`/`ritualRing()`) to `shadowFreeze` and `voidBlackout`, with
+`shadowFreeze` locking its burst position at warning time and
+`voidBlackout` locking its gap angle onto the nearest player at warning
+time. See `CHANGELOG.md` for full detail. `voidLane`'s W11 edge-stream
+bullets were also flagged by the naive simulation but investigated and
+NOT changed — that only showed up because the synthetic dodge AI cornered
+itself against a wall; `voidLane` fires from the edges and travels inward
+like every other `wall()`-style pattern in the game (no telegraph
+convention exists for those), so it's consistent with the rest of the
+codebase, not a bug.
+**Files:** `js/patterns/patterns.js`, `CHANGELOG.md`.
+**Test result:** `npm test` → 184 PASS / 0 FAIL / 1 WARN (same pre-existing
+WARN as Session 1/2, unrelated). Ran `npm run bump-version` after.
+**For the next session:** User's second ask this session — "บาง pattern
+มันโง่เกินไป ผู้เล่นหลบง่าย" (some patterns are too easy to dodge) — is
+still open. A static/heuristic pass didn't turn up a confident, specific
+culprit (difficulty-feel is subjective and needs either real playtesting
+or the user naming a specific wave/pattern that felt trivial). Asked the
+user which wave(s)/pattern(s) felt too easy before touching balance
+numbers, per their stated preference to be consulted before changes — do
+not rebalance broadly without that answer or explicit user sign-off on
+defaults.
+
 **Session 2 — Item pickups & "No Hit" bonus now pop "+N" next to SCORE, matching graze (user-requested, "เพิ่มขึ้น + ตรง score เหมือน graze ด้วยสิ"):**
 Graze already calls `ui.showScorePopup(gained)` — a "+N" that pops right
 beside the SCORE HUD stat. Items and the No Hit bonus only used
