@@ -59,6 +59,52 @@ what changed, why, key numbers if any.
 
 ## 2026-08-22 — Claude (Sonnet 5, claude.ai)
 
+**Session 6 — Swap Act 3/Act 4 visual themes (user-requested, "เอาธีมหลัง wave 20 มาใช้ หลังผ่านบอส wave 15 แล้วเอาธีม wave 15 ไปใช้แทนหลัง wave 20 ก็คือสลับกันอ่ะ"):**
+Simple swap of the two `CONFIG.actThemes[3]`/`[4]` entries in
+`js/core/config.js` — W16-20 (right after the W15 boss) now gets the
+former W21+ "void" palette, W21+ now gets the former W16-20 "ritual"
+palette. `actForWave()` mapping itself untouched, boss chapter subtitle
+text in `waveSystem.js` untouched (that's separate from the palette
+object, stays in original story order). Verified the swap with a
+throwaway `verify_theme.mjs` (not committed) printing `actForWave`+label
+for waves 15/16/19/20/21/25.
+**Files:** `js/core/config.js`, `CHANGELOG.md`.
+**Test result:** `npm test` → 184 PASS / 0 FAIL / 1 WARN (same
+pre-existing WARN as prior sessions, unrelated). Ran `npm run
+bump-version` after.
+**For the next session:** Nothing pending.
+
+**Session 5 — W11 VOID pattern *reach* fix, follow-up to Session 4 (user-reported, "มันยังนัวๆ ตรงกลางอ่ะ ผมแค่ออกมาขอบจอก็ยังรอดสบายๆ"):**
+User tested the Session 4 fix and reported it wasn't enough: still clumped
+in the middle, still safe just by walking to the screen edge. Built a
+temporary (not committed) scratch simulation that froze the player at 9
+fixed spots (4 corners, 4 mid-edges, dead center) for wave 11's full 40s
+and measured closest-bullet-approach per spot. Found a real geometric gap
+in 3 of the 5 patterns, unrelated to Session 4's player-tracking fix:
+`voidCollapse`'s converging ring spawned at a fixed 330px radius — only
+ever covers the middle ~660x660 of the 1280x720 arena, corners
+geometrically unreachable; `voidLane`'s lane heights only spanned
+22%-76% of arena height, leaving the top/bottom wall strips lane-free;
+`voidSplit`'s two stream origins were fixed interior quadrant points, so
+the other two corners were never in its line of fire. Fixed by scaling
+`voidCollapse`'s radius to `hypot(width,height)/2 + 40` (past every
+corner), spreading `voidLane`'s lanes to 8%-92% (scaled to however many
+bursts are passed in, not a hardcoded `%4`), and switching `voidSplit` to
+fire from the actual four corners with the diagonal pair rotating each
+burst so all four get swept. Re-ran the same 9-spot simulation after: all
+spots now show comparable exposure, where corners/mid-edges were
+previously untouched by these three patterns specifically. Full detail in
+`CHANGELOG.md`.
+**Files:** `js/patterns/patterns.js`, `CHANGELOG.md`.
+**Test result:** `npm test` → 184 PASS / 0 FAIL / 1 WARN (same pre-existing
+WARN as prior sessions, unrelated). W11 isn't in `balance-baseline.json`
+(W1-4 only), so no regression-test risk from the density changes. Ran
+`npm run bump-version` after.
+**For the next session:** Nothing pending on this specific report. If the
+user still finds W11 (or any other wave) too easy to camp/dodge after
+this, ask which specific spot/pattern before making further balance
+changes — same policy as Session 3.
+
 **Session 4 — W11 VOID pattern fairness/difficulty fix, answers Session 3's open question (user-reported, two issues: "บาง pattern มาจ่อตรงกลาง ผู้เล่นแค่ไปหลบข้างๆ ก็รอดแล้ว" and "วงกลมที่เกิดมาล้อมตรงกลางแล้วหุบบีบ มันไม่มีทางออก ถ้าผู้เล่นอยู่ข้างใน"):**
 This is the specific answer to the "which pattern felt too easy" question
 Session 3 left open — user named `case 11` directly this time. Two distinct

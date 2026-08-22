@@ -1,5 +1,73 @@
 # Changelog
 
+## Swap Act 3 (W16-20) and Act 4 (W21+) visual themes (user-requested, "เอาธีมหลัง wave 20 มาใช้ หลังผ่านบอส wave 15 แล้วเอาธีม wave 15 ไปใช้แทนหลัง wave 20 ก็คือสลับกันอ่ะ")
+Swapped the two `CONFIG.actThemes` entries in `js/core/config.js`: the
+stretch right after the W15 boss (W16-20) now shows what used to be the
+W21+ "ความว่างเปล่าไร้จุดจบ" (void) palette (`bg: #000000`, cool
+white/red-accent colors), and W21+ now shows what used to be the W16-20
+"พิธีกรรมแห่งการล้าง" (ritual) palette (`bg: #180505`, red/orange
+colors). Only the visual theme (background + bullet-color palette +
+accent) moved — the boss chapter subtitle text in `waveSystem.js`
+(`buildBoss()`'s "บทที่สาม..."/"บทสุดท้าย..." strings) is separate and
+unaffected, so the story beats stay in their original order; only which
+color palette plays under which stretch of waves changed. `actForWave()`
+itself is untouched — verified with a throwaway script that wave 16-20
+now resolve to the former W21+ theme object and wave 21+ resolve to the
+former W16-20 theme object. `npm test` (184 PASS / 0 FAIL / 1
+pre-existing WARN) unchanged.
+
+## Fix: W11 VOID patterns left the arena edges/corners almost entirely safe (user-reported, "มันยังนัวๆ ตรงกลางอ่ะ ผมแค่ออกมาขอบจอก็ยังรอดสบายๆ")
+Follow-up to the previous W11 fix below — that fix made `voidWell`/
+`voidPulse` track the player instead of a fixed point, but three other
+`case 11` patterns still had a **geometric reach problem**: they simply
+never spawned bullets anywhere near the arena's outer edges/corners,
+regardless of the player-tracking fix, so retreating to a wall/corner and
+staying there sidestepped them completely rather than requiring a real
+dodge:
+- **`voidCollapse`** spawned its converging ring at a fixed 330px radius
+  around center — on a 1280x720 arena that only ever covers the middle
+  ~660x660 square. Every corner (and most of the outer border) was
+  geometrically outside the ring's reach for the pattern's entire
+  duration, every time it fired.
+- **`voidLane`**'s horizontal streams only used lane heights spanning
+  22%-76% of arena height (`0.22 + (b % 4) * 0.18`) — the top ~22% and
+  bottom ~24% strips of the arena, right along the top/bottom walls, were
+  never in any lane's path.
+- **`voidSplit`**'s two stream origins were fixed interior points,
+  `(300, 180)` and `(980, 540)` — quadrant-ish spots, not the arena's
+  actual corners — so the *other* two corners were never in either
+  stream's line of fire for the whole wave.
+- **Fix:**
+  - `voidCollapse` now spawns its ring at `hypot(width, height) / 2 + 40`
+    (~775px) — just past every corner — instead of a fixed 330px, so each
+    pulse sweeps across the *entire* play space (corners included) on its
+    way in, not just the center. Its escape-gap telegraph from the
+    previous fix now scales its warning ring to the same radius.
+  - `voidLane` now spreads its lane heights across 8%-92% of arena height
+    (was 22%-76%), and scales the number of distinct lane slots to however
+    many bursts are actually passed in (2-6) instead of a hardcoded `% 4`,
+    so the strips right against the top/bottom walls are covered too.
+  - `voidSplit` now fires from the arena's actual four corners (with the
+    same off-screen `-20`/`+20` margin `collapseCorners` in W14 already
+    uses) instead of two fixed interior points, and rotates which
+    *diagonal pair* of corners fires each burst so all four corners get
+    swept across the wave's 4 bursts instead of two of them being
+    permanently outside the pattern.
+  - Verified with a temporary (not committed) scratch simulation that
+    froze the player at 9 fixed spots — all four corners, all four
+    mid-edge points, and dead center — for the full 40s of wave 11 and
+    measured the closest any bullet ever came. Before this fix, corners
+    and mid-edges were reachable by the already-player-tracking `voidWell`/
+    `voidPulse` but conspicuously undertouched by the other three patterns;
+    after, all 9 spots show comparable exposure (closest-approach and
+    near-miss frame counts are all in the same order of magnitude, where
+    before corners/mid-edges were untouched by `voidCollapse`/`voidLane`/
+    `voidSplit` specifically).
+  - `npm test` (184 PASS / 0 FAIL / 1 pre-existing WARN) unchanged after
+    these edits. W11 isn't part of the `balance-baseline.json` regression
+    check (that only tracks W1-4), so these density changes don't risk
+    tripping it.
+
 ## Fix: W11 VOID patterns — some attacks were trivially avoidable, one was inescapable if the player was already inside it (user-reported)
 Two separate reports about `case 11` in `waveSystem.js`:
 1. "บาง pattern มาจ่อตรงกลาง ผู้เล่นแค่ไปหลบข้างๆ ก็รอดแล้ว" (some patterns

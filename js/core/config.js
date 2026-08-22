@@ -220,17 +220,21 @@ export const CONFIG = {
       colors: ["#54a0ff", "#00d2d3", "#74b9ff", "#a4b0be", "#dfe6e9"],
       accent: "#54a0ff",
     },
-    { // Act 3 — W15-19: "พิธีกรรมแห่งการล้าง" (the world is ritually unmade)
-      label: "พิธีกรรมแห่งการล้าง",
-      bg: "#180505",
-      colors: ["#ff4757", "#e17055", "#d63031", "#ff7675", "#2d3436"],
-      accent: "#ff4757",
-    },
-    { // Act 4 — W20+: "ความว่างเปล่าไร้จุดจบ" (only the formless void remains)
+    { // Act 3 — W15-19: was "ท้องฟ้าที่ไร้ดวงดาว"'s successor theme; now
+      // showing what used to be the W20+ "void" palette here instead (user
+      // requested swapping the two, 2026-08-22 — "เอาธีมหลัง wave 20 มาใช้
+      // หลังผ่านบอส wave 15 แล้วเอาธีม wave 15 ไปใช้แทนหลัง wave 20").
       label: "ความว่างเปล่าไร้จุดจบ",
       bg: "#000000",
       colors: ["#f5f6fa", "#dfe6e9", "#b2bec3", "#ff6b81", "#ff0037"],
       accent: "#ff0037",
+    },
+    { // Act 4 — W20+: now showing what used to be the W15-19 "ritual" theme
+      // here instead (same user-requested swap as Act 3 above).
+      label: "พิธีกรรมแห่งการล้าง",
+      bg: "#180505",
+      colors: ["#ff4757", "#e17055", "#d63031", "#ff7675", "#2d3436"],
+      accent: "#ff4757",
     },
   ],
 };

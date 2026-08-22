@@ -947,10 +947,19 @@ export class PatternLibrary {
   // These deliberately do not reuse the W1-10 signature families.
   // ================================================================
 
+  // Horizontal streams travel edge-to-edge, each locked to one lane height
+  // (`cy`). The old lane heights only spanned 22%-76% of the arena height,
+  // so the strip near the very top and very bottom wall was never in any
+  // lane's path — camping right up against the top/bottom edge dodged this
+  // pattern entirely regardless of anything else in the wave. Spreading
+  // the lanes across 8%-92% (and scaling to however many bursts are passed
+  // in, rather than a hardcoded 4) keeps that same near-the-wall strip
+  // covered too.
   voidLane(start, bursts, interval, count, speed, color) {
+    const laneSlots = Math.max(2, Math.min(bursts, 6));
     for (let b = 0; b < bursts; b++) {
       this.game.queue(start + b * interval, () => {
-        const cy = WORLD.height * (0.22 + (b % 4) * 0.18);
+        const cy = WORLD.height * (0.08 + (b % laneSlots) * (0.84 / (laneSlots - 1)));
         for (let i = 0; i < count; i++) {
           const y = cy + (i - count / 2) * 12;
           const x = i % 2 ? WORLD.width + 20 : -20;
@@ -966,40 +975,61 @@ export class PatternLibrary {
   // A ring of bullets spawns on the arena rim around (x, y) and collapses
   // inward on that same point. If a player is standing near (x, y) when it
   // closes there was previously no gap anywhere in the ring — an
-  // unavoidable hit. Now, same contract as ring()/voidBlackout(): telegraph
-  // the ring shortly before it fires and leave a gap locked onto whichever
-  // direction the nearest player is standing in, so there's always an open
-  // lane out before the ring finishes closing.
+  // unavoidable hit. Telegraph the ring shortly before it fires and leave a
+  // gap locked onto whichever direction the nearest player is standing in,
+  // same contract as ring()/voidBlackout(), so there's always an open lane
+  // out before the ring finishes closing.
+  //
+  // Reach: the old fixed 330px spawn radius only ever covered the middle
+  // ~660x660 of a 1280x720 arena — a player standing anywhere near the
+  // walls/corners was geometrically outside the ring's reach the entire
+  // time, no dodging required (user-reported, "ออกไปขอบจอก็รอดสบายๆ").
+  // Spawning on a radius that reaches past the arena's own corners means
+  // every pulse sweeps the whole play space on its way in, corners
+  // included, not just the center.
   voidCollapse(start, pulses, interval, count, speed, x, y, color) {
     const warnDuration = 0.6;
     const gapWidth = 0.5;
+    const ringRadius = Math.hypot(WORLD.width, WORLD.height) / 2 + 40; // past every corner
     for (let p = 0; p < pulses; p++) {
       let gapAngle = 0;
       this.game.queue(start + p * interval - warnDuration, () => {
         const target = this.targetPlayer(x, y);
         gapAngle = Math.atan2(target.y - y, target.x - x);
-        this.game.ringWarnings.push({ x, y, t: 0, duration: warnDuration, color, radius: 330, gapAngle, gapWidth });
+        this.game.ringWarnings.push({ x, y, t: 0, duration: warnDuration, color, radius: ringRadius, gapAngle, gapWidth });
       });
       this.game.queue(start + p * interval, () => {
         for (let i = 0; i < count; i++) {
           const a = (Math.PI * 2 * i) / count + (p % 2) * 0.08;
           const delta = Math.atan2(Math.sin(a - gapAngle), Math.cos(a - gapAngle));
           if (Math.abs(delta) < gapWidth) continue; // leave an escape lane toward the player
-          const sx = x + Math.cos(a) * 330;
-          const sy = y + Math.sin(a) * 330;
+          const sx = x + Math.cos(a) * ringRadius;
+          const sy = y + Math.sin(a) * ringRadius;
           const angle = Math.atan2(y - sy, x - sx);
           this.game.spawnBullet(sx, sy, Math.cos(angle) * speed, Math.sin(angle) * speed, 5, color, {
-            maxAge: 7, trajectory: 'gravityWell', gravityX: x, gravityY: y, gravityStrength: 0.065
+            maxAge: 8, trajectory: 'gravityWell', gravityX: x, gravityY: y, gravityStrength: 0.065
           });
         }
       });
     }
   }
 
+  // Two streams converge from opposite origins toward the arena center.
+  // The old fixed origins, (300,180)/(980,540), were interior quadrant
+  // points, not the actual corners — a player parked in either of the
+  // *other* two corners (or hugging a wall far from those two spots) was
+  // never in either stream's path. Firing from the true corners instead,
+  // and rotating which diagonal pair fires each burst, means every corner
+  // gets swept by this pattern at some point instead of two of them being
+  // permanently outside it.
   voidSplit(start, bursts, interval, count, speed, color) {
+    const CORNERS = [
+      [-20, -20], [WORLD.width + 20, -20],
+      [WORLD.width + 20, WORLD.height + 20], [-20, WORLD.height + 20],
+    ]; // TL, TR, BR, BL
     for (let b = 0; b < bursts; b++) {
       this.game.queue(start + b * interval, () => {
-        const centers = [[300, 180], [980, 540]];
+        const centers = [CORNERS[b % 4], CORNERS[(b + 2) % 4]]; // opposite corners
         for (let c = 0; c < centers.length; c++) {
           const [x, y] = centers[c];
           for (let i = 0; i < count; i++) {
