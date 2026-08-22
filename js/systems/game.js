@@ -1,16 +1,16 @@
-import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260822-zyio';
-import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260822-zyio';
-import { circleHit, circleNear } from '../core/collision.js?v=20260822-zyio';
-import { Player } from '../entities/player.js?v=20260822-zyio';
-import { BulletManager } from '../entities/bullet.js?v=20260822-zyio';
-import { Boss } from '../entities/boss.js?v=20260822-zyio';
-import { ParticleSystem } from '../rendering/particles.js?v=20260822-zyio';
-import { PatternLibrary } from '../patterns/patterns.js?v=20260822-zyio';
-import { WaveSystem } from './waveSystem.js?v=20260822-zyio';
-import { SkillSystem } from './skillSystem.js?v=20260822-zyio';
-import { LifeSystem } from './lifeSystem.js?v=20260822-zyio';
-import { DevMode } from './devMode.js?v=20260822-zyio';
-import { ItemSystem } from './itemSystem.js?v=20260822-zyio';
+import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260822-dqro';
+import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260822-dqro';
+import { circleHit, circleNear } from '../core/collision.js?v=20260822-dqro';
+import { Player } from '../entities/player.js?v=20260822-dqro';
+import { BulletManager } from '../entities/bullet.js?v=20260822-dqro';
+import { Boss } from '../entities/boss.js?v=20260822-dqro';
+import { ParticleSystem } from '../rendering/particles.js?v=20260822-dqro';
+import { PatternLibrary } from '../patterns/patterns.js?v=20260822-dqro';
+import { WaveSystem } from './waveSystem.js?v=20260822-dqro';
+import { SkillSystem } from './skillSystem.js?v=20260822-dqro';
+import { LifeSystem } from './lifeSystem.js?v=20260822-dqro';
+import { DevMode } from './devMode.js?v=20260822-dqro';
+import { ItemSystem } from './itemSystem.js?v=20260822-dqro';
 
 /** Converts a "#rrggbb" hex string to an "r,g,b" string for use in
  * rgba(...) fill styles (see Renderer.flash()). */
@@ -540,6 +540,12 @@ export class Game {
         ? eligible.map((p) => (p === this.players[0] ? "P1" : "P2"))
         : [];
     this.ui.showNoHitBanner?.(labels, bonus);
+    // Also pop a "+N" next to the SCORE stat itself, same as graze does
+    // (ui.showScorePopup) — the big banner shows the bonus, but the HUD
+    // number should get the same little "it just went up" feedback graze
+    // gets. Sum across eligible players so the popup matches how much the
+    // displayed team/solo score total actually just jumped by.
+    this.ui.showScorePopup?.(bonus * eligible.length);
     return true;
   }
 

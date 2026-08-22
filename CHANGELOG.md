@@ -1,5 +1,28 @@
 # Changelog
 
+## New: item pickups & the "No Hit" bonus now pop a "+N" next to the SCORE stat, same as graze (user-requested, "เพิ่มขึ้น + ตรง score เหมือน graze ด้วยสิ")
+- **Before:** grazing already called `ui.showScorePopup(gained)`, which
+  spawns a little "+N" text right beside the SCORE HUD number (see
+  `.score-popup` / `grazeScoreSidePop` in `css/main.css`). Item pickups and
+  the No Hit wave-clear bonus only ever called `game.spawnScorePopup()` — a
+  *different*, world-space floating text that appears at the item's (or
+  player's) position on the play field, not next to the HUD stat. So graze
+  had the HUD-side "+" feedback and items/No Hit didn't.
+- **Fix:** item pickups that actually award score (`case 'score'`, the
+  score-outcome branch of the Mystery Box, and the `default` fallback) now
+  also call `game.ui.showScorePopup?.(cfg.scoreValue)` — items that award
+  0 score (heart, energy, shield, and Mystery's bad outcomes) intentionally
+  do not, since there's no score gain to call out. `awardNoHitBonuses()`
+  now also calls `this.ui.showScorePopup?.(bonus * eligible.length)` —
+  summed across eligible players so the popup amount matches how much the
+  displayed team/solo score total actually just jumped by.
+- **Files:** `js/systems/itemSystem.js`, `js/systems/game.js`,
+  `tests/unit/item.test.mjs`, `tests/unit/score.test.mjs`.
+- Added 3 tests: a score-item pickup triggers exactly one
+  `ui.showScorePopup` call with the right amount; a non-score item (energy)
+  triggers none; and the No Hit bonus triggers one with the bonus amount.
+  Full suite now 184/184 PASS (181 prior + 3 new).
+
 ## Fix: item pickups and the "No Hit" wave-clear bonus didn't visibly add score on the HUD (user-reported, "item ที่เก็บแล้ว + คะแนน มันไม่ได้ + คะแนน" / "No hit ไม่ได้ + คะแนนจริง")
 - **Root cause:** `Game.updateScore()` early-returned its ENTIRE body
   whenever `state.waveTime < 0` (added in an earlier session to hold the

@@ -6,7 +6,7 @@
 
 import { TestSuite, assert, assertEqual, assertNoNaN, assertClose } from '../helpers/assertions.mjs';
 import { createGame, jumpToWave, tick } from '../helpers/gameFactory.mjs';
-import { CONFIG, GRAZE_REWARD } from '../../js/core/config.js?v=20260822-zyio';
+import { CONFIG, GRAZE_REWARD } from '../../js/core/config.js?v=20260822-dqro';
 
 export async function run() {
   const s = new TestSuite('COMBAT: Score / Graze / Combo');
@@ -258,6 +258,27 @@ export async function run() {
       'state.teamScore must stay in sync on subsequent transition-phase frames too',
       { likely: "js/systems/game.js update() 'transition' phase branch missing a score sync" },
     );
+  });
+
+  await s.testAsync('the "No Hit" wave-clear bonus pops a "+N" next to the SCORE stat, same as graze (ui.showScorePopup)', async () => {
+    const { game, ui } = await createGame();
+    jumpToWave(game, 1);
+    game.actionQueue = [];
+    game.state.wavePhase = 'draining';
+    game.bullets.items.length = 0;
+    game.ringWarnings.length = 0;
+    game.lasers.length = 0;
+
+    const bonus = game.noHitBonus(game.state.wave);
+    tick(game, 1); // wave clears with no hit taken -> awards bonus
+
+    const popupCalls = ui.calls.filter((c) => c.name === 'showScorePopup');
+    assertEqual(popupCalls.length, 1, 'the No Hit bonus should trigger exactly one ui.showScorePopup call, same as graze', {
+      likely: 'js/systems/game.js awardNoHitBonuses()',
+    });
+    assertEqual(popupCalls[0].args[0], bonus, 'in solo mode the popup amount should equal the single player\'s No Hit bonus', {
+      likely: 'js/systems/game.js awardNoHitBonuses()',
+    });
   });
 
   return s;

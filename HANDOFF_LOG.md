@@ -59,6 +59,23 @@ what changed, why, key numbers if any.
 
 ## 2026-08-22 — Claude (Sonnet 5, claude.ai)
 
+**Session 2 — Item pickups & "No Hit" bonus now pop "+N" next to SCORE, matching graze (user-requested, "เพิ่มขึ้น + ตรง score เหมือน graze ด้วยสิ"):**
+Graze already calls `ui.showScorePopup(gained)` — a "+N" that pops right
+beside the SCORE HUD stat. Items and the No Hit bonus only used
+`game.spawnScorePopup()`, a different world-space popup at the pickup/
+player position, so they never got that HUD-side "+" cue. Added
+`game.ui.showScorePopup?.(...)` calls alongside the existing
+`spawnScorePopup()` calls: item's `score`/mystery-good-score/`default`
+cases in `itemSystem.js` (0-score items — heart, energy, shield, mystery
+bad outcomes — intentionally skipped), and `awardNoHitBonuses()` in
+`game.js` (summed across eligible players so the popup matches the actual
+HUD jump in coop). Added 3 tests. Ran `npm run bump-version` after.
+**Files:** `js/systems/itemSystem.js`, `js/systems/game.js`,
+`tests/unit/item.test.mjs`, `tests/unit/score.test.mjs`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **184 PASS / 0 FAIL / 1 WARN**
+(181 prior + 3 new, same pre-existing unrelated WARN as Session 1).
+**For the next session:** Nothing pending.
+
 **Session 1 — Item pickups & "No Hit" bonus not showing on the score HUD (user-reported, "item ที่เก็บแล้ว + คะแนน มันไม่ได้ + คะแนน" / "No hit ไม่ได้ + คะแนนจริง"):**
 Traced to `updateScore()`'s `if (this.state.waveTime < 0) return;` guard (added
 Session 4, 2026-08-21) — it was meant to hold only the passive `+100*dt` tick/

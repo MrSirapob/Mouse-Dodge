@@ -8,8 +8,8 @@
 import { TestSuite, assert, assertEqual, assertNoNaN } from '../helpers/assertions.mjs';
 import { createGame, jumpToWave } from '../helpers/gameFactory.mjs';
 import { withSeededRandom } from '../helpers/seededRandom.mjs';
-import { CONFIG } from '../../js/core/config.js?v=20260822-zyio';
-import { ITEM_COLORS } from '../../js/systems/itemSystem.js?v=20260822-zyio';
+import { CONFIG } from '../../js/core/config.js?v=20260822-dqro';
+import { ITEM_COLORS } from '../../js/systems/itemSystem.js?v=20260822-dqro';
 
 export async function run() {
   const s = new TestSuite('ITEMS');
@@ -49,6 +49,33 @@ export async function run() {
     withSeededRandom(999, () => game.itemSystem.trySpawn());
     assertEqual(game.itemSystem.items.length, CONFIG.items.maxActive, 'trySpawn() must not exceed CONFIG.items.maxActive', {
       likely: 'js/systems/itemSystem.js trySpawn() guard',
+    });
+  });
+
+  await s.testAsync('collecting a score item pops a "+N" next to the SCORE stat, same as graze (ui.showScorePopup)', async () => {
+    const { game, ui } = await createGame();
+    jumpToWave(game, 1);
+    const player = game.players[0];
+    game.itemSystem.items.push({ x: player.x, y: player.y, type: 'score', r: CONFIG.items.radius, age: 0, ttl: CONFIG.items.ttl, bob: 0 });
+    game.itemSystem.update(1 / 60);
+    const popupCalls = ui.calls.filter((c) => c.name === 'showScorePopup');
+    assertEqual(popupCalls.length, 1, 'collecting a score item should trigger exactly one ui.showScorePopup call', {
+      likely: 'js/systems/itemSystem.js collect() case "score"',
+    });
+    assertEqual(popupCalls[0].args[0], CONFIG.items.scoreValue, 'the popup amount should match the score item\'s value', {
+      likely: 'js/systems/itemSystem.js collect() case "score"',
+    });
+  });
+
+  await s.testAsync('picking up a non-score item (e.g. energy) does not pop a SCORE-stat popup', async () => {
+    const { game, ui } = await createGame();
+    jumpToWave(game, 1);
+    const player = game.players[0];
+    game.itemSystem.items.push({ x: player.x, y: player.y, type: 'energy', r: CONFIG.items.radius, age: 0, ttl: CONFIG.items.ttl, bob: 0 });
+    game.itemSystem.update(1 / 60);
+    const popupCalls = ui.calls.filter((c) => c.name === 'showScorePopup');
+    assertEqual(popupCalls.length, 0, 'an energy pickup awards no score, so it should not trigger ui.showScorePopup', {
+      likely: 'js/systems/itemSystem.js collect() case "energy"',
     });
   });
 

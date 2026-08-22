@@ -1,4 +1,4 @@
-import { CONFIG } from '../core/config.js?v=20260822-zyio';
+import { CONFIG } from '../core/config.js?v=20260822-dqro';
 
 export const ITEM_COLORS = {
   heart: '#ff5c8a',
@@ -168,6 +168,7 @@ export class ItemSystem {
       case 'score':
         player.score += cfg.scoreValue;
         game.spawnScorePopup(item.x, item.y, cfg.scoreValue, color);
+        game.ui.showScorePopup?.(cfg.scoreValue);
         break;
       case 'mystery':
         this.resolveMysteryBox(item, player);
@@ -175,6 +176,7 @@ export class ItemSystem {
       default:
         player.score += cfg.scoreValue;
         game.spawnScorePopup(item.x, item.y, cfg.scoreValue, color);
+        game.ui.showScorePopup?.(cfg.scoreValue);
         break;
     }
   }
@@ -219,6 +221,7 @@ export class ItemSystem {
         const bonus = cfg.scoreValue * mcfg.scoreMultiplier;
         player.score += bonus;
         game.spawnScorePopup(item.x, item.y, bonus, color, '🎁');
+        game.ui.showScorePopup?.(bonus);
       }
       return;
     }
