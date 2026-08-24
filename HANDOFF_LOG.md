@@ -59,7 +59,16 @@ what changed, why, key numbers if any.
 
 ## 2026-08-24 — ChatGPT (GPT-5.6 Luna) — Skin / Case / Inventory system
 
-**Session 16 — Antigravity — Case Result Skin Card Overlay:**
+**Session 17 — Antigravity — Case Result UX & Validation Polish:**
+Polished UX details for the Case/Skin UI according to specific user feedback. Did NOT touch Case Reel, RNG, or Skin Ownership logic.
+- Cursor UX: Removed `cursor: wait` from the `OPEN CASE` disabled state. It now falls back to the default cursor when disabled, preventing the ugly loading spinner on hover while still preventing double-clicks.
+- Collection Complete: Added `unownedRarePlus` validation before executing `exchangeRarePlus()`. If the player already owns all Rare+ skins, a "COLLECTION COMPLETE" alert popup is shown and execution stops (no scrap deducted, no RNG called).
+- Random Skin Confirmation: Intercepted the 100 Scrap Random Skin button to show a Confirmation Popup first (CANCEL / CONFIRM). Cancel closes it. Confirm re-validates scrap and collection, locks the UI with an `isProcessing` flag (preventing double click race conditions), deducts scrap, rolls RNG, and finally shows the standard Case Result screen.
+- CS:GO Spin for Random Scrap Exchange: Refactored `runCaseReel()` to accept options, allowing it to spin and force a stop on a specific target Skin ID. Now, when the user confirms spending 100 Scrap, they see the same exciting CS:GO reel animation before getting their new Rare+ skin. 
+- Fast Confirm Popup: Sped up the Confirm Popup's appearance to 0.25s and swapped the buttons so CONFIRM is large, on top, and visually distinct.
+**Files:** `js/ui/ui.js`, `css/main.css`.
+**Test result:** `npm test` → 190 PASS / 0 FAIL / 1 WARN.
+**For the next session:** Nothing pending.
 Redesigned the Case Result Screen *again* into a centered Skin Card modal overlay based on user request. Did not change RNG, Winner, Inventory, or Case Reel logic.
 - Layout: Full screen backdrop (`.skin-case-result` fixed) with an inner popup (`.skin-result-popup`).
 - Inside popup: Large "Skin Card" container (`.skin-result-card`), followed by Name, NEW/DUPLICATE status, scrap (if duplicate), and EQUIP/CLOSE buttons.

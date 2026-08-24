@@ -1,4 +1,4 @@
-import { CONFIG } from '../core/config.js?v=20260824-sv8v';
+import { CONFIG } from '../core/config.js?v=20260824-lqdh';
 
 export class SkillSystem {
   constructor(game) { this.game = game; }

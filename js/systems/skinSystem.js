@@ -6,7 +6,7 @@ import {
   SKINS,
   SKINS_BY_RARITY,
   TOTAL_RARITY_WEIGHT,
-} from '../data/skins.js?v=20260824-sv8v';
+} from '../data/skins.js?v=20260824-lqdh';
 
 const STORAGE_KEY = 'waveDodgeSkinData';
 const SAVE_VERSION = 1;
@@ -198,6 +198,21 @@ export class SkinSystem {
     this.data.ownedSkins.push(item.id);
     this.save();
     log('scrap exchanged for random Rare+', { cost, skin: item.id, scrapRemaining: this.data.scrap });
+    return { ok: true, item, duplicate: false, scrap: 0 };
+  }
+
+  awardScrapExchange(id) {
+    const cost = 100;
+    const item = this.getSkin(id);
+    if (!item) return { ok: false, reason: 'invalid_skin' };
+    if (this.data.scrap < cost) return { ok: false, reason: 'not_enough_scrap' };
+    
+    this.data.scrap -= cost;
+    if (!this.owns(id)) {
+      this.data.ownedSkins.push(item.id);
+    }
+    this.save();
+    log('scrap exchanged via case reel', { cost, skin: item.id, scrapRemaining: this.data.scrap });
     return { ok: true, item, duplicate: false, scrap: 0 };
   }
 
