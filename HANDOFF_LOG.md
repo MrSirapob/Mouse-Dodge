@@ -87,6 +87,38 @@ this session.
 page → back flow in a real/mobile browser, and confirm `fitOverlayScreens()`
 no longer needs to zoom either skin page down at common viewport sizes.
 
+**Session 3 — Claude (Sonnet 5, claude.ai) — Collection page still unreadable, follow-up to Session 2 (user-reported, "หน้าคลังสกินมันยังมองไม่ค่อยเห็นอ่ะ ไกลไป"):**
+Two real bugs behind Session 2's fix not being enough. (1) `.skin-grid`
+was set to a fixed `width:min(720px,94vw)` while its parent
+`.menu-screen` is capped at `width:min(560px,92vw)` — the grid was wider
+than its own container and got visually pushed/clipped by `#overlay`'s
+`overflow:hidden`. Fixed by giving `#skinCollectionScreen` its own wider
+ID-level width (`min(760px,94vw)`, wins on specificity over the generic
+`.menu-screen` rule) and changing `.skin-grid` to `width:100%` so it
+always matches its actual parent. (2) Even at the right width, 21 skin
+cards in a 4-column grid is tall enough that `fitOverlayScreens()` (see
+Session 2 notes / the JSDoc above it) still zoomed the whole page down
+to fit the viewport height, which is the real "ไกลไป" (looks small/far)
+complaint. Fixed properly this time by excluting screens with a new
+`.scrollable-screen` class from the zoom-fit pass entirely (added to
+`#skinCollectionScreen` in `index.html`) and instead giving that class
+`max-height:calc(100vh - 32px);overflow-y:auto` in CSS, with the back
+button `position:sticky` at the top so it stays reachable while scrolling.
+No other menu screens were changed, so the shrink-to-fit behavior other
+screens rely on (per the original JSDoc, laptops with short viewports)
+is untouched.
+**Files:** `index.html`, `js/ui/ui.js`, `css/main.css`.
+**Test result:** Not run — pure CSS/markup layout fix, no JS logic under
+test touched. Still not manually verified in a real/mobile browser this
+session — genuinely needed before calling the skin UI done.
+**For the next session:** Please actually open this in a real (ideally
+mobile) browser before making further UI claims — two sessions in a row
+shipped a skin-UI fix without visually verifying it, and the user had to
+report readability was still broken. Check `#skinCollectionScreen`
+scrolls smoothly with all ~21 cards reachable and readable, sticky back
+button doesn't overlap content, and `#skinScreen` (case/wallet page)
+still looks fine since it wasn't touched this session.
+
 Added a complete cosmetic Skin system on top of `wave-dodge-refactored`. This session is based on the project before the Claude handoff work; the Skin system is isolated from gameplay balance as much as possible.
 
 **Implemented:**

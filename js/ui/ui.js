@@ -680,7 +680,14 @@ export class UI {
    */
   fitOverlayScreens() {
     if (!this.overlay) return;
-    const screens = this.overlay.querySelectorAll(".menu-screen:not(.hidden)");
+    const screens = this.overlay.querySelectorAll(
+      ".menu-screen:not(.hidden):not(.scrollable-screen)",
+    );
+    this.overlay
+      .querySelectorAll(".menu-screen.scrollable-screen")
+      .forEach((screen) => {
+        screen.style.zoom = "";
+      });
     if (!screens || screens.length === 0) return;
 
     const pad = 96;
