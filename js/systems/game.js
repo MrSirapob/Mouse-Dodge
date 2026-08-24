@@ -1,17 +1,17 @@
-import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260824-gaom';
-import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260824-gaom';
-import { circleHit, circleNear } from '../core/collision.js?v=20260824-gaom';
-import { Player } from '../entities/player.js?v=20260824-gaom';
-import { BulletManager } from '../entities/bullet.js?v=20260824-gaom';
-import { Boss } from '../entities/boss.js?v=20260824-gaom';
-import { ParticleSystem } from '../rendering/particles.js?v=20260824-gaom';
-import { PatternLibrary } from '../patterns/patterns.js?v=20260824-gaom';
-import { WaveSystem } from './waveSystem.js?v=20260824-gaom';
-import { SkillSystem } from './skillSystem.js?v=20260824-gaom';
-import { LifeSystem } from './lifeSystem.js?v=20260824-gaom';
-import { DevMode } from './devMode.js?v=20260824-gaom';
-import { ItemSystem } from './itemSystem.js?v=20260824-gaom';
-import { SkinSystem } from './skinSystem.js?v=20260824-gaom';
+import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260824-3pa8';
+import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260824-3pa8';
+import { circleHit, circleNear } from '../core/collision.js?v=20260824-3pa8';
+import { Player } from '../entities/player.js?v=20260824-3pa8';
+import { BulletManager } from '../entities/bullet.js?v=20260824-3pa8';
+import { Boss } from '../entities/boss.js?v=20260824-3pa8';
+import { ParticleSystem } from '../rendering/particles.js?v=20260824-3pa8';
+import { PatternLibrary } from '../patterns/patterns.js?v=20260824-3pa8';
+import { WaveSystem } from './waveSystem.js?v=20260824-3pa8';
+import { SkillSystem } from './skillSystem.js?v=20260824-3pa8';
+import { LifeSystem } from './lifeSystem.js?v=20260824-3pa8';
+import { DevMode } from './devMode.js?v=20260824-3pa8';
+import { ItemSystem } from './itemSystem.js?v=20260824-3pa8';
+import { SkinSystem } from './skinSystem.js?v=20260824-3pa8';
 
 /** Converts a "#rrggbb" hex string to an "r,g,b" string for use in
  * rgba(...) fill styles (see Renderer.flash()). */
@@ -463,6 +463,11 @@ export class Game {
       this.boss.active = true;
       this.ui.setBossVisible(true);
       this.ui.setBossName(this.boss.name);
+    }
+
+    if (this.skinSystem && this.skinSystem.pendingToastForWave === n) {
+      this.skinSystem.pendingToastForWave = null;
+      this.queue(0, () => this.ui.showSkinRewardToast('REWARD', '+1 CASE'));
     }
 
     // Chapter-transition cue (user-requested follow-up to the act

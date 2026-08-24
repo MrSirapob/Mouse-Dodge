@@ -59,6 +59,16 @@ what changed, why, key numbers if any.
 
 ## 2026-08-24 — ChatGPT (GPT-5.6 Luna) — Skin / Case / Inventory system
 
+**Session 14 — Antigravity — Case Reward Toast Deferred to Start of Next Wave:**
+Updated the timing of the "CASE +1" toast so it avoids clashing visually with the middle-of-screen WAVE clear text.
+- `skinSystem.js`: `awardCaseForWave(n)` still grants the case immediately at the end of waves 5, 10, 15, and 20. For W20, the toast fires immediately (since there is no Wave 21). For 5/10/15, it queues the request by setting `pendingToastForWave = n + 1`.
+- `game.js`: `startWave()` checks for `pendingToastForWave`. If it matches the new wave, it uses `this.queue(0, ...)` to show the toast *exactly* when the large WAVE N banner finishes fading out and the gameplay officially begins.
+- `skinSystem.js`: `resetForNewRun()` clears `pendingToastForWave` so that restarting the game won't accidentally trigger a deferred toast from a previous run.
+**Files:** `js/systems/skinSystem.js`, `js/systems/game.js`.
+**Test result:** `npm test` → 190 PASS / 0 FAIL / 1 WARN.
+**For the next session:** Nothing pending.
+
+
 **Session 12 — Antigravity — Skin UI layout completely broken / Case Reel mismatch (missing CSS cache-buster):**
 Root cause: User reported the skin collection layout was broken, and the UI was throwing `[Case Reel Mismatch] Expected X but got 0`. The entire skin-page markup lacked styling (`display: flex` was missing) because `index.html` loaded `./css/main.css` without a `?v=` cache-busting tag, causing the browser to heavily cache the old, pre-Skin-update `main.css`. Because `.skin-reel-track` items were stacked vertically rather than horizontally, their `getBoundingClientRect().left` values were identical, causing the JS pointer logic to always select index 0, leading to the mismatch error.
 Fixed by adding the `?v=` tag to the `<link rel="stylesheet">` in `index.html`, and updated `scripts/check-versions.mjs` to also enforce `?v=` tags on CSS links in HTML files so it doesn't get missed again (the bump script already supports replacing them if they exist).

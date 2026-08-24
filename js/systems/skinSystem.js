@@ -6,7 +6,7 @@ import {
   SKINS,
   SKINS_BY_RARITY,
   TOTAL_RARITY_WEIGHT,
-} from '../data/skins.js?v=20260824-gaom';
+} from '../data/skins.js?v=20260824-3pa8';
 
 const STORAGE_KEY = 'waveDodgeSkinData';
 const SAVE_VERSION = 1;
@@ -79,6 +79,7 @@ export class SkinSystem {
 
   resetForNewRun() {
     this.rewardedWaves.clear();
+    this.pendingToastForWave = null;
     log('new run: wave reward tracking reset');
   }
 
@@ -163,14 +164,20 @@ export class SkinSystem {
 
   awardCaseForWave(wave) {
     const n = Number(wave);
-    if (![5, 10, 15].includes(n)) return false;
+    if (![5, 10, 15, 20].includes(n)) return false;
     if (this.rewardedWaves.has(n)) {
       warn('wave case reward blocked: already rewarded this run', { wave: n });
       return false;
     }
     this.rewardedWaves.add(n);
     this.addCases(1);
-    this.ui?.showSkinRewardToast?.('CASE +1');
+    
+    if (n === 20) {
+      this.ui?.showSkinRewardToast?.('REWARD', '+1 CASE');
+    } else {
+      this.pendingToastForWave = n + 1;
+    }
+    
     log('wave case reward granted', { wave: n, cases: this.data.cases });
     return true;
   }
