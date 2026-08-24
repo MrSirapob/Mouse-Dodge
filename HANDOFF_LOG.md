@@ -59,6 +59,18 @@ what changed, why, key numbers if any.
 
 ## 2026-08-24 — ChatGPT (GPT-5.6 Luna) — Skin / Case / Inventory system
 
+**Session 12 — Antigravity — Skin UI layout completely broken / Case Reel mismatch (missing CSS cache-buster):**
+Root cause: User reported the skin collection layout was broken, and the UI was throwing `[Case Reel Mismatch] Expected X but got 0`. The entire skin-page markup lacked styling (`display: flex` was missing) because `index.html` loaded `./css/main.css` without a `?v=` cache-busting tag, causing the browser to heavily cache the old, pre-Skin-update `main.css`. Because `.skin-reel-track` items were stacked vertically rather than horizontally, their `getBoundingClientRect().left` values were identical, causing the JS pointer logic to always select index 0, leading to the mismatch error.
+Fixed by adding the `?v=` tag to the `<link rel="stylesheet">` in `index.html`, and updated `scripts/check-versions.mjs` to also enforce `?v=` tags on CSS links in HTML files so it doesn't get missed again (the bump script already supports replacing them if they exist).
+**Files:** `index.html`, `scripts/check-versions.mjs`.
+**Test result:** `npm test` → 190 PASS / 0 FAIL / 1 WARN. `npm run check-versions` → PASS (58 occurrences).
+**For the next session:** Nothing pending on this issue.
+**Session 13 — Antigravity — Unclosed brace syntax error broke skin layout:**
+User reported the layout was *still* broken. Traced it to a missing closing brace `}` at the end of `@keyframes waveBannerFade` in `css/main.css` (line 887). Because of this missing brace, the browser treated the entire `/* SKIN COLLECTION */` CSS block that followed as being inside the keyframes block, effectively ignoring all flexbox and layout rules for the skin system! Fixed by adding the closing brace.
+**Files:** `css/main.css`.
+**Test result:** Syntax checked with python script (balanced). `npm run bump-version` bumped everything to `20260824-gaom`.
+**For the next session:** Nothing pending.
+
 **Session 2 — Claude (Sonnet 5, claude.ai) — Split Skin screen into two pages (user-reported, "แก้ Ui หน้า skin ใหม่ ใช้เป็น 2 หน้าก็ได้ ตอนนี้เหมือนพยายามยัดใน 1 หน้า แล้วมันมองตัวหนังสือ รายละเอียดไม่เห็น"):**
 Root cause: `fitOverlayScreens()` in `js/ui/ui.js` auto-shrinks any
 `.menu-screen` that overflows the viewport via CSS `zoom`, so cramming

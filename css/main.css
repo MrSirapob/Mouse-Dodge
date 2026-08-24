@@ -885,6 +885,7 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
   10% {opacity: 1}
   85% {opacity: 1}
   100% {opacity: 0}
+}
 
 
 /* Responsive: @media (prefers-reduced-motion: reduce) */

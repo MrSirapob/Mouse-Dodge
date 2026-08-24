@@ -66,6 +66,16 @@ for (const file of files) {
       }
     }
   }
+
+  if (file.endsWith('.html')) {
+    const cssRe = /<link\s+rel="stylesheet"\s+href="([^"]+\.css)(\?[^"]*)?">/g;
+    for (const m of text.matchAll(cssRe)) {
+      const [, specifier, query] = m;
+      if (!query || !query.includes('v=')) {
+        missing.push(`${rel}: stylesheet '${specifier}' has no ?v= cache-bust string`);
+      }
+    }
+  }
 }
 
 const versions = new Set(found.map((f) => f.version));
