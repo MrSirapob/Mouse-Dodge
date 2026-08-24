@@ -256,6 +256,9 @@ export class UI {
     this.skinCaseRoll = document.getElementById("skinCaseRoll");
     this.skinCaseResult = document.getElementById("skinCaseResult");
     this.exchangeRarePlusBtn = document.getElementById("exchangeRarePlusBtn");
+    this.exchangeRarePlusConfirmRow = document.getElementById("exchangeRarePlusConfirmRow");
+    this.exchangeRarePlusConfirmBtn = document.getElementById("exchangeRarePlusConfirmBtn");
+    this.exchangeRarePlusCancelBtn = document.getElementById("exchangeRarePlusCancelBtn");
     this.skinInfoBtn = document.getElementById("skinInfoBtn");
     this.skinInfoOverlay = document.getElementById("skinInfoOverlay");
     this.skinInfoCloseBtn = document.getElementById("skinInfoCloseBtn");
@@ -342,6 +345,8 @@ export class UI {
       ?.addEventListener("click", () => this.showSkinScreen());
     this.openSkinCaseBtn?.addEventListener("click", () => this.openSkinCase());
     this.exchangeRarePlusBtn?.addEventListener("click", () => this.exchangeRarePlus());
+    this.exchangeRarePlusConfirmBtn?.addEventListener("click", () => this.confirmExchangeRarePlus());
+    this.exchangeRarePlusCancelBtn?.addEventListener("click", () => this.cancelExchangeRarePlus());
     this.skinInfoBtn?.addEventListener("click", () => this.showSkinInfo());
     this.skinInfoCloseBtn?.addEventListener("click", () => this.hideSkinInfo());
     this.skinInfoOverlay?.addEventListener("click", (e) => {
@@ -587,6 +592,10 @@ export class UI {
         this.exchangeRarePlusBtn.disabled = data.scrap < 100;
       }
     }
+    // Re-rendering (e.g. after the exchange finishes, or the screen is
+    // reopened) always drops back to the plain button — the inline
+    // confirm/cancel row is a transient UI state, not something to persist.
+    this.cancelExchangeRarePlus();
 
     // Same idea for the case-opening button: once the whole collection is
     // owned, opening a case can only ever hand back scrap, so say that
@@ -899,41 +908,53 @@ export class UI {
     });
   }
 
-  showScrapConfirmPopup(onConfirm) {
-    if (!this.skinCaseResult) return;
-    this.skinCaseResult.className = `skin-case-result sheet`;
-    this.skinCaseResult.classList.remove("hidden");
-    
-    this.skinCaseResult.innerHTML = `
-      <div class="skin-result-popup sheet-panel" style="max-width: 400px; text-align: center;">
-        <div class="result-header" style="color: #ffb84d;">RANDOM SKIN</div>
-        <p style="color: #d8dbe5; font-size: 13px; line-height: 1.6; margin-bottom: 20px;">
-          ใช้ 100 Scrap เพื่อสุ่ม Skin 1 ครั้ง?
-        </p>
-        <div class="result-actions" style="display: flex; flex-direction: column; gap: 10px; width: 100%; opacity: 1; animation: none;">
-          <button type="button" class="equip-btn" id="confirmScrapBtn" style="width: 100%; border-color: #ffb84d; color: #ffb84d; background: rgba(255,184,77,0.15);">ยืนยัน</button>
-          <button type="button" class="close-btn" style="width: 100%;">ยกเลิก</button>
-        </div>
-      </div>
-    `;
-    
-    const closeBtn = this.skinCaseResult.querySelector(".close-btn");
-    const confirmBtn = this.skinCaseResult.querySelector("#confirmScrapBtn");
-    
-    let isProcessing = false;
-    
-    closeBtn.addEventListener("click", () => {
-      if (isProcessing) return;
-      this.skinCaseResult.classList.add("hidden");
-    });
-    
-    confirmBtn.addEventListener("click", () => {
-      if (isProcessing) return;
-      isProcessing = true;
-      confirmBtn.disabled = true;
-      confirmBtn.textContent = "WAIT...";
-      onConfirm();
-    });
+  // Clicking the random-exchange button doesn't fire the roll immediately —
+  // it swaps the button for an inline ยืนยัน/ยกเลิก row so the player has to
+  // confirm the 100-scrap spend before anything happens.
+  exchangeRarePlus() {
+    if (!this.skinSystem || this.skinSystem.data.scrap < 100 || this.skinCaseBusy) return;
+
+    const unownedRarePlus = SKINS.filter((s) => ['Rare', 'Epic', 'Legendary', 'Mythic'].includes(s.rarity) && !this.skinSystem.owns(s.id));
+    if (unownedRarePlus.length === 0) {
+      this.showCollectionCompleteAlert();
+      return;
+    }
+
+    if (this.exchangeRarePlusBtn) this.exchangeRarePlusBtn.classList.add("hidden");
+    if (this.exchangeRarePlusConfirmRow) this.exchangeRarePlusConfirmRow.classList.remove("hidden");
+  }
+
+  cancelExchangeRarePlus() {
+    if (this.exchangeRarePlusConfirmRow) this.exchangeRarePlusConfirmRow.classList.add("hidden");
+    if (this.exchangeRarePlusBtn) this.exchangeRarePlusBtn.classList.remove("hidden");
+  }
+
+  confirmExchangeRarePlus() {
+    // Double check state at confirm time — scrap/collection may have
+    // changed since the row was shown.
+    if (!this.skinSystem || this.skinSystem.data.scrap < 100 || this.skinCaseBusy) {
+      this.cancelExchangeRarePlus();
+      return;
+    }
+    if (SKINS.filter((s) => ['Rare', 'Epic', 'Legendary', 'Mythic'].includes(s.rarity) && !this.skinSystem.owns(s.id)).length === 0) {
+      this.cancelExchangeRarePlus();
+      this.showCollectionCompleteAlert();
+      return;
+    }
+
+    const started = this.skinSystem.beginExchangeRarePlus();
+    if (!started.ok) {
+      this.cancelExchangeRarePlus();
+      return;
+    }
+
+    this.cancelExchangeRarePlus();
+    this.skinCaseBusy = true;
+    if (this.openSkinCaseBtn) this.openSkinCaseBtn.disabled = true;
+    if (this.exchangeRarePlusBtn) this.exchangeRarePlusBtn.disabled = true;
+    this.skinCaseResult.classList.add("hidden");
+
+    this.runCaseReel(started.rarity, this.exchangeReelOptions());
   }
 
   // Reel options for the 100-scrap exchange: same spin mechanics as case
@@ -953,42 +974,6 @@ export class UI {
       resultHeader: "EXCHANGE RESULT",
       newLabel: "EXCHANGE",
     };
-  }
-
-  exchangeRarePlus() {
-    if (!this.skinSystem || this.skinSystem.data.scrap < 100 || this.skinCaseBusy) return;
-
-    // Check if the user owns all Rare+ skins
-    const unownedRarePlus = SKINS.filter((s) => ['Rare', 'Epic', 'Legendary', 'Mythic'].includes(s.rarity) && !this.skinSystem.owns(s.id));
-    if (unownedRarePlus.length === 0) {
-      this.showCollectionCompleteAlert();
-      return;
-    }
-
-    this.showScrapConfirmPopup(() => {
-      // Double check state inside the confirm callback
-      if (!this.skinSystem || this.skinSystem.data.scrap < 100 || this.skinCaseBusy) {
-        this.skinCaseResult.classList.add("hidden");
-        return;
-      }
-      if (SKINS.filter((s) => ['Rare', 'Epic', 'Legendary', 'Mythic'].includes(s.rarity) && !this.skinSystem.owns(s.id)).length === 0) {
-        this.showCollectionCompleteAlert();
-        return;
-      }
-
-      const started = this.skinSystem.beginExchangeRarePlus();
-      if (!started.ok) {
-        this.skinCaseResult.classList.add("hidden");
-        return;
-      }
-
-      this.skinCaseBusy = true;
-      if (this.openSkinCaseBtn) this.openSkinCaseBtn.disabled = true;
-      if (this.exchangeRarePlusBtn) this.exchangeRarePlusBtn.disabled = true;
-      this.skinCaseResult.classList.add("hidden");
-
-      this.runCaseReel(started.rarity, this.exchangeReelOptions());
-    });
   }
 
   showSkinInfo() {
