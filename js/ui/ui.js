@@ -1,5 +1,5 @@
-import { CONFIG } from "../core/config.js?v=20260824-7uzh";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-7uzh";
+import { CONFIG } from "../core/config.js?v=20260824-hi9y";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-hi9y";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -807,8 +807,6 @@ export class UI {
     if (closeBtn) {
       closeBtn.addEventListener("click", () => {
         this.skinCaseResult.classList.add("hidden");
-        // Also remove the rarity class so it doesn't leak to next use
-        this.skinCaseResult.className = "skin-case-result hidden";
       });
     }
   }
@@ -818,18 +816,26 @@ export class UI {
     if (this.openSkinCaseBtn) this.openSkinCaseBtn.disabled = false;
     if (this.skinCaseRoll) this.skinCaseRoll.classList.add("hidden");
     if (this.skinCaseResult) {
-      this.skinCaseResult.className = `skin-case-result rarity-${result.item.rarity.toLowerCase()}`;
+      this.skinCaseResult.className = `skin-case-result`;
       
       const isDup = result.duplicate;
       const title = isDup ? "DUPLICATE" : "NEW!";
-      const subText = isDup ? `<small>+${result.scrap} SCRAP</small>` : `<div class="result-actions"><button type="button" class="equip-btn">EQUIP</button><button type="button" class="close-btn">CLOSE</button></div>`;
       
       this.skinCaseResult.innerHTML = `
-        <div class="result-skin-wrapper">${this.skinResultIconHTML(result.item)}</div>
-        <span>${title}</span>
-        <strong>${result.item.name}</strong>
-        <b>${result.item.rarity}</b>
-        ${subText}
+        <div class="skin-result-popup">
+          <div class="result-header">CASE RESULT</div>
+          <div class="skin-result-card rarity-${result.item.rarity.toLowerCase()}">
+            <div class="result-skin-visual">${this.skinResultIconHTML(result.item)}</div>
+            <div class="result-rarity-tag rarity-${result.item.rarity.toLowerCase()}">✦ ${result.item.rarity.toUpperCase()} ✦</div>
+          </div>
+          <strong class="result-skin-name">${result.item.name}</strong>
+          <span class="result-status ${isDup ? "duplicate" : "new"}">${title}</span>
+          ${isDup ? `<div class="result-scrap">+${result.scrap} SCRAP</div>` : ''}
+          <div class="result-actions">
+            ${isDup ? '' : `<button type="button" class="equip-btn">EQUIP</button>`}
+            <button type="button" class="close-btn">CLOSE</button>
+          </div>
+        </div>
       `;
       this.bindResultActions(result.item.id);
     }
@@ -841,13 +847,21 @@ export class UI {
     const result = this.skinSystem.exchangeChooseRare(id);
     if (!result.ok) return;
     if (this.skinCaseResult) {
-      this.skinCaseResult.className = `skin-case-result rarity-${result.item.rarity.toLowerCase()}`;
+      this.skinCaseResult.className = `skin-case-result`;
       this.skinCaseResult.innerHTML = `
-        <div class="result-skin-wrapper">${this.skinResultIconHTML(result.item)}</div>
-        <span>EXCHANGE</span>
-        <strong>${result.item.name}</strong>
-        <b>${result.item.rarity}</b>
-        <div class="result-actions"><button type="button" class="equip-btn">EQUIP</button><button type="button" class="close-btn">CLOSE</button></div>
+        <div class="skin-result-popup">
+          <div class="result-header">EXCHANGE RESULT</div>
+          <div class="skin-result-card rarity-${result.item.rarity.toLowerCase()}">
+            <div class="result-skin-visual">${this.skinResultIconHTML(result.item)}</div>
+            <div class="result-rarity-tag rarity-${result.item.rarity.toLowerCase()}">✦ ${result.item.rarity.toUpperCase()} ✦</div>
+          </div>
+          <strong class="result-skin-name">${result.item.name}</strong>
+          <span class="result-status new">EXCHANGE</span>
+          <div class="result-actions">
+            <button type="button" class="equip-btn">EQUIP</button>
+            <button type="button" class="close-btn">CLOSE</button>
+          </div>
+        </div>
       `;
       this.bindResultActions(result.item.id);
     }
@@ -859,15 +873,23 @@ export class UI {
     const result = this.skinSystem.exchangeRandomRarePlus();
     if (!result.ok) return;
     if (this.skinCaseResult) {
-      this.skinCaseResult.className = `skin-case-result rarity-${result.item.rarity.toLowerCase()}`;
+      this.skinCaseResult.className = `skin-case-result`;
       const isDup = result.duplicate;
-      const subText = isDup ? `<small>+${result.scrap} SCRAP</small>` : `<div class="result-actions"><button type="button" class="equip-btn">EQUIP</button><button type="button" class="close-btn">CLOSE</button></div>`;
       this.skinCaseResult.innerHTML = `
-        <div class="result-skin-wrapper">${this.skinResultIconHTML(result.item)}</div>
-        <span>${isDup ? "DUPLICATE" : "EXCHANGE"}</span>
-        <strong>${result.item.name}</strong>
-        <b>${result.item.rarity}</b>
-        ${subText}
+        <div class="skin-result-popup">
+          <div class="result-header">EXCHANGE RESULT</div>
+          <div class="skin-result-card rarity-${result.item.rarity.toLowerCase()}">
+            <div class="result-skin-visual">${this.skinResultIconHTML(result.item)}</div>
+            <div class="result-rarity-tag rarity-${result.item.rarity.toLowerCase()}">✦ ${result.item.rarity.toUpperCase()} ✦</div>
+          </div>
+          <strong class="result-skin-name">${result.item.name}</strong>
+          <span class="result-status ${isDup ? "duplicate" : "new"}">${isDup ? "DUPLICATE" : "EXCHANGE"}</span>
+          ${isDup ? `<div class="result-scrap">+${result.scrap} SCRAP</div>` : ''}
+          <div class="result-actions">
+            ${isDup ? '' : `<button type="button" class="equip-btn">EQUIP</button>`}
+            <button type="button" class="close-btn">CLOSE</button>
+          </div>
+        </div>
       `;
       this.bindResultActions(result.item.id);
     }

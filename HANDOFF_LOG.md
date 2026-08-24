@@ -59,7 +59,17 @@ what changed, why, key numbers if any.
 
 ## 2026-08-24 — ChatGPT (GPT-5.6 Luna) — Skin / Case / Inventory system
 
-**Session 15 — Antigravity — Case Result Screen UI Polish:**
+**Session 16 — Antigravity — Case Result Skin Card Overlay:**
+Redesigned the Case Result Screen *again* into a centered Skin Card modal overlay based on user request. Did not change RNG, Winner, Inventory, or Case Reel logic.
+- Layout: Full screen backdrop (`.skin-case-result` fixed) with an inner popup (`.skin-result-popup`).
+- Inside popup: Large "Skin Card" container (`.skin-result-card`), followed by Name, NEW/DUPLICATE status, scrap (if duplicate), and EQUIP/CLOSE buttons.
+- Rarity logic: Moved the rarity classes and glow/border effects from the main wrapper to the inner `.skin-result-card` to match the exact "Skin Card" requirement. Maintained the `rarityGlowPulse` on Epic/Legendary/Mythic.
+- Animations: Added backdrop fade in, popup scale in, skin card pop, and staggered text fade-in.
+- Responsive: Tuned popup and card sizes for Mobile (max 90vw width, 85dvh height).
+**Files:** `js/ui/ui.js`, `css/main.css`.
+**Test result:** `npm test` → 190 PASS / 0 FAIL / 1 WARN.
+**For the next session:** Nothing pending.
+
 Polished the Case Result Screen based on user request. Did not change any RNG, Winner, Inventory, or Case Reel logic.
 - New Skin: Title is now "NEW!", skin visual scaled up 1.8x, and added EQUIP and CLOSE buttons.
 - Duplicate Skin: Title is now "DUPLICATE", shows scrap amount as before, added EQUIP and CLOSE buttons for consistency (though EQUIP equips the duplicate skin).
