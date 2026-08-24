@@ -20,7 +20,7 @@ export class LifeSystem {
     player.invulnerable = CONFIG.lives.hitInvulnerability;
     player.hitFlash = 0.30;
     this.game.state.shakeMag = 12; this.game.state.damageShake = 0.22;
-    this.game.particles.spawnBlood(player.x, player.y, 28);
+    this.game.particles.spawnBlood(player.x, player.y, 28, player.skinVisual?.deathEffect);
     if (player.lives <= 0) {
       player.down = true;
       player.reviveProgress = 0;

@@ -28,6 +28,7 @@ const CATEGORIES = {
     './unit/game-state.test.mjs',
     './unit/devmode-docs.test.mjs',
     './unit/game-loop-timescale.test.mjs',
+    './unit/skin.test.mjs',
   ],
   simulation: [
     './simulation/wave-simulation.test.mjs',

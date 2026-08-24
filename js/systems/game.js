@@ -11,6 +11,7 @@ import { SkillSystem } from './skillSystem.js?v=20260822-pi3c';
 import { LifeSystem } from './lifeSystem.js?v=20260822-pi3c';
 import { DevMode } from './devMode.js?v=20260822-pi3c';
 import { ItemSystem } from './itemSystem.js?v=20260822-pi3c';
+import { SkinSystem } from './skinSystem.js?v=20260824-skin1';
 
 /** Converts a "#rrggbb" hex string to an "r,g,b" string for use in
  * rgba(...) fill styles (see Renderer.flash()). */
@@ -49,6 +50,13 @@ export class Game {
     this.lifeSystem = new LifeSystem(this);
     this.devMode = new DevMode(this);
     this.itemSystem = new ItemSystem(this);
+    this.skinSystem = new SkinSystem({ ui });
+    this.ui.setSkinSystem?.(this.skinSystem);
+    // There is only one equip slot, so only P1 wears the equipped skin;
+    // P2 stays on the default visual (see HANDOFF_LOG.md 2026-08-24) so the
+    // two players stay distinguishable by their base P1/P2 colors in coop.
+    this.players[0].skinVisual = this.skinSystem.buildVisual();
+    for (let i = 1; i < this.players.length; i++) this.players[i].skinVisual = this.skinSystem.buildVisual('default');
 
     this.actionQueue = [];   // scheduled { time, fn } spawn callbacks, run when state.waveTime reaches `time`
     this.ringWarnings = [];  // telegraph rings shown before a `ring`/`bossRing` pattern fires
@@ -348,6 +356,12 @@ export class Game {
     this.bulletCleanupCooldown = 0;
     this.bulletCleanupUsedThisFrame = 0;
     this.itemSystem.clear();
+    this.skinSystem.resetForNewRun();
+    // Same one-equip-slot rule as the constructor: only P1 gets the
+    // equipped skin, P2 always stays on the default visual.
+    const equippedSkinVisual = this.skinSystem.buildVisual();
+    const defaultSkinVisual = this.skinSystem.buildVisual('default');
+    this.players.forEach((p, i) => { p.skinVisual = i === 0 ? equippedSkinVisual : defaultSkinVisual; });
 
     // Solo play should center the player. The 420/860 split is only
     // meaningful in COOP, where both players need distinct starting
@@ -680,7 +694,9 @@ export class Game {
     // Do not start the next wave until every object from this wave has
     // naturally left/finished.
     if (s.wavePhase === 'draining' && this.isWaveClear()) {
-      const showedNoHit = this.awardNoHitBonuses(s.wave);
+      const clearedWave = s.wave;
+      const showedNoHit = this.awardNoHitBonuses(clearedWave);
+      this.skinSystem.awardCaseForWave(clearedWave);
       this.syncScoreDisplay();
       if (s.wave >= 20) {
         this.gameOver();
@@ -1018,7 +1034,7 @@ export class Game {
           const damaged = this.hitPlayer(p);
           if (damaged) {
             this.bullets.remove(i);
-            this.particles.spawnBlood(b.x, b.y, 10);
+            this.particles.spawnBlood(b.x, b.y, 10, p.skinVisual?.deathEffect);
             break;
           }
         }

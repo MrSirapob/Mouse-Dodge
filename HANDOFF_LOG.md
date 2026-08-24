@@ -57,6 +57,29 @@ what changed, why, key numbers if any.
 
 ---
 
+## 2026-08-24 — ChatGPT (GPT-5.6 Luna) — Skin / Case / Inventory system
+
+Added a complete cosmetic Skin system on top of `wave-dodge-refactored`. This session is based on the project before the Claude handoff work; the Skin system is isolated from gameplay balance as much as possible.
+
+**Implemented:**
+- `js/data/skins.js`: 20 obtainable skins (6 Common / 5 Uncommon / 4 Rare / 3 Epic / 1 Legendary / 1 Mythic) plus a non-obtainable `default` skin.
+- `js/systems/skinSystem.js`: inventory, equip, cases, weighted rarity roll (55/25/12/6/1.8/0.2), duplicate→scrap, wave reward gating, visual descriptors, LocalStorage persistence and defensive save loading.
+- `js/rendering/renderer.js`: cosmetic skin rendering (shape, glow, trail, particles, higher-tier rings/effects) with a default fallback matching the original player look.
+- `js/systems/game.js`: SkinSystem integration, equipped visual application on reset/run start, and case rewards on Wave 5/10/15 without changing the wave/bullet rules. P2 remains on the default skin because there is one equip slot.
+- `js/ui/ui.js`, `index.html`, `css/main.css`: Skins screen, inventory, equip controls, case opening/reveal UI, cases/scrap counters and in-run case reward feedback.
+- Scrap exchange: 100 Scrap → random Rare+, 500 Scrap → choose a Rare, with UI support.
+- Added `[SkinSystem]` console logging for initialization/load, equip, case open/result, duplicates/scrap, wave rewards and exchange/error paths.
+
+**Persistence:** Skin data uses its own LocalStorage key (`waveDodgeSkinData`) so existing game/reset-best storage is not unintentionally cleared. Corrupt/malformed skin data falls back safely.
+
+**Gameplay safety:** Skin effects are cosmetic only. No intentional changes were made to Wave patterns, bullet caps/speeds, player movement, collision, score, skills, revive, No Hit or Game Over rules.
+
+**Verification:** `npm test -- --runInBand` → **184 PASS / 0 FAIL / 1 WARN**. The warning is the existing Node module-type warning (`package.json` does not declare `type: module`). Test output also exercises SkinSystem initialization/reward tracking.
+
+**For the next session:** Manually open the game in a real browser and test the Skins screen, Case opening animation, Equip → actual gameplay rendering, Duplicate/Scrap, Scrap Exchange, Wave 5/10/15 case rewards, and mobile layout. Browser/manual visual testing was not performed in this session. If visual polish is needed, improve only the Skin UI/effects without changing gameplay logic.
+
+**Files:** `js/data/skins.js`, `js/systems/skinSystem.js`, `js/rendering/renderer.js`, `js/systems/game.js`, `js/ui/ui.js`, `js/core/config.js`, `index.html`, `css/main.css`, `HANDOFF_LOG.md`.
+
 ## 2026-08-22 — Claude (Sonnet 5, claude.ai)
 
 **Session 6 — Swap Act 3/Act 4 visual themes (user-requested, "เอาธีมหลัง wave 20 มาใช้ หลังผ่านบอส wave 15 แล้วเอาธีม wave 15 ไปใช้แทนหลัง wave 20 ก็คือสลับกันอ่ะ"):**

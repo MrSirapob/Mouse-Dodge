@@ -1,4 +1,5 @@
 import { CONFIG } from "../core/config.js?v=20260822-pi3c";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS } from "../data/skins.js?v=20260824-skin1";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -185,6 +186,8 @@ export class UI {
     this.onMenu = null;
     this.onResume = null;
     this.onResetBest = null;
+    this.skinSystem = null;
+    this.skinCaseBusy = false;
     this.currentMode = "solo";
     this.currentSkill = "pulse";
     this.currentSkillP2 = "pulse";
@@ -244,6 +247,15 @@ export class UI {
     this.controlHint = document.getElementById("controlHint");
     this.skillScreenSub = document.getElementById("skillScreenSub");
     this.resultScreen = document.getElementById("resultScreen");
+    this.skinScreen = document.getElementById("skinScreen");
+    this.skinGrid = document.getElementById("skinGrid");
+    this.skinCaseCount = document.getElementById("skinCaseCount");
+    this.skinScrapCount = document.getElementById("skinScrapCount");
+    this.openSkinCaseBtn = document.getElementById("openSkinCaseBtn");
+    this.skinCaseRoll = document.getElementById("skinCaseRoll");
+    this.skinCaseResult = document.getElementById("skinCaseResult");
+    this.exchangeRarePlusBtn = document.getElementById("exchangeRarePlusBtn");
+    this.chooseRareExchange = document.getElementById("chooseRareExchange");
 
     this.el = {
       best: document.getElementById("best"),
@@ -313,6 +325,14 @@ export class UI {
     document
       .getElementById("settingsBtn")
       ?.addEventListener("click", () => this.showSettingsScreen());
+    document
+      .getElementById("skinsBtn")
+      ?.addEventListener("click", () => this.showSkinScreen());
+    document
+      .getElementById("backSkinBtn")
+      ?.addEventListener("click", () => this.showModeScreen());
+    this.openSkinCaseBtn?.addEventListener("click", () => this.openSkinCase());
+    this.exchangeRarePlusBtn?.addEventListener("click", () => this.exchangeRarePlus());
     document
       .getElementById("backSettingsBtn")
       ?.addEventListener("click", () => this.showModeScreen());
@@ -420,6 +440,7 @@ export class UI {
     this.settingsScreen?.classList.remove("hidden");
     this.skillScreen?.classList.add("hidden");
     this.resultScreen?.classList.add("hidden");
+    this.skinScreen?.classList.add("hidden");
     this.updateMouseSensitivityDisplay();
     this.fitOverlayScreens();
   }
@@ -451,6 +472,7 @@ export class UI {
     this.settingsScreen?.classList.add("hidden");
     this.skillScreen?.classList.add("hidden");
     this.resultScreen?.classList.add("hidden");
+    this.skinScreen?.classList.add("hidden");
     this.fitOverlayScreens();
   }
 
@@ -460,6 +482,7 @@ export class UI {
     this.howToPlayScreen?.classList.remove("hidden");
     this.skillScreen?.classList.add("hidden");
     this.resultScreen?.classList.add("hidden");
+    this.skinScreen?.classList.add("hidden");
     this.fitOverlayScreens();
   }
 
@@ -467,6 +490,7 @@ export class UI {
     this.modeScreen?.classList.add("hidden");
     this.skillScreen?.classList.remove("hidden");
     this.resultScreen?.classList.add("hidden");
+    this.skinScreen?.classList.add("hidden");
 
     const coop = this.currentMode === "coop";
     this.p2SkillPicker?.classList.toggle("hidden", !coop);
@@ -490,6 +514,118 @@ export class UI {
       this.currentMode === "coop"
         ? `<span>P1 <b>${SKILL_NAMES[this.currentSkill]}</b></span><i>•</i><span>P2 <b>${SKILL_NAMES[this.currentSkillP2]}</b></span>`
         : `<span>สกิลที่เลือก <b>${SKILL_NAMES[this.currentSkill]}</b></span>`;
+  }
+
+  setSkinSystem(system) {
+    this.skinSystem = system;
+    this.renderSkinScreen();
+  }
+
+  showSkinScreen() {
+    this.modeScreen?.classList.add("hidden");
+    this.howToPlayScreen?.classList.add("hidden");
+    this.settingsScreen?.classList.add("hidden");
+    this.skillScreen?.classList.add("hidden");
+    this.resultScreen?.classList.add("hidden");
+    this.skinScreen?.classList.remove("hidden");
+    this.renderSkinScreen();
+    this.fitOverlayScreens();
+  }
+
+  renderSkinScreen() {
+    if (!this.skinSystem || !this.skinGrid) return;
+    const data = this.skinSystem.snapshot();
+    if (this.skinCaseCount) this.skinCaseCount.textContent = data.cases;
+    if (this.skinScrapCount) this.skinScrapCount.textContent = data.scrap;
+    if (this.exchangeRarePlusBtn) this.exchangeRarePlusBtn.disabled = data.scrap < 100;
+    if (this.chooseRareExchange) {
+      const rares = SKINS.filter((s) => s.rarity === "Rare" && !data.ownedSkins.includes(s.id));
+      const canAffordRare = data.scrap >= 500;
+      this.chooseRareExchange.innerHTML = rares.length ? `<span>500 SCRAP · CHOOSE RARE</span>${rares.map((s) => `<button type="button" data-exchange-rare="${s.id}" ${canAffordRare ? "" : "disabled"}>${s.name}</button>`).join("")}` : `<span>RARE COLLECTION COMPLETE</span>`;
+      this.chooseRareExchange.querySelectorAll("[data-exchange-rare]").forEach((button) => button.addEventListener("click", () => this.exchangeChooseRare(button.dataset.exchangeRare)));
+    }
+    const equipped = data.equippedSkin;
+    const cards = SKINS.map((s) => {
+      const owned = data.ownedSkins.includes(s.id);
+      const isEquipped = equipped === s.id;
+      return `<button type="button" class="skin-card ${owned ? "owned" : "locked"} ${isEquipped ? "equipped" : ""}" data-skin-id="${s.id}" ${owned ? "" : "disabled"}>
+        <span class="skin-preview" style="--skin:${s.color};--skin2:${s.secondaryColor}"><i class="skin-shape skin-shape-${s.shape}"></i></span>
+        <span class="skin-card-rarity rarity-${s.rarity.toLowerCase()}">${s.rarity}</span>
+        <strong>${owned ? s.name : "???"}</strong>
+        <small>${isEquipped ? "EQUIPPED" : owned ? "EQUIP" : "LOCKED"}</small>
+      </button>`;
+    }).join("");
+    this.skinGrid.innerHTML = `<button type="button" class="skin-card owned ${equipped === "default" ? "equipped" : ""}" data-skin-id="default">
+      <span class="skin-preview default-preview"><i class="skin-shape skin-shape-circle"></i></span><span class="skin-card-rarity">DEFAULT</span><strong>Default</strong><small>${equipped === "default" ? "EQUIPPED" : "EQUIP"}</small>
+    </button>${cards}`;
+    this.skinGrid.querySelectorAll("[data-skin-id]").forEach((button) => button.addEventListener("click", () => {
+      if (this.skinSystem.equip(button.dataset.skinId)) this.renderSkinScreen();
+    }));
+  }
+
+  openSkinCase() {
+    if (!this.skinSystem || this.skinCaseBusy || this.skinSystem.data.cases <= 0) return;
+    const result = this.skinSystem.openCase();
+    if (!result.ok) return;
+    this.skinCaseBusy = true;
+    if (this.openSkinCaseBtn) this.openSkinCaseBtn.disabled = true;
+    if (this.skinCaseResult) this.skinCaseResult.classList.add("hidden");
+    if (this.skinCaseRoll) this.skinCaseRoll.classList.remove("hidden");
+    const labels = ["COMMON", "RARE", "COMMON", "EPIC", "UNCOMMON", "RARE", "COMMON", "LEGENDARY", "UNCOMMON", result.item.rarity.toUpperCase()];
+    let i = 0;
+    const tick = () => {
+      if (!this.skinCaseRoll) return;
+      this.skinCaseRoll.textContent = labels[i];
+      this.skinCaseRoll.dataset.rarity = labels[i].toLowerCase();
+      i += 1;
+      if (i < labels.length) setTimeout(tick, 75 + i * 18);
+      else setTimeout(() => {
+        this.skinCaseBusy = false;
+        if (this.openSkinCaseBtn) this.openSkinCaseBtn.disabled = false;
+        this.skinCaseRoll.classList.add("hidden");
+        if (this.skinCaseResult) {
+          this.skinCaseResult.className = `skin-case-result rarity-${result.item.rarity.toLowerCase()}`;
+          this.skinCaseResult.innerHTML = `<span>${result.duplicate ? "DUPLICATE" : "YOU UNLOCKED"}</span><strong>${result.item.name}</strong><b>${result.item.rarity}</b>${result.duplicate ? `<small>+${result.scrap} SCRAP</small>` : `<small>Added to Inventory</small>`}`;
+        }
+        this.renderSkinScreen();
+      }, 260);
+    };
+    tick();
+  }
+
+  exchangeChooseRare(id) {
+    if (!this.skinSystem || this.skinSystem.data.scrap < 500 || this.skinCaseBusy) return;
+    const result = this.skinSystem.exchangeChooseRare(id);
+    if (!result.ok) return;
+    if (this.skinCaseResult) {
+      this.skinCaseResult.className = `skin-case-result rarity-${result.item.rarity.toLowerCase()}`;
+      this.skinCaseResult.innerHTML = `<span>EXCHANGE</span><strong>${result.item.name}</strong><b>${result.item.rarity}</b><small>Added to Inventory</small>`;
+    }
+    this.renderSkinScreen();
+  }
+
+  exchangeRarePlus() {
+    if (!this.skinSystem || this.skinSystem.data.scrap < 100 || this.skinCaseBusy) return;
+    const result = this.skinSystem.exchangeRandomRarePlus();
+    if (!result.ok) return;
+    if (this.skinCaseResult) {
+      this.skinCaseResult.className = `skin-case-result rarity-${result.item.rarity.toLowerCase()}`;
+      this.skinCaseResult.innerHTML = `<span>${result.duplicate ? "DUPLICATE" : "EXCHANGE"}</span><strong>${result.item.name}</strong><b>${result.item.rarity}</b><small>${result.duplicate ? `+${result.scrap} SCRAP` : "Added to Inventory"}</small>`;
+    }
+    this.renderSkinScreen();
+  }
+
+  showSkinRewardToast(title, subtitle) {
+    let toast = document.getElementById("skinRewardToast");
+    if (!toast) {
+      toast = document.createElement("section");
+      toast.id = "skinRewardToast";
+      document.getElementById("gameRoot")?.appendChild(toast);
+    }
+    toast.innerHTML = `<strong>${title}</strong><span>${subtitle}</span>`;
+    toast.classList.remove("hidden");
+    clearTimeout(this._skinToastTimer);
+    this._skinToastTimer = setTimeout(() => toast.classList.add("hidden"), 2200);
   }
 
   setStartHandler(fn) {
@@ -556,6 +692,7 @@ export class UI {
     this.overlay.classList.add("hidden");
     this.pause?.classList.add("hidden");
     this.hud?.classList.remove("hidden");
+    this.skinScreen?.classList.add("hidden");
   }
 
   /** Hides the HUD/pause overlay and shows the mode-select menu screen. */

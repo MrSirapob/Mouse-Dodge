@@ -87,6 +87,7 @@
       <div class="menu-actions">
         <button id="howToPlayBtn" class="howto-btn" type="button">วิธีการเล่น</button>
         <button id="settingsBtn" class="howto-btn settings-btn" type="button">ตั้งค่า</button>
+        <button id="skinsBtn" class="howto-btn settings-btn" type="button">สกิน</button>
       </div>
     </div>
 
@@ -188,6 +189,35 @@
           <div class="howto-tip">มือถือรองรับ <strong>เล่นคนเดียว</strong> เท่านั้น · โหมด 2 คนต้องเล่นบน PC</div>
         </div>
       </div>
+    </div>
+
+    <div class="menu-screen hidden" id="skinScreen">
+      <button class="back-btn" id="backSkinBtn" type="button">‹ กลับ</button>
+      <div class="howto-head">
+        <div class="hero-kicker">SKIN COLLECTION</div>
+        <h2>สกิน</h2>
+        <p>สะสมสกิน เปิด Case และเปลี่ยน Visual ของผู้เล่น</p>
+      </div>
+      <div class="skin-wallet">
+        <div><span>CASES</span><b id="skinCaseCount">0</b></div>
+        <div><span>SCRAP</span><b id="skinScrapCount">0</b></div>
+      </div>
+      <div class="skin-case-box">
+        <div class="skin-case-title">SKIN CASE</div>
+        <div class="skin-rarity-odds"><span>Common 55%</span><span>Uncommon 25%</span><span>Rare 12%</span><span>Epic 6%</span><span>Legendary 1.8%</span><span>Mythic 0.2%</span></div>
+        <button id="openSkinCaseBtn" class="start skin-open-btn" type="button">OPEN CASE</button>
+        <div id="skinCaseRoll" class="skin-case-roll hidden" aria-live="polite"></div>
+        <div id="skinCaseResult" class="skin-case-result hidden"></div>
+      </div>
+      <div class="skin-exchange">
+        <div class="skin-section-title">SCRAP EXCHANGE</div>
+        <div class="skin-exchange-actions">
+          <button id="exchangeRarePlusBtn" type="button">100 SCRAP · RANDOM RARE+</button>
+          <div id="chooseRareExchange" class="choose-rare-exchange"></div>
+        </div>
+      </div>
+      <div class="skin-section-title">MY SKINS</div>
+      <div id="skinGrid" class="skin-grid"></div>
     </div>
 
     <div class="menu-screen hidden" id="skillScreen">

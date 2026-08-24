@@ -1073,10 +1073,20 @@ export class Renderer {
   drawParticle(p) {
     const c = this.ctx;
     c.globalAlpha = Math.max(p.life, 0);
-    c.beginPath();
-    c.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    c.fillStyle = p.color;
-    c.fill();
+    // `glitch` deathEffect particles (see particles.js DEATH_EFFECTS) carry
+    // a flickerColors palette and re-pick their color every frame instead
+    // of keeping one fixed color, plus draw as squares for a pixelated look.
+    const fillColor = p.flickerColors
+      ? p.flickerColors[(Math.random() * p.flickerColors.length) | 0]
+      : p.color;
+    c.fillStyle = fillColor;
+    if (p.square) {
+      c.fillRect(p.x - p.r, p.y - p.r, p.r * 2, p.r * 2);
+    } else {
+      c.beginPath();
+      c.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      c.fill();
+    }
     c.globalAlpha = 1;
   }
 
@@ -1092,10 +1102,11 @@ export class Renderer {
     c.fillStyle = '#ffd166';
     c.fill();
 
+    const skinColor = p.skinVisual?.color || p.color;
     c.globalAlpha = 0.72;
     c.beginPath();
     c.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    c.fillStyle = p.color;
+    c.fillStyle = skinColor;
     c.fill();
 
     c.globalAlpha = 0.95;
@@ -1144,17 +1155,39 @@ export class Renderer {
 
   drawPlayer(p) {
     const c = this.ctx;
+    const v = p.skinVisual;
+    const isDefault = !v || v.id === 'default';
+    const primary = v?.color || p.color;
+    const secondary = v?.secondaryColor || '#ffffff';
+    const tier = v?.tier || 0;
+    const now = performance.now();
 
     for (let i = 0; i < p.trail.length; i++) {
       const t = p.trail[i], a = i / p.trail.length;
       c.beginPath();
       c.arc(t.x, t.y, p.r * a * 0.8, 0, Math.PI * 2);
-      c.fillStyle = `rgba(78,205,196,${a * 0.3})`;
+      c.fillStyle = isDefault ? `rgba(78,205,196,${a * 0.3})` : primary;
+      c.globalAlpha = isDefault ? 1 : a * 0.28;
       c.fill();
+      c.globalAlpha = 1;
+    }
+
+    if (v && !isDefault && v.trail !== 'none') {
+      c.save();
+      c.globalAlpha = 0.18;
+      c.strokeStyle = primary;
+      c.lineWidth = v.trail === 'glitch' ? 3 : 2;
+      c.beginPath();
+      for (let i = 1; i < p.trail.length; i++) {
+        const t = p.trail[i];
+        if (i === 1) c.moveTo(t.x, t.y); else c.lineTo(t.x, t.y);
+      }
+      c.stroke();
+      c.restore();
     }
 
     if (p.invulnerable > 0) {
-      const blink = Math.floor(performance.now() / 90) % 2 === 0;
+      const blink = Math.floor(now / 90) % 2 === 0;
       if (blink) {
         c.beginPath();
         c.arc(p.x, p.y, p.r + 6, 0, Math.PI * 2);
@@ -1164,13 +1197,85 @@ export class Renderer {
       }
     }
 
+    if (!isDefault && v.glow > 0) {
+      c.save();
+      c.globalAlpha = 0.28;
+      c.beginPath();
+      c.arc(p.x, p.y, p.r + 5 + Math.sin(now / 140) * 1.5, 0, Math.PI * 2);
+      c.fillStyle = primary;
+      c.shadowColor = primary;
+      c.shadowBlur = v.glow;
+      c.fill();
+      c.restore();
+    }
+
+    c.save();
+    c.translate(p.x, p.y);
+    c.fillStyle = primary;
+    c.shadowColor = primary;
+    c.shadowBlur = isDefault ? 12 : Math.min(30, 8 + v.glow);
+    c.strokeStyle = '#fff';
+    c.lineWidth = 2;
+
+    const r = p.r;
     c.beginPath();
-    c.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    c.fillStyle = p.color;
-    c.shadowColor = p.color;
-    c.shadowBlur = 12;
+    switch (v?.shape || 'circle') {
+      case 'diamond':
+        c.moveTo(0, -r); c.lineTo(r, 0); c.lineTo(0, r); c.lineTo(-r, 0); c.closePath(); break;
+      case 'square':
+        c.rect(-r * 0.82, -r * 0.82, r * 1.64, r * 1.64); break;
+      case 'hex':
+        for (let i = 0; i < 6; i++) { const a = Math.PI / 6 + i * Math.PI / 3; const x = Math.cos(a) * r; const y = Math.sin(a) * r; if (i === 0) c.moveTo(x, y); else c.lineTo(x, y); } c.closePath(); break;
+      case 'star':
+        for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5; const rr = i % 2 ? r * 0.46 : r; const x = Math.cos(a) * rr; const y = Math.sin(a) * rr; if (i === 0) c.moveTo(x, y); else c.lineTo(x, y); } c.closePath(); break;
+      case 'void':
+        c.arc(0, 0, r, 0, Math.PI * 2); break;
+      default:
+        c.arc(0, 0, r, 0, Math.PI * 2);
+    }
     c.fill();
     c.shadowBlur = 0;
+
+    if (!isDefault && tier >= 2) {
+      c.beginPath();
+      c.arc(0, 0, r * 0.42 + Math.sin(now / 100) * 1.5, 0, Math.PI * 2);
+      c.fillStyle = secondary;
+      c.globalAlpha = 0.7;
+      c.fill();
+      c.globalAlpha = 1;
+    }
+
+    if (!isDefault && tier >= 5) {
+      const spin = now / 900;
+      c.save();
+      c.rotate(spin);
+      c.setLineDash([5, 4]);
+      c.beginPath();
+      c.arc(0, 0, r + 10, 0, Math.PI * 2);
+      c.strokeStyle = secondary;
+      c.lineWidth = 1.8;
+      c.globalAlpha = 0.75;
+      c.stroke();
+      c.restore();
+    }
+
+    c.stroke();
+    c.restore();
+
+    if (!isDefault && v.particle && tier >= 4) {
+      const count = tier >= 6 ? 5 : 3;
+      c.save();
+      c.globalAlpha = 0.6;
+      for (let i = 0; i < count; i++) {
+        const a = now / 700 + (i * Math.PI * 2) / count;
+        const rr = p.r + 8 + Math.sin(now / 180 + i) * 3;
+        const x = p.x + Math.cos(a) * rr;
+        const y = p.y + Math.sin(a) * rr;
+        c.fillStyle = i % 2 ? secondary : primary;
+        c.fillRect(x - 1.5, y - 1.5, 3, 3);
+      }
+      c.restore();
+    }
 
     if (p.hitFlash > 0) {
       const k = p.hitFlash / 0.30;
@@ -1178,26 +1283,29 @@ export class Renderer {
       c.globalAlpha = 0.78 * k;
       c.beginPath();
       c.arc(p.x, p.y, p.r + 3, 0, Math.PI * 2);
-      c.strokeStyle = '#ff5c5c';
+      c.strokeStyle = tier >= 3 ? primary : '#ff5c5c';
       c.lineWidth = 2.5;
-      c.shadowColor = '#ff5c5c';
+      c.shadowColor = c.strokeStyle;
       c.shadowBlur = 7;
       c.stroke();
-      c.shadowBlur = 0;
       c.restore();
     }
 
     if (p.shieldTimer > 0 || p.shieldCharges > 0) {
       c.beginPath();
-      c.arc(p.x, p.y, p.r + 10 + Math.sin(performance.now() / 100) * 2, 0, Math.PI * 2);
+      c.arc(p.x, p.y, p.r + 10 + Math.sin(now / 100) * 2, 0, Math.PI * 2);
       c.strokeStyle = '#7bed9f';
       c.lineWidth = 2;
       c.stroke();
     }
 
-    c.lineWidth = 2;
-    c.strokeStyle = '#fff';
-    c.stroke();
+    if (isDefault) {
+      c.lineWidth = 2;
+      c.strokeStyle = '#fff';
+      c.beginPath();
+      c.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      c.stroke();
+    }
   }
 
   /** Looks up and runs the matching entry in SKILL_EFFECT_DRAWERS for fx.type. */
