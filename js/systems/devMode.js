@@ -1,5 +1,5 @@
-import { CONFIG } from '../core/config.js?v=20260824-lqdh';
-import { SKINS_BY_RARITY } from '../data/skins.js?v=20260824-lqdh';
+import { CONFIG } from '../core/config.js?v=20260824-qsi4';
+import { SKINS_BY_RARITY } from '../data/skins.js?v=20260824-qsi4';
 
 export class DevMode {
   // Selectable game-speed levels for the SPEED panel (spec: "เร่งความเร็ว

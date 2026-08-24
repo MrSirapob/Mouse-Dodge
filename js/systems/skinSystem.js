@@ -6,7 +6,7 @@ import {
   SKINS,
   SKINS_BY_RARITY,
   TOTAL_RARITY_WEIGHT,
-} from '../data/skins.js?v=20260824-umgq';
+} from '../data/skins.js?v=20260824-qsi4';
 
 const STORAGE_KEY = 'waveDodgeSkinData';
 const SAVE_VERSION = 1;
@@ -182,22 +182,59 @@ export class SkinSystem {
     return true;
   }
 
-  exchangeRandomRarePlus(random = Math.random) {
+  // CS:GO-style weighted rarity roll: each rarity tier keeps its own
+  // RARITY_CONFIG odds (Rare far more likely than Mythic). Used both for the
+  // spin's actual result and to populate filler slots in the visual reel.
+  rollWeightedRarity(rarities, random = Math.random) {
+    let totalWeight = 0;
+    for (const r of rarities) totalWeight += RARITY_CONFIG[r].weight;
+    let roll = random() * totalWeight;
+    for (const r of rarities) {
+      roll -= RARITY_CONFIG[r].weight;
+      if (roll < 0) return r;
+    }
+    return rarities[rarities.length - 1];
+  }
+
+  // Phase 1 of the scrap-100 exchange: deduct scrap and roll only the
+  // *rarity tier* (CS:GO odds, restricted to Rare/Epic/Legendary/Mythic
+  // tiers that still have an unowned skin). The UI spins a reel against
+  // this rarity and calls finalizeExchangeRarePlus() with whatever item
+  // the reel actually lands on — mirrors consumeCase()/awardSkin() below.
+  beginExchangeRarePlus(random = Math.random) {
     const cost = 100;
     if (this.data.scrap < cost) {
       warn('scrap exchange rejected: not enough scrap', { cost, scrap: this.data.scrap });
       return { ok: false, reason: 'not_enough_scrap' };
     }
-    const pool = SKINS.filter((s) => ['Rare', 'Epic', 'Legendary', 'Mythic'].includes(s.rarity) && !this.owns(s.id));
-    if (!pool.length) {
+    const eligibleRarities = ['Rare', 'Epic', 'Legendary', 'Mythic']
+      .filter((r) => SKINS_BY_RARITY[r].some((s) => !this.owns(s.id)));
+    if (!eligibleRarities.length) {
       warn('scrap exchange rejected: no unowned Rare+ skins');
       return { ok: false, reason: 'no_unowned_rare_plus' };
     }
+    const rarity = this.rollWeightedRarity(eligibleRarities, random);
     this.data.scrap -= cost;
-    const item = pool[Math.floor(random() * pool.length)];
+    this.save();
+    log('scrap exchange started: CS:GO-style rarity roll', { cost, rarity, scrapRemaining: this.data.scrap });
+    return { ok: true, rarity };
+  }
+
+  // Phase 2: apply whatever unowned skin the reel landed on. Refunds the
+  // scrap if the id is somehow invalid/already-owned (shouldn't happen —
+  // the reel is only ever populated from unowned Rare+ skins — but a
+  // refund keeps a stray bug from just eating the player's scrap).
+  finalizeExchangeRarePlus(skinId) {
+    const item = SKINS.find((s) => s.id === skinId);
+    if (!item || !['Rare', 'Epic', 'Legendary', 'Mythic'].includes(item.rarity) || this.owns(item.id)) {
+      warn('exchange finalize rejected: invalid/owned skin, refunding scrap', { skinId });
+      this.data.scrap += 100;
+      this.save();
+      return { ok: false, reason: 'invalid_skin' };
+    }
     this.data.ownedSkins.push(item.id);
     this.save();
-    log('scrap exchanged for random Rare+', { cost, skin: item.id, scrapRemaining: this.data.scrap });
+    log('scrap exchanged for random Rare+', { skin: item.id, rarity: item.rarity, scrapRemaining: this.data.scrap });
     return { ok: true, item, duplicate: false, scrap: 0 };
   }
 

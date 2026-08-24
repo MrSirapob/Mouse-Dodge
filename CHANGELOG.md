@@ -1,5 +1,47 @@
 # Changelog
 
+## Scrap-100 exchange: real CS:GO-style spinning reel, not just a random+popup (user-requested, "ใช้สุ่มแบบ csgo สิ ของ 100 scrap อ่ะ ตอนนี้แค่กดสุ่มแล้วก็กด confirm popup เด้งว่าได้อะไรมาเฉยๆ แก้ซะ")
+Follow-up to the entry directly below (that one fixed the *odds* to be
+rarity-weighted; this one fixes the *presentation* — user pointed out it
+was still just confirm-popup → instant result, no actual reel like case
+opening has). Split `SkinSystem`'s exchange into two phases, mirroring
+how case-opening already works (`consumeCase()` roll → `awardSkin()`
+apply): `beginExchangeRarePlus()` deducts the 100 scrap and rolls only the
+rarity tier (CS:GO odds, restricted to Rare/Epic/Legendary/Mythic tiers
+that still have an unowned skin); `finalizeExchangeRarePlus(skinId)`
+applies whichever skin the reel visually lands on (refunds the 100 scrap
+if that id is ever invalid/owned — defensive, shouldn't happen). On the
+UI side, generalized the existing case-opening reel
+(`runCaseReel`/`finishCaseReel` in `js/ui/ui.js`) to take options
+(`rollSlotRarity`, `poolForRarity`, `award`, `resultHeader`, `newLabel`)
+instead of hardcoding case behavior, and added `exchangeReelOptions()` so
+the exchange spins the *same* 6s reel/tick/landing animation as opening a
+case — just with every slot (filler and the landing item) drawn only from
+unowned Rare+ skins, and calling `finalizeExchangeRarePlus` instead of
+`awardSkin` when it lands. Result popup now says "EXCHANGE RESULT" /
+"EXCHANGE" instead of "CASE RESULT" / "NEW!", same as before. The
+500-scrap choose-your-Rare exchange (`exchangeChooseRare`) is untouched —
+it's a direct pick, not a random roll, so no reel applies there.
+Verified end-to-end with a scripted run (drains all 9 unowned Rare+ skins,
+scrap deducted exactly 100 per success, stops cleanly once none remain).
+Full test suite (191 tests) still passes; cache-busting version bumped to
+`20260824-qsi4`.
+
+## Scrap-100 exchange: weighted CS:GO-style rarity roll (user-requested, "จากไฟล์ตอนสุ่ม scrap 100 ให้ใช้สุ่มแบบ csgo ด้วย โดย รายการที่สุ่มต้องตามเงื่อนไขระดับของ scrap 100 ด้วยนะ")
+`SkinSystem.exchangeRandomRarePlus()` (the 100-scrap exchange) previously
+picked a skin from the eligible pool with a flat uniform roll — every
+Rare/Epic/Legendary/Mythic candidate had equal odds. Added
+`rollWeightedFromPool()`, which groups the pool by rarity and rolls the
+tier first using the existing `RARITY_CONFIG` weights (Rare 12, Epic 6,
+Legendary 1.8, Mythic 0.2 — same odds as a case roll), then picks
+uniformly among unowned skins within the winning tier. The scrap-100
+eligibility condition is unchanged: still restricted to
+Rare/Epic/Legendary/Mythic and unowned skins only, cost still 100 scrap.
+Verified the new odds with a 200k-sample simulation (~60% Rare, ~30%
+Epic, ~9% Legendary, ~1% Mythic — matches the weight ratios). Full test
+suite (191 tests) still passes; cache-busting version bumped to
+`20260824-6nbx`.
+
 ## Simplify Rarity Frame system to plain colored borders, follow-up (user-requested, "ผมว่าใช้แค่กรอบสีอะดีละ แค่ทำให้มันเด่นชัดก็พอ common ก็ไม่ต้องมีกรอบ เพราะแย่สุดอะไรแบบนี")
 Follow-up to the Rarity Border/Frame entry directly below. The glow/
 shimmer/spin animation turned out to be more than the user wanted — they

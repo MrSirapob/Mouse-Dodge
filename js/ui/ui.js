@@ -1,5 +1,5 @@
-import { CONFIG } from "../core/config.js?v=20260824-umgq";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-umgq";
+import { CONFIG } from "../core/config.js?v=20260824-qsi4";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-qsi4";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -606,6 +606,7 @@ export class UI {
     if (!caseResult.ok) return;
     this.skinCaseBusy = true;
     if (this.openSkinCaseBtn) this.openSkinCaseBtn.disabled = true;
+    if (this.exchangeRarePlusBtn) this.exchangeRarePlusBtn.disabled = true;
     if (this.skinCaseResult) this.skinCaseResult.classList.add("hidden");
     this.runCaseReel(caseResult.rarity);
   }
@@ -615,19 +616,32 @@ export class UI {
    * skin items. We randomly populate the reel matching natural rarity weights,
    * pick a PLANNED_INDEX near the end, and inject an item of the rolled rarity there.
    * Then we drive the strip's position itself via requestAnimationFrame.
-   * 
+   *
+   * Shared by both the case-open flow (default opts) and the 100-scrap
+   * exchange (via exchangeReelOptions()) — same spin/tick/landing mechanics,
+   * only the reel's slot pool, the awarding call, and the result-popup
+   * copy differ between the two.
+   *
    * CRITICAL: The item at PLANNED_INDEX is just a visual target. The ACTUAL result
    * is strictly determined by whatever element physically sits under the pointer
    * when the animation ends.
    */
-  runCaseReel(targetRarity) {
+  runCaseReel(targetRarity, opts = {}) {
+    const {
+      rollSlotRarity = () => this.skinSystem.rollRarity(),
+      poolForRarity = (r) => SKINS_BY_RARITY[r],
+      award = (skinId) => this.skinSystem.awardSkin(skinId),
+      resultHeader = "CASE RESULT",
+      newLabel = "NEW!",
+    } = opts;
+
     const roll = this.skinCaseRoll;
     if (!roll) { 
       // Fallback if no UI: award a random skin of the target rarity directly
-      const pool = SKINS_BY_RARITY[targetRarity];
+      const pool = poolForRarity(targetRarity);
       const fallbackItem = pool[Math.floor(Math.random() * pool.length)] || pool[0];
-      const result = this.skinSystem.awardSkin(fallbackItem.id);
-      this.finishCaseReel(result);
+      const result = award(fallbackItem.id);
+      this.finishCaseReel(result, { resultHeader, newLabel });
       return; 
     }
     if (this._caseReelRaf) cancelAnimationFrame(this._caseReelRaf);
@@ -638,8 +652,8 @@ export class UI {
     
     // 1. Generate the entire reel using the natural weighted random
     for (let i = 0; i < REEL_LENGTH; i += 1) {
-      const r = this.skinSystem.rollRarity();
-      const rp = SKINS_BY_RARITY[r];
+      const r = rollSlotRarity();
+      const rp = poolForRarity(r);
       items.push(rp[Math.floor(Math.random() * rp.length)] || rp[0]);
     }
 
@@ -657,7 +671,7 @@ export class UI {
     // 3. Ensure the target rarity exists in the stop zone
     if (candidateIndices.length === 0) {
       const forcedIndex = stopZoneStart + Math.floor(Math.random() * (stopZoneEnd - stopZoneStart + 1));
-      const targetRarityPool = SKINS_BY_RARITY[targetRarity];
+      const targetRarityPool = poolForRarity(targetRarity);
       items[forcedIndex] = targetRarityPool[Math.floor(Math.random() * targetRarityPool.length)] || targetRarityPool[0];
       candidateIndices.push(forcedIndex);
     }
@@ -763,7 +777,7 @@ export class UI {
             return;
         }
 
-        const finalResult = this.skinSystem.awardSkin(skinId);
+        const finalResult = award(skinId);
 
         // Requested log: targetIndex / pointedIndex / targetSkin / pointedSkin
         const targetSkin = items[PLANNED_INDEX].id;
@@ -773,7 +787,7 @@ export class UI {
             console.error(`[Case Reel Mismatch] Expected ${PLANNED_INDEX} (${targetSkin}) but got ${pointedIndex} (${pointedSkin})`);
         }
 
-        setTimeout(() => this.finishCaseReel(finalResult), 250);
+        setTimeout(() => this.finishCaseReel(finalResult, { resultHeader, newLabel }), 250);
       }
     };
     this._caseReelRaf = requestAnimationFrame(frame);
@@ -810,7 +824,8 @@ export class UI {
     }
   }
 
-  finishCaseReel(result) {
+  finishCaseReel(result, opts = {}) {
+    const { resultHeader = "CASE RESULT", newLabel = "NEW!" } = opts;
     this.skinCaseBusy = false;
     if (this.openSkinCaseBtn) this.openSkinCaseBtn.disabled = false;
     if (this.skinCaseRoll) this.skinCaseRoll.classList.add("hidden");
@@ -818,11 +833,11 @@ export class UI {
       this.skinCaseResult.className = `skin-case-result`;
       
       const isDup = result.duplicate;
-      const title = isDup ? "DUPLICATE" : "NEW!";
+      const title = isDup ? "DUPLICATE" : newLabel;
       
       this.skinCaseResult.innerHTML = `
         <div class="skin-result-popup">
-          <div class="result-header">CASE RESULT</div>
+          <div class="result-header">${resultHeader}</div>
           <div class="skin-result-card rarity-${result.item.rarity.toLowerCase()}">
             <div class="result-skin-visual">${this.skinResultIconHTML(result.item)}</div>
             <div class="result-rarity-tag rarity-${result.item.rarity.toLowerCase()}">✦ ${result.item.rarity.toUpperCase()} ✦</div>
@@ -926,6 +941,25 @@ export class UI {
     });
   }
 
+  // Reel options for the 100-scrap exchange: same spin mechanics as case
+  // opening, but every slot (filler AND the eventual landing item) is drawn
+  // only from Rare+ skins the player doesn't already own — the scrap-100
+  // condition — with CS:GO-style tier odds deciding which rarity wins.
+  exchangeReelOptions() {
+    const eligibleRarities = ['Rare', 'Epic', 'Legendary', 'Mythic']
+      .filter((r) => SKINS_BY_RARITY[r].some((s) => !this.skinSystem.owns(s.id)));
+    return {
+      rollSlotRarity: () => this.skinSystem.rollWeightedRarity(eligibleRarities),
+      poolForRarity: (r) => {
+        const pool = SKINS_BY_RARITY[r].filter((s) => !this.skinSystem.owns(s.id));
+        return pool.length ? pool : SKINS_BY_RARITY[r];
+      },
+      award: (skinId) => this.skinSystem.finalizeExchangeRarePlus(skinId),
+      resultHeader: "EXCHANGE RESULT",
+      newLabel: "EXCHANGE",
+    };
+  }
+
   exchangeRarePlus() {
     if (!this.skinSystem || this.skinSystem.data.scrap < 100 || this.skinCaseBusy) return;
 
@@ -947,35 +981,18 @@ export class UI {
         return;
       }
 
-      const result = this.skinSystem.exchangeRandomRarePlus();
-      if (!result.ok) {
+      const started = this.skinSystem.beginExchangeRarePlus();
+      if (!started.ok) {
         this.skinCaseResult.classList.add("hidden");
         return;
       }
-      
-      if (this.skinCaseResult) {
-        this.skinCaseResult.className = `skin-case-result`;
-        const isDup = result.duplicate;
-        this.skinCaseResult.innerHTML = `
-          <div class="skin-result-popup">
-            <div class="result-header">EXCHANGE RESULT</div>
-            <div class="skin-result-card rarity-${result.item.rarity.toLowerCase()}">
 
-            <div class="result-skin-visual">${this.skinResultIconHTML(result.item)}</div>
-            <div class="result-rarity-tag rarity-${result.item.rarity.toLowerCase()}">✦ ${result.item.rarity.toUpperCase()} ✦</div>
-          </div>
-          <strong class="result-skin-name">${result.item.name}</strong>
-          <span class="result-status ${isDup ? "duplicate" : "new"}">${isDup ? "DUPLICATE" : "EXCHANGE"}</span>
-          ${isDup ? `<div class="result-scrap">+${result.scrap} SCRAP</div>` : ''}
-          <div class="result-actions">
-            ${isDup ? '' : `<button type="button" class="equip-btn">EQUIP</button>`}
-            <button type="button" class="close-btn">CLOSE</button>
-          </div>
-        </div>
-      `;
-      this.bindResultActions(result.item.id);
-      }
-      this.renderSkinScreen();
+      this.skinCaseBusy = true;
+      if (this.openSkinCaseBtn) this.openSkinCaseBtn.disabled = true;
+      if (this.exchangeRarePlusBtn) this.exchangeRarePlusBtn.disabled = true;
+      this.skinCaseResult.classList.add("hidden");
+
+      this.runCaseReel(started.rarity, this.exchangeReelOptions());
     });
   }
 

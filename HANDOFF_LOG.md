@@ -845,6 +845,42 @@ to consume the charge. Don't "fix" that without re-reading this entry first.
 
 ---
 
+## 2026-08-24 (2nd session): Scrap-100 exchange gets an actual spinning reel
+Follow-up to the same-day entry below — user pointed out the scrap-100 exchange still just did
+confirm-popup → instant result, no visual reel like case opening has. Split the exchange into two
+phases in `skinSystem.js` (`beginExchangeRarePlus()` deducts scrap + rolls the rarity tier only,
+`finalizeExchangeRarePlus(skinId)` applies whatever the reel lands on, with a scrap refund if that
+id is ever invalid — defensive only). Generalized `runCaseReel()`/`finishCaseReel()` in `ui.js` to
+accept options (`rollSlotRarity`, `poolForRarity`, `award`, `resultHeader`, `newLabel`) so the
+exchange now drives the *same* 6s spin/tick/landing reel as case opening, restricted to unowned
+Rare+ skins for every slot. `exchangeChooseRare()` (500-scrap pick-your-Rare) is untouched — it's
+a direct pick, no roll, no reel needed. Verified with a scripted run draining all 9 unowned Rare+
+skins (exact scrap deduction, clean stop). Ran `npm run bump-version` after (new tag
+`20260824-qsi4`).
+**Files:** `js/systems/skinSystem.js`, `js/ui/ui.js`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **190 PASS / 0 FAIL / 1 WARN** (pre-existing warning,
+unrelated).
+**For the next session:** Nothing pending.
+
+---
+
+## 2026-08-24: Scrap-100 exchange now uses a CS:GO-style weighted rarity roll
+User asked for the 100-scrap exchange (`SkinSystem.exchangeRandomRarePlus()`) to roll like a
+CS:GO case instead of flat-uniform across the whole Rare+ pool, while keeping the existing
+scrap-100 eligibility condition (Rare/Epic/Legendary/Mythic, unowned only). Added
+`rollWeightedFromPool()`: groups the eligible pool by rarity, rolls the tier using the existing
+`RARITY_CONFIG` weights (same odds as `rollRarity()`/case rolls — Rare 12, Epic 6, Legendary 1.8,
+Mythic 0.2), then picks uniformly among unowned skins within that tier. `exchangeChooseRare()`
+(the 500-scrap pick-your-Rare exchange) untouched. Verified odds with a 200k-sample simulation —
+came out ~60/30/9/1 which matches the weight ratios. Ran `npm run bump-version` after (new tag
+`20260824-6nbx`).
+**Files:** `js/systems/skinSystem.js`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **190 PASS / 0 FAIL / 1 WARN** (pre-existing warning,
+unrelated).
+**For the next session:** Nothing pending.
+
+---
+
 *(2026-08-20, 2026-08-19, and 2026-08-18 entries archived per the*
 *Housekeeping rule above — their content is already in `CHANGELOG.md`.*
 *Nothing carried forward as pending: the items those entries flagged*
