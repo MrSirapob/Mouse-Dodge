@@ -1,5 +1,5 @@
-import { CONFIG } from "../core/config.js?v=20260824-hi9y";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-hi9y";
+import { CONFIG } from "../core/config.js?v=20260824-sv8v";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-sv8v";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -633,7 +633,7 @@ export class UI {
     if (this._caseReelRaf) cancelAnimationFrame(this._caseReelRaf);
 
     const REEL_LENGTH = 70;
-    const SPIN_MS = 9000;
+    const SPIN_MS = 6000;
     const items = [];
     
     // 1. Generate the entire reel using the natural weighted random
@@ -696,15 +696,14 @@ export class UI {
     track.style.willChange = "transform";
     track.style.transform = "translate3d(0px, 0, 0)";
 
-    // Quintic ease-out: fast for most of the spin, then a long smooth
-    // crawl into the stop — the CS:GO/CS2 "will it land here?" feel.
-    const easeOutQuint = (t) => 1 - (1 - t) ** 5;
+    // Cubic ease-out: smooth stop without the ultra-long "stuck" crawl of quintic
+    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
     let lastTickIndex = -1;
     const startTime = performance.now();
     const frame = (now) => {
       const t = Math.min((now - startTime) / SPIN_MS, 1);
-      const x = startX + (targetX - startX) * easeOutQuint(t);
+      const x = startX + (targetX - startX) * easeOutCubic(t);
       track.style.transform = `translate3d(${x}px, 0, 0)`;
 
       // Tick logic: find which item's center is closest to the pointer's local X in track coordinates
@@ -774,7 +773,7 @@ export class UI {
             console.error(`[Case Reel Mismatch] Expected ${PLANNED_INDEX} (${targetSkin}) but got ${pointedIndex} (${pointedSkin})`);
         }
 
-        setTimeout(() => this.finishCaseReel(finalResult), 400);
+        setTimeout(() => this.finishCaseReel(finalResult), 250);
       }
     };
     this._caseReelRaf = requestAnimationFrame(frame);

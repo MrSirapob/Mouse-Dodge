@@ -8,7 +8,7 @@
 
 import { TestSuite, assert, assertEqual } from '../helpers/assertions.mjs';
 import { createGame, jumpToWave, tick } from '../helpers/gameFactory.mjs';
-import { CONFIG } from '../../js/core/config.js?v=20260824-hi9y';
+import { CONFIG } from '../../js/core/config.js?v=20260824-sv8v';
 
 export async function run() {
   const s = new TestSuite('INTEGRATION: Skill Flow');

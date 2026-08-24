@@ -65,6 +65,7 @@ Redesigned the Case Result Screen *again* into a centered Skin Card modal overla
 - Inside popup: Large "Skin Card" container (`.skin-result-card`), followed by Name, NEW/DUPLICATE status, scrap (if duplicate), and EQUIP/CLOSE buttons.
 - Rarity logic: Moved the rarity classes and glow/border effects from the main wrapper to the inner `.skin-result-card` to match the exact "Skin Card" requirement. Maintained the `rarityGlowPulse` on Epic/Legendary/Mythic.
 - Animations: Added backdrop fade in, popup scale in, skin card pop, and staggered text fade-in.
+- Spin Physics: Changed the Case Reel spin easing from Quintic (`t^5`) over 9s to Cubic (`t^3`) over 6s. This removes the 2-second sub-pixel "stuck" feeling at the end of the spin while keeping a smooth deceleration, and reduced the post-spin pop delay to 250ms so the result overlay appears instantly after the item settles.
 - Responsive: Tuned popup and card sizes for Mobile (max 90vw width, 85dvh height).
 **Files:** `js/ui/ui.js`, `css/main.css`.
 **Test result:** `npm test` → 190 PASS / 0 FAIL / 1 WARN.

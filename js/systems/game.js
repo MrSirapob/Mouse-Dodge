@@ -1,17 +1,17 @@
-import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260824-hi9y';
-import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260824-hi9y';
-import { circleHit, circleNear } from '../core/collision.js?v=20260824-hi9y';
-import { Player } from '../entities/player.js?v=20260824-hi9y';
-import { BulletManager } from '../entities/bullet.js?v=20260824-hi9y';
-import { Boss } from '../entities/boss.js?v=20260824-hi9y';
-import { ParticleSystem } from '../rendering/particles.js?v=20260824-hi9y';
-import { PatternLibrary } from '../patterns/patterns.js?v=20260824-hi9y';
-import { WaveSystem } from './waveSystem.js?v=20260824-hi9y';
-import { SkillSystem } from './skillSystem.js?v=20260824-hi9y';
-import { LifeSystem } from './lifeSystem.js?v=20260824-hi9y';
-import { DevMode } from './devMode.js?v=20260824-hi9y';
-import { ItemSystem } from './itemSystem.js?v=20260824-hi9y';
-import { SkinSystem } from './skinSystem.js?v=20260824-hi9y';
+import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260824-sv8v';
+import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260824-sv8v';
+import { circleHit, circleNear } from '../core/collision.js?v=20260824-sv8v';
+import { Player } from '../entities/player.js?v=20260824-sv8v';
+import { BulletManager } from '../entities/bullet.js?v=20260824-sv8v';
+import { Boss } from '../entities/boss.js?v=20260824-sv8v';
+import { ParticleSystem } from '../rendering/particles.js?v=20260824-sv8v';
+import { PatternLibrary } from '../patterns/patterns.js?v=20260824-sv8v';
+import { WaveSystem } from './waveSystem.js?v=20260824-sv8v';
+import { SkillSystem } from './skillSystem.js?v=20260824-sv8v';
+import { LifeSystem } from './lifeSystem.js?v=20260824-sv8v';
+import { DevMode } from './devMode.js?v=20260824-sv8v';
+import { ItemSystem } from './itemSystem.js?v=20260824-sv8v';
+import { SkinSystem } from './skinSystem.js?v=20260824-sv8v';
 
 /** Converts a "#rrggbb" hex string to an "r,g,b" string for use in
  * rgba(...) fill styles (see Renderer.flash()). */
