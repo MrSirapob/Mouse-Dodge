@@ -1,5 +1,20 @@
 # Changelog
 
+## Added CS:GO-style tick sound to the case reel (user-requested)
+The case-opening reel had its visual "tick" bounce removed earlier (see
+below) for looking too much like a premature win. This adds a matching
+**sound** instead, in the same CS:GO case-reel spirit: a short synthesized
+click plays each time a new item crosses the pointer while the reel
+spins, via a new `js/audio/reelTick.js` (Web Audio API — no sound assets
+existed in the project, and none were added; it's generated on the fly:
+a quick pitch-down square-wave click with a fast decay envelope). Ticks
+naturally speed up/slow down with the reel's existing easing, same as a
+real reel, and get a touch more weight as the spin nears its stop.
+Sound-only — no visual class or bounce reintroduced.
+**Files:** `js/audio/reelTick.js` (new), `js/ui/ui.js`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated). `node scripts/check-versions.mjs` → PASS.
+
 ## Reverted skin/case UI back to English (user preference)
 Session 21 had translated the Skin Collection / Case / Exchange result
 microcopy to Thai; the user asked to revert it back to English. Straight

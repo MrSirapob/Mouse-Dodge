@@ -1,5 +1,6 @@
 import { CONFIG } from "../core/config.js?v=20260824-75fj";
 import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-75fj";
+import { tick as playReelTick } from "../audio/reelTick.js?v=20260824-75fj";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -832,11 +833,29 @@ export class UI {
     // Cubic ease-out: smooth stop without the ultra-long "stuck" crawl of quintic
     const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
+    // Audio-only "tick" tracking (CS:GO-style): every time a new item's
+    // center becomes the one nearest the pointer, play one synthesized
+    // click via reelTick.js. This is sound-only — no `.tick` CSS class,
+    // no visual bounce; that was deliberately removed (see HANDOFF_LOG.md
+    // 2026-08-24 Session 20) because it read as a premature "selected"
+    // pop. Ticking naturally speeds up/slows down with the eased motion
+    // itself, same as the real reel.
+    let lastTickIndex = -1;
     const startTime = performance.now();
     const frame = (now) => {
       const t = Math.min((now - startTime) / SPIN_MS, 1);
       const x = startX + (targetX - startX) * easeOutCubic(t);
       track.style.transform = `translate3d(${x}px, 0, 0)`;
+
+      const currentCenterTarget = viewportCenter - x - (trackRect.left - rollRect.left);
+      let idx = lastTickIndex >= 0 ? lastTickIndex : 0;
+      while (idx < itemCenters.length - 1 && Math.abs(currentCenterTarget - itemCenters[idx + 1]) <= Math.abs(currentCenterTarget - itemCenters[idx])) {
+        idx++;
+      }
+      if (idx !== lastTickIndex && idx >= 0 && idx < items.length) {
+        lastTickIndex = idx;
+        playReelTick(t);
+      }
 
       if (t < 1) {
         this._caseReelRaf = requestAnimationFrame(frame);

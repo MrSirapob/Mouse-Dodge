@@ -59,6 +59,37 @@ what changed, why, key numbers if any.
 
 ## 2026-08-24 — ChatGPT (GPT-5.6 Luna) — Skin / Case / Inventory system
 
+**Session 23 — Claude (Sonnet 5, claude.ai) — Added CS:GO-style tick sound to the case reel (user-requested, "เพิ่มเสียง Tick แบบ csgo ขอแบบเหมือนๆ"):**
+The project has no audio system at all (no `<audio>`/`new Audio()`/
+`AudioContext` anywhere, no sound assets — `assets/` is images only), so
+this is new ground, not a wire-up of something existing. Added
+`js/audio/reelTick.js`: a small Web Audio API generator that synthesizes
+one short percussive "tick" per call (square-oscillator pitch-down +
+fast exponential gain envelope, ~35ms, with tiny per-call pitch jitter so
+a run of ticks doesn't sound robotic) — no audio file, nothing fetched,
+lazily creates/resumes its own `AudioContext` on first use and fails
+silent if Web Audio isn't available (cosmetic-only, must never break the
+reel). Wired it into `runCaseReel()`'s existing rAF loop in `js/ui/ui.js`
+by reinstating the nearest-item-to-pointer tracking that Session 20
+removed — but this time it only calls `playReelTick(t)` (t = spin
+progress 0→1, used to make ticks feel a touch weightier near landing),
+with **no** `.tick` CSS class and no visual bounce, since that visual was
+the thing Session 20 was explicitly asked to remove. `tick()` is always
+invoked from inside `openSkinCase()`'s click handler (a real user
+gesture), so autoplay-policy shouldn't block it. `js/audio/reelTick.js`
+was added with the project's standard `?v=20260824-75fj` cache-bust tag
+on its one import in `ui.js`; `node scripts/check-versions.mjs` confirms
+it's in sync with the rest of the project.
+**Files:** `js/audio/reelTick.js` (new), `js/ui/ui.js`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated). `node scripts/check-versions.mjs` → PASS.
+**For the next session:** Not manually verified with actual sound in a
+real browser (no audio playback in this sandbox) — please open a case
+and confirm the ticks sound reasonable (rate, pitch, volume) and don't
+clip/distort when several fire in quick succession during the fast part
+of the spin. If it turns out too quiet/loud/clicky, the envelope/peak
+gain constants are all in `reelTick.js`'s `tick()`.
+
 **Session 22 — Claude (Sonnet 5, claude.ai) — Reverted Session 21's Thai-language skin/case UI back to English (user preference, "ผมว่าแก้กลับเป็ฯภาษาอังกฤษดีกว่า"):**
 Straight revert of the microcopy strings changed in Session 21 —
 EQUIP/EQUIPPED/LOCKED/DEFAULT/OPEN CASE/COLLECTED/COLLECTION
