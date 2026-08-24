@@ -1,5 +1,5 @@
-import { CONFIG } from "../core/config.js?v=20260824-88u1";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS } from "../data/skins.js?v=20260824-88u1";
+import { CONFIG } from "../core/config.js?v=20260824-zf8g";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS } from "../data/skins.js?v=20260824-zf8g";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -619,9 +619,9 @@ export class UI {
     if (!roll) { this.finishCaseReel(result); return; }
     if (this._caseReelRaf) cancelAnimationFrame(this._caseReelRaf);
 
-    const REEL_LENGTH = 42;
-    const WINNER_INDEX = 34; // fixed slot; leaves a short tail of items past the pointer, like the real reel
-    const SPIN_MS = 5600;
+    const REEL_LENGTH = 70;
+    const WINNER_INDEX = 58; // fixed slot; leaves a short tail of items past the pointer, like the real reel
+    const SPIN_MS = 9000;
     const pool = SKINS;
     const items = [];
     for (let i = 0; i < REEL_LENGTH; i += 1) {

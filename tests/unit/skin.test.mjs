@@ -13,8 +13,8 @@
 
 import { TestSuite, assert, assertEqual } from '../helpers/assertions.mjs';
 import { createGame } from '../helpers/gameFactory.mjs';
-import { ParticleSystem } from '../../js/rendering/particles.js?v=20260824-88u1';
-import { SKIN_BY_ID } from '../../js/data/skins.js?v=20260824-88u1';
+import { ParticleSystem } from '../../js/rendering/particles.js?v=20260824-zf8g';
+import { SKIN_BY_ID } from '../../js/data/skins.js?v=20260824-zf8g';
 
 export async function run() {
   const s = new TestSuite('SKIN SYSTEM');
@@ -99,7 +99,7 @@ export async function run() {
     game.skinSystem.data.ownedSkins.push('mint');
     game.skinSystem.equip('mint');
     // Re-create a fresh Game the same way main.js does, without calling reset() first.
-    const { Game } = await import('../../js/systems/game.js?v=20260824-88u1');
+    const { Game } = await import('../../js/systems/game.js?v=20260824-zf8g');
     const fresh = new Game({ renderer: game.renderer, input: game.input, ui: game.ui });
     assertEqual(fresh.players[1].skinVisual.id, 'default', 'P2 should default to the default skin at construction time too', {
       likely: 'js/systems/game.js constructor',

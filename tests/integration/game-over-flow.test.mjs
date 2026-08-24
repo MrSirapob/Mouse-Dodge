@@ -7,7 +7,7 @@
 
 import { TestSuite, assert, assertEqual } from '../helpers/assertions.mjs';
 import { createGame, jumpToWave, tick } from '../helpers/gameFactory.mjs';
-import { CONFIG } from '../../js/core/config.js?v=20260824-88u1';
+import { CONFIG } from '../../js/core/config.js?v=20260824-zf8g';
 
 export async function run() {
   const s = new TestSuite('INTEGRATION: Game Over Flow');
