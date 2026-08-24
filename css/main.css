@@ -1096,12 +1096,51 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 @media (max-width:560px){.skin-exchange-grid{grid-template-columns:1fr}}
 .skin-goto-collection-btn {max-width:300px;margin:6px auto 0}
 #skinCollectionScreen {width:min(760px,94vw)}
+
+/* Collection Progress — headline + overall bar + per-rarity breakdown.
+   Purely a display of what renderSkinScreen() in js/ui/ui.js computes from
+   SKINS (the full catalog) vs data.ownedSkins (SkinSystem's real saved
+   inventory) — no counts are hardcoded here, this block only styles them. */
+.skin-collection-progress {max-width:620px;margin:0 auto 16px;padding:14px 16px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(14,16,26,.72);box-sizing:border-box}
+.skin-progress-headline {display:flex;align-items:baseline;justify-content:center;flex-wrap:wrap;gap:7px 14px;margin-bottom:10px;text-align:center}
+.skin-progress-count {font-size:14px;font-weight:900;letter-spacing:1.5px;color:#fff}
+.skin-progress-complete {font-size:10px;font-weight:900;letter-spacing:2px;color:var(--gold);padding:3px 9px;border:1px solid rgba(255,217,61,.4);border-radius:20px;background:rgba(255,217,61,.1);white-space:nowrap}
+.skin-progress-bar {position:relative;height:8px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden}
+.skin-progress-fill {height:100%;border-radius:5px;background:linear-gradient(90deg,var(--accent),#7bed9f);box-shadow:0 0 10px rgba(78,205,196,.5);transition:width .4s ease}
+.skin-progress-rarities {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 10px;margin-top:12px}
+.skin-progress-rarity-row {display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0;padding:5px 8px;border-radius:7px;background:rgba(255,255,255,.03);font-size:10px}
+.skin-progress-rarity-row.complete {background:rgba(255,255,255,.06)}
+.skin-progress-rarity-label {font-weight:900;letter-spacing:.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.skin-progress-rarity-count {flex:0 0 auto;font-weight:800;color:#d8dbe5;font-variant-numeric:tabular-nums}
+.skin-progress-rarity-row.complete .skin-progress-rarity-count {color:var(--graze)}
+@media (max-width:520px){
+  .skin-collection-progress {padding:11px 12px;margin-bottom:12px}
+  .skin-progress-count {font-size:12px}
+  .skin-progress-rarities {grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 8px}
+  .skin-progress-rarity-row {font-size:9px;padding:4px 6px}
+}
+/* Below ~400px the 2-column rarity breakdown starts fighting the headline
+   for room — drop it and keep only the overall bar (still fully readable),
+   per the "don't force extra info into a cramped layout" rule. */
+@media (max-width:400px){
+  .skin-progress-rarities {display:none}
+}
+
+/* Missing/locked skin — silhouette instead of the real visual. The rarity
+   border/glow (from .skin-preview.rarity-*, above) and the card-wide
+   opacity dim (from the existing .skin-card:disabled rule) still apply —
+   a locked card should read as "I'm missing a <rarity> skin" at a glance,
+   without previewing the actual shape/color reward before it's unlocked. */
+.skin-preview.locked-preview {background:rgba(255,255,255,.03)}
+.skin-silhouette {display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.07);border:2px dashed rgba(255,255,255,.25);color:#9aa0b2;font-size:15px;font-weight:900;font-style:normal;line-height:1}
+
 #skinCollectionScreen.scrollable-screen {max-height:calc(100vh - 32px);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;box-sizing:border-box;scrollbar-width:thin;scrollbar-color:rgba(78,205,196,.55) rgba(255,255,255,.06)}
 #skinCollectionScreen.scrollable-screen::-webkit-scrollbar {width:8px}
 #skinCollectionScreen.scrollable-screen::-webkit-scrollbar-track {background:rgba(255,255,255,.06);border-radius:8px}
 #skinCollectionScreen.scrollable-screen::-webkit-scrollbar-thumb {background:rgba(78,205,196,.55);border-radius:8px;border:2px solid rgba(14,16,26,.9)}
 #skinCollectionScreen.scrollable-screen::-webkit-scrollbar-thumb:hover {background:rgba(78,205,196,.8)}
 #skinCollectionScreen .back-btn {position:sticky;top:0;background:rgba(10,11,18,.92);z-index:2;margin:-4px -4px 8px;padding:8px 4px 4px}
+
 .skin-grid {width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 auto}
 .skin-card {min-width:0;padding:14px 8px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(14,16,26,.72);color:#fff;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;transition:transform .12s,border-color .12s,background .12s}
 .skin-card:hover:not(:disabled) {transform:translateY(-2px);background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.23)}

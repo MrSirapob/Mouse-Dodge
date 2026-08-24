@@ -1,5 +1,5 @@
-import { CONFIG } from "../core/config.js?v=20260824-edvl";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-edvl";
+import { CONFIG } from "../core/config.js?v=20260824-75fj";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-75fj";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -252,6 +252,7 @@ export class UI {
     this.resultScreen = document.getElementById("resultScreen");
     this.skinScreen = document.getElementById("skinScreen");
     this.skinCollectionScreen = document.getElementById("skinCollectionScreen");
+    this.skinCollectionProgress = document.getElementById("skinCollectionProgress");
     this.skinGrid = document.getElementById("skinGrid");
     this.skinCaseCount = document.getElementById("skinCaseCount");
     this.skinScrapCount = document.getElementById("skinScrapCount");
@@ -654,11 +655,54 @@ export class UI {
     }
 
     const equipped = data.equippedSkin;
+
+    // === Collection Progress ===
+    // Source of truth: SKINS (full skin catalog, imported from data/skins.js)
+    // and data.ownedSkins (SkinSystem's real inventory) — nothing here is
+    // hardcoded, and `default` is intentionally excluded from the count
+    // since it isn't an obtainable/collectible skin (see SKIN_BY_ID).
+    if (this.skinCollectionProgress) {
+      const totalSkins = SKINS.length;
+      const collectedSkins = SKINS.reduce((n, s) => n + (data.ownedSkins.includes(s.id) ? 1 : 0), 0);
+      const pct = totalSkins > 0 ? Math.round((collectedSkins / totalSkins) * 100) : 0;
+      const rarityRows = RARITY_ORDER.map((rarity) => {
+        const pool = SKINS_BY_RARITY[rarity];
+        if (!pool.length) return "";
+        const ownedInRarity = pool.reduce((n, s) => n + (data.ownedSkins.includes(s.id) ? 1 : 0), 0);
+        const rarityComplete = ownedInRarity === pool.length;
+        return `<div class="skin-progress-rarity-row ${rarityComplete ? "complete" : ""}">
+          <span class="skin-progress-rarity-label rarity-${rarity.toLowerCase()}">${rarity.toUpperCase()}</span>
+          <span class="skin-progress-rarity-count">${ownedInRarity} / ${pool.length}</span>
+        </div>`;
+      }).join("");
+      this.skinCollectionProgress.innerHTML = `
+        <div class="skin-progress-headline">
+          <span class="skin-progress-count">${collectedSkins} / ${totalSkins} COLLECTED</span>
+          ${collectionComplete ? '<span class="skin-progress-complete">COLLECTION COMPLETE</span>' : ""}
+        </div>
+        <div class="skin-progress-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Collection progress">
+          <div class="skin-progress-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="skin-progress-rarities">${rarityRows}</div>
+      `;
+    }
+
     const cards = SKINS.map((s) => {
       const owned = data.ownedSkins.includes(s.id);
       const isEquipped = equipped === s.id;
+      // OWNED cards show the real skin visual (shape + color) exactly as
+      // before. LOCKED cards intentionally never receive the `--skin`/
+      // `--skin2` color variables or the real `skin-shape-*` glyph — only a
+      // generic silhouette + "?" — so the rarity border/label is visible
+      // (players can see *what's* missing) without previewing the actual
+      // color/shape reward (players can't see *exactly* what it looks like
+      // before unlocking it).
+      const previewInner = owned
+        ? `<i class="skin-shape skin-shape-${s.shape}"></i>`
+        : `<i class="skin-silhouette" aria-hidden="true">?</i>`;
+      const previewStyle = owned ? ` style="--skin:${s.color};--skin2:${s.secondaryColor}"` : "";
       return `<button type="button" class="skin-card ${owned ? "owned" : "locked"} ${isEquipped ? "equipped" : ""}" data-skin-id="${s.id}" ${owned ? "" : "disabled"}>
-        <span class="skin-preview rarity-${s.rarity.toLowerCase()}" style="--skin:${s.color};--skin2:${s.secondaryColor}"><i class="skin-shape skin-shape-${s.shape}"></i></span>
+        <span class="skin-preview rarity-${s.rarity.toLowerCase()} ${owned ? "" : "locked-preview"}"${previewStyle}>${previewInner}</span>
         <span class="skin-card-rarity rarity-${s.rarity.toLowerCase()}">${s.rarity}</span>
         <strong>${owned ? s.name : "???"}</strong>
         <small>${isEquipped ? "EQUIPPED" : owned ? "EQUIP" : "LOCKED"}</small>

@@ -1,5 +1,40 @@
 # Changelog
 
+## Skin Collection: Collection Progress + Missing Skin Silhouette (user-requested — add exactly these 2 features, no RNG/case-reel/scrap/equip changes)
+Audited the existing Skin Collection system first, per the request: found
+`index.html` already had a `#skinCollectionProgress` placeholder div and
+`js/ui/ui.js`'s `renderSkinScreen()` already computed real progress numbers
+and rendered a `skin-silhouette` "?" for locked cards — but **no CSS
+existed for any of it** (`.skin-collection-progress`, `.skin-progress-*`,
+`.skin-silhouette`, `.locked-preview` were all undefined), so the feature
+was present in markup/data but effectively invisible/unstyled. Rather than
+build a second Collection system, this session only added the missing
+`css/main.css` styling (progress card, overall bar, per-rarity grid,
+dashed silhouette placeholder, mobile breakpoints) — zero changes to
+`SkinSystem`, RNG, the case reel, scrap, or equip logic.
+- **Collection Progress**: headline "`N / total COLLECTED`" (+ "COLLECTION
+  COMPLETE" badge at 100%), a fill bar, and a 6-rarity breakdown grid — all
+  driven by `SKINS.length` and `data.ownedSkins` (real `SkinSystem` state),
+  nothing hardcoded. Below 400px width the per-rarity grid hides (overall
+  bar only) to avoid crowding a narrow screen, per the request's own
+  fallback guidance.
+- **Missing Skin / Silhouette**: locked cards already rendered a
+  `skin-silhouette` "?" glyph instead of the real shape — added a dashed
+  circular placeholder style for it, distinct from the real glowing
+  `skin-shape`. The rarity border/label and the existing `.skin-card:disabled`
+  dimming already made rarity visible without revealing the real
+  color/shape — no change needed there.
+Added `tests/unit/skin-collection-progress.test.mjs` (5 tests) calling the
+real `UI.prototype.renderSkinScreen` against a real `SkinSystem` (fake DOM
+elements only) to verify 0/total, partial, and total/total counts, that
+owned cards keep the real visual, that locked cards never leak the real
+shape/color, and that progress updates immediately after `awardSkin()`
+with no reload needed. Registered in `tests/run-all.mjs`.
+**Files:** `css/main.css`, `tests/unit/skin-collection-progress.test.mjs`,
+`tests/run-all.mjs`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated).
+
 ## Skin selector preview now matches the character actually played (user-reported, "ช่วยแก้ ให้ Preview ใน skin ตรงกับตัวละครที่เอาไปเล่นจริงๆ")
 Fixed a long-documented bug (flagged since the Session 5 dev-mode notes in
 HANDOFF_LOG.md 2026-08-24): equipping a skin from the Skin screen updated

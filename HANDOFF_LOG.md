@@ -59,6 +59,33 @@ what changed, why, key numbers if any.
 
 ## 2026-08-24 — ChatGPT (GPT-5.6 Luna) — Skin / Case / Inventory system
 
+**Session 19 — Claude (Sonnet 5, claude.ai) — Skin Collection: Collection Progress + Missing Skin Silhouette (user-requested, scoped to exactly these 2 UI/UX features, no RNG/reel/scrap/equip changes):**
+Audited first, as instructed. Found the markup/logic for both features
+*already existed* — `index.html`'s `#skinCollectionProgress` div and
+`renderSkinScreen()`'s real progress calc + `skin-silhouette` "?" for
+locked cards were already in `js/ui/ui.js` — but `css/main.css` had zero
+rules for any of the classes involved, so it was effectively invisible.
+Added only the missing CSS: `.skin-collection-progress` card (headline,
+fill bar, per-rarity grid — hidden under 400px per the "don't crowd a
+narrow screen" fallback), and `.skin-silhouette`/`.locked-preview` (dashed
+placeholder distinct from the real glowing skin-shape; rarity border/label
+and the existing `:disabled` dim already handled the rest). No JS logic
+changed — this was purely styling a feature whose data/markup layer was
+already correct and already sourced from real `SkinSystem`/`SKINS` state,
+not reimplemented. Added 5 regression tests
+(`tests/unit/skin-collection-progress.test.mjs`) exercising the real
+`UI.prototype.renderSkinScreen` at 0/total, partial, and total/total
+ownership, confirming locked cards never leak the real shape/color and
+progress updates immediately after `awardSkin()`.
+**Files:** `css/main.css`, `tests/unit/skin-collection-progress.test.mjs`,
+`tests/run-all.mjs`, `CHANGELOG.md`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated).
+**For the next session:** Not manually verified in a real/mobile browser —
+please open the Skin Collection screen at 360/375/390/412px widths and
+confirm the progress card and locked-card silhouettes actually look right
+(no overflow, dashed "?" reads clearly against each rarity border).
+
 **Session 18 — Claude (Sonnet 5, claude.ai) — Skin selector preview now matches the character actually played (user-reported, "ช่วยแก้ ให้ Preview ใน skin ตรงกับตัวละครที่เอาไปเล่นจริงๆ"):**
 Fixed the exact bug Session 5's notes flagged as dev-only-workaround
 territory: normal `equip()` (from the Skin screen, or the case/exchange
