@@ -64,8 +64,6 @@ Polished UX details for the Case/Skin UI according to specific user feedback. Di
 - Cursor UX: Removed `cursor: wait` from the `OPEN CASE` disabled state. It now falls back to the default cursor when disabled, preventing the ugly loading spinner on hover while still preventing double-clicks.
 - Collection Complete: Added `unownedRarePlus` validation before executing `exchangeRarePlus()`. If the player already owns all Rare+ skins, a "COLLECTION COMPLETE" alert popup is shown and execution stops (no scrap deducted, no RNG called).
 - Random Skin Confirmation: Intercepted the 100 Scrap Random Skin button to show a Confirmation Popup first (CANCEL / CONFIRM). Cancel closes it. Confirm re-validates scrap and collection, locks the UI with an `isProcessing` flag (preventing double click race conditions), deducts scrap, rolls RNG, and finally shows the standard Case Result screen.
-- CS:GO Spin for Random Scrap Exchange: Refactored `runCaseReel()` to accept options, allowing it to spin and force a stop on a specific target Skin ID. Now, when the user confirms spending 100 Scrap, they see the same exciting CS:GO reel animation before getting their new Rare+ skin. 
-- Fast Confirm Popup: Sped up the Confirm Popup's appearance to 0.25s and swapped the buttons so CONFIRM is large, on top, and visually distinct.
 **Files:** `js/ui/ui.js`, `css/main.css`.
 **Test result:** `npm test` → 190 PASS / 0 FAIL / 1 WARN.
 **For the next session:** Nothing pending.

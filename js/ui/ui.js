@@ -1,5 +1,5 @@
-import { CONFIG } from "../core/config.js?v=20260824-lqdh";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-lqdh";
+import { CONFIG } from "../core/config.js?v=20260824-umgq";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-umgq";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -620,28 +620,14 @@ export class UI {
    * is strictly determined by whatever element physically sits under the pointer
    * when the animation ends.
    */
-  runCaseReel(options) {
-    let targetRarity, targetSkinId, mode;
-    
-    // Support legacy call signature: runCaseReel(targetRarity)
-    if (typeof options === 'string') {
-      targetRarity = options;
-      mode = 'case';
-    } else {
-      targetRarity = options.targetRarity;
-      targetSkinId = options.targetSkinId;
-      mode = options.mode || 'case';
-    }
-
+  runCaseReel(targetRarity) {
     const roll = this.skinCaseRoll;
     if (!roll) { 
-      // Fallback if no UI
-      if (mode === 'case') {
-        const pool = SKINS_BY_RARITY[targetRarity];
-        const fallbackItem = pool[Math.floor(Math.random() * pool.length)] || pool[0];
-        const result = this.skinSystem.awardSkin(fallbackItem.id);
-        this.finishCaseReel(result);
-      }
+      // Fallback if no UI: award a random skin of the target rarity directly
+      const pool = SKINS_BY_RARITY[targetRarity];
+      const fallbackItem = pool[Math.floor(Math.random() * pool.length)] || pool[0];
+      const result = this.skinSystem.awardSkin(fallbackItem.id);
+      this.finishCaseReel(result);
       return; 
     }
     if (this._caseReelRaf) cancelAnimationFrame(this._caseReelRaf);
@@ -663,22 +649,16 @@ export class UI {
     const candidateIndices = [];
     
     for (let i = stopZoneStart; i <= stopZoneEnd; i++) {
-      if (targetSkinId) {
-        if (items[i].id === targetSkinId) candidateIndices.push(i);
-      } else if (targetRarity) {
-        if (items[i].rarity === targetRarity) candidateIndices.push(i);
+      if (items[i].rarity === targetRarity) {
+        candidateIndices.push(i);
       }
     }
 
-    // 3. Ensure the target exists in the stop zone
+    // 3. Ensure the target rarity exists in the stop zone
     if (candidateIndices.length === 0) {
       const forcedIndex = stopZoneStart + Math.floor(Math.random() * (stopZoneEnd - stopZoneStart + 1));
-      if (targetSkinId) {
-        items[forcedIndex] = SKINS.find(s => s.id === targetSkinId);
-      } else {
-        const targetRarityPool = SKINS_BY_RARITY[targetRarity];
-        items[forcedIndex] = targetRarityPool[Math.floor(Math.random() * targetRarityPool.length)] || targetRarityPool[0];
-      }
+      const targetRarityPool = SKINS_BY_RARITY[targetRarity];
+      items[forcedIndex] = targetRarityPool[Math.floor(Math.random() * targetRarityPool.length)] || targetRarityPool[0];
       candidateIndices.push(forcedIndex);
     }
 
@@ -783,12 +763,7 @@ export class UI {
             return;
         }
 
-        let finalResult;
-        if (mode === 'scrap') {
-            finalResult = this.skinSystem.awardScrapExchange(skinId);
-        } else {
-            finalResult = this.skinSystem.awardSkin(skinId);
-        }
+        const finalResult = this.skinSystem.awardSkin(skinId);
 
         // Requested log: targetIndex / pointedIndex / targetSkin / pointedSkin
         const targetSkin = items[PLANNED_INDEX].id;
@@ -920,14 +895,14 @@ export class UI {
     this.skinCaseResult.classList.remove("hidden");
     
     this.skinCaseResult.innerHTML = `
-      <div class="skin-result-popup" style="width: 320px; text-align: center; animation-duration: 0.25s;">
-        <div class="result-header">RANDOM SKIN</div>
-        <p style="color: #d8dbe5; font-size: 13px; line-height: 1.6; margin-bottom: 24px; opacity: 1; animation: none;">
+      <div class="skin-result-popup" style="width: 320px; text-align: center;">
+        <div class="result-header" style="color: #ffb84d;">RANDOM SKIN</div>
+        <p style="color: #d8dbe5; font-size: 13px; line-height: 1.6; margin-bottom: 24px;">
           ใช้ 100 Scrap เพื่อสุ่ม Skin 1 ครั้ง?
         </p>
-        <div class="result-actions" style="display: flex; flex-direction: column; gap: 10px; width: 100%; opacity: 1; animation: none; margin-top: 10px;">
-          <button type="button" class="equip-btn" id="confirmScrapBtn" style="border-color: #ffb84d; color: #ffb84d; background: rgba(255,184,77,0.15); width: 100%;">CONFIRM</button>
-          <button type="button" class="close-btn" style="width: 100%;">CANCEL</button>
+        <div class="result-actions" style="display: flex; gap: 12px; width: 100%;">
+          <button type="button" class="close-btn" style="flex: 1;">CANCEL</button>
+          <button type="button" class="equip-btn" id="confirmScrapBtn" style="flex: 1; border-color: #ffb84d; color: #ffb84d; background: rgba(255,184,77,0.15);">CONFIRM</button>
         </div>
       </div>
     `;
@@ -967,25 +942,40 @@ export class UI {
         this.skinCaseResult.classList.add("hidden");
         return;
       }
-      const unownedCheck = SKINS.filter((s) => ['Rare', 'Epic', 'Legendary', 'Mythic'].includes(s.rarity) && !this.skinSystem.owns(s.id));
-      if (unownedCheck.length === 0) {
+      if (SKINS.filter((s) => ['Rare', 'Epic', 'Legendary', 'Mythic'].includes(s.rarity) && !this.skinSystem.owns(s.id)).length === 0) {
         this.showCollectionCompleteAlert();
         return;
       }
 
-      this.skinCaseResult.classList.add("hidden");
+      const result = this.skinSystem.exchangeRandomRarePlus();
+      if (!result.ok) {
+        this.skinCaseResult.classList.add("hidden");
+        return;
+      }
       
-      // Determine the skin we want to give them upfront
-      const targetSkin = unownedCheck[Math.floor(Math.random() * unownedCheck.length)];
-      
-      this.skinCaseBusy = true;
-      if (this.exchangeRarePlusBtn) this.exchangeRarePlusBtn.disabled = true;
-      if (this.chooseRareExchange) Array.from(this.chooseRareExchange.children).forEach(b => b.disabled = true);
-      
-      // Scroll to top so they can see the animation
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      
-      this.runCaseReel({ targetSkinId: targetSkin.id, mode: 'scrap' });
+      if (this.skinCaseResult) {
+        this.skinCaseResult.className = `skin-case-result`;
+        const isDup = result.duplicate;
+        this.skinCaseResult.innerHTML = `
+          <div class="skin-result-popup">
+            <div class="result-header">EXCHANGE RESULT</div>
+            <div class="skin-result-card rarity-${result.item.rarity.toLowerCase()}">
+
+            <div class="result-skin-visual">${this.skinResultIconHTML(result.item)}</div>
+            <div class="result-rarity-tag rarity-${result.item.rarity.toLowerCase()}">✦ ${result.item.rarity.toUpperCase()} ✦</div>
+          </div>
+          <strong class="result-skin-name">${result.item.name}</strong>
+          <span class="result-status ${isDup ? "duplicate" : "new"}">${isDup ? "DUPLICATE" : "EXCHANGE"}</span>
+          ${isDup ? `<div class="result-scrap">+${result.scrap} SCRAP</div>` : ''}
+          <div class="result-actions">
+            ${isDup ? '' : `<button type="button" class="equip-btn">EQUIP</button>`}
+            <button type="button" class="close-btn">CLOSE</button>
+          </div>
+        </div>
+      `;
+      this.bindResultActions(result.item.id);
+      }
+      this.renderSkinScreen();
     });
   }
 
