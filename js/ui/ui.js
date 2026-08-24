@@ -242,10 +242,13 @@ export class UI {
       "mouseSensitivityValue",
     );
     this.skillScreen = document.getElementById("skillScreen");
+    this.p1SkillPicker = document.getElementById("p1SkillPicker");
     this.p2SkillPicker = document.getElementById("p2SkillPicker");
     this.selectedLoadout = document.getElementById("selectedLoadout");
     this.controlHint = document.getElementById("controlHint");
     this.skillScreenSub = document.getElementById("skillScreenSub");
+    this.startBtn = document.getElementById("startBtn");
+    this.skillNextBtn = document.getElementById("skillNextBtn");
     this.resultScreen = document.getElementById("resultScreen");
     this.skinScreen = document.getElementById("skinScreen");
     this.skinCollectionScreen = document.getElementById("skinCollectionScreen");
@@ -409,7 +412,16 @@ export class UI {
 
     document
       .getElementById("backModeBtn")
-      ?.addEventListener("click", () => this.showModeScreen());
+      ?.addEventListener("click", () => {
+        if (this.currentMode === "coop" && this.coopSkillStep === 2) {
+          this.goToP1SkillStep();
+        } else {
+          this.showModeScreen();
+        }
+      });
+    document
+      .getElementById("skillNextBtn")
+      ?.addEventListener("click", () => this.goToP2SkillStep());
     document
       .getElementById("startBtn")
       ?.addEventListener("click", () =>
@@ -518,20 +530,50 @@ export class UI {
     this.skinScreen?.classList.add("hidden");
     this.skinCollectionScreen?.classList.add("hidden");
 
+    // Coop always restarts the loadout flow on P1's step: pick P1's skill,
+    // "ถัดไป" -> pick P2's skill, then "เริ่มเล่น" appears.
+    this.coopSkillStep = 1;
+    this.renderSkillStep();
+    this.updateLoadout();
+    this.fitOverlayScreens();
+  }
+
+  renderSkillStep() {
     const coop = this.currentMode === "coop";
-    this.p2SkillPicker?.classList.toggle("hidden", !coop);
+    const onP2Step = coop && this.coopSkillStep === 2;
+
+    this.p1SkillPicker?.classList.toggle("hidden", onP2Step);
+    this.p2SkillPicker?.classList.toggle("hidden", !onP2Step);
+
     if (this.skillScreenSub) {
-      this.skillScreenSub.textContent = coop
-        ? "เลือกสกิลให้ผู้เล่นแต่ละคน"
-        : "เลือกสกิลที่ต้องการก่อนเริ่มเกม";
+      this.skillScreenSub.textContent = !coop
+        ? "เลือกสกิลที่ต้องการก่อนเริ่มเกม"
+        : onP2Step
+          ? "PLAYER 2 เลือกสกิลที่ต้องการ"
+          : "PLAYER 1 เลือกสกิลที่ต้องการ";
     }
     if (this.controlHint) {
       this.controlHint.textContent = coop
         ? "P1: เมาส์ · P2: WASD / ลูกศร + / · Space: หยุดเกม"
         : "P1: เมาส์ · Space: หยุดเกม";
     }
-    this.updateLoadout();
-    this.fitOverlayScreens();
+
+    // In coop, P1's step shows "ถัดไป" instead of "เริ่มเล่น" — the run
+    // can't start until P2 has picked a skill too.
+    const showNext = coop && !onP2Step;
+    this.skillNextBtn?.classList.toggle("hidden", !showNext);
+    this.startBtn?.classList.toggle("hidden", showNext);
+  }
+
+  goToP2SkillStep() {
+    if (this.currentMode !== "coop") return;
+    this.coopSkillStep = 2;
+    this.renderSkillStep();
+  }
+
+  goToP1SkillStep() {
+    this.coopSkillStep = 1;
+    this.renderSkillStep();
   }
 
   updateLoadout() {
@@ -603,7 +645,7 @@ export class UI {
     const collectionComplete = SKINS.every((s) => data.ownedSkins.includes(s.id));
     if (this.openSkinCaseBtn) {
       if (collectionComplete) {
-        this.openSkinCaseBtn.textContent = "คุณมีสกินครบแล้ว";
+        this.openSkinCaseBtn.textContent = "คุณมีสกินครบทุกอันแล้ว";
         this.openSkinCaseBtn.disabled = true;
       } else {
         this.openSkinCaseBtn.textContent = "OPEN CASE";
@@ -666,20 +708,20 @@ export class UI {
     } = opts;
 
     const roll = this.skinCaseRoll;
-    if (!roll) {
+    if (!roll) { 
       // Fallback if no UI: award a random skin of the target rarity directly
       const pool = poolForRarity(targetRarity);
       const fallbackItem = pool[Math.floor(Math.random() * pool.length)] || pool[0];
       const result = award(fallbackItem.id);
       this.finishCaseReel(result, { resultHeader, newLabel });
-      return;
+      return; 
     }
     if (this._caseReelRaf) cancelAnimationFrame(this._caseReelRaf);
 
     const REEL_LENGTH = 70;
     const SPIN_MS = 6000;
     const items = [];
-
+    
     // 1. Generate the entire reel using the natural weighted random
     for (let i = 0; i < REEL_LENGTH; i += 1) {
       const r = rollSlotRarity();
@@ -691,7 +733,7 @@ export class UI {
     const stopZoneStart = 55;
     const stopZoneEnd = 65;
     const candidateIndices = [];
-
+    
     for (let i = stopZoneStart; i <= stopZoneEnd; i++) {
       if (items[i].rarity === targetRarity) {
         candidateIndices.push(i);
@@ -716,13 +758,13 @@ export class UI {
       </span>`).join("")}</div>`;
 
     const track = roll.querySelector(".skin-reel-track");
-
+    
     // Calculate actual pixel positions based on layout
     const rollRect = roll.getBoundingClientRect();
     const trackRect = track.getBoundingClientRect();
     const viewportCenter = roll.clientWidth / 2;
     const pointerScreenX = rollRect.left + viewportCenter;
-
+    
     // Precalculate item centers relative to track for exact tick tracking
     const itemCenters = Array.from(track.children).map(el => {
       const rect = el.getBoundingClientRect();
@@ -730,10 +772,10 @@ export class UI {
     });
 
     const plannedCenter = itemCenters[PLANNED_INDEX];
-
+    
     // Remove jitter temporarily for 100% deterministic pixel-perfect alignment
-    const jitter = 0;
-
+    const jitter = 0; 
+    
     const startX = 0;
     const targetX = pointerScreenX - (trackRect.left + plannedCenter) - jitter;
 
@@ -752,7 +794,7 @@ export class UI {
 
       // Tick logic: find which item's center is closest to the pointer's local X in track coordinates
       const currentCenterTarget = viewportCenter - x - (trackRect.left - rollRect.left);
-
+      
       let idx = lastTickIndex >= 0 ? lastTickIndex : 0;
       // Advance idx if the next item is closer to the center target
       while (idx < itemCenters.length - 1 && Math.abs(currentCenterTarget - itemCenters[idx + 1]) <= Math.abs(currentCenterTarget - itemCenters[idx])) {
@@ -779,7 +821,7 @@ export class UI {
         // Get the final layout after the target transform
         const finalRollRect = roll.getBoundingClientRect();
         const finalPointerX = finalRollRect.left + finalRollRect.width / 2;
-
+        
         let pointedElement = null;
         let minDiff = Infinity;
         let pointedIndex = -1;
@@ -794,7 +836,7 @@ export class UI {
                 pointedIndex = i;
             }
         }
-
+        
         if (pointedElement) {
           pointedElement.classList.add("winner");
         }
@@ -861,10 +903,10 @@ export class UI {
     if (this.skinCaseRoll) this.skinCaseRoll.classList.add("hidden");
     if (this.skinCaseResult) {
       this.skinCaseResult.className = `skin-case-result`;
-
+      
       const isDup = result.duplicate;
       const title = isDup ? "DUPLICATE" : newLabel;
-
+      
       this.skinCaseResult.innerHTML = `
         <div class="skin-result-popup">
           <div class="result-header">${resultHeader}</div>
@@ -890,7 +932,7 @@ export class UI {
     if (!this.skinCaseResult) return;
     this.skinCaseResult.className = `skin-case-result sheet`;
     this.skinCaseResult.classList.remove("hidden");
-
+    
     this.skinCaseResult.innerHTML = `
       <div class="skin-result-popup sheet-panel" style="max-width: 400px; text-align: center;">
         <div class="result-header">COLLECTION COMPLETE</div>

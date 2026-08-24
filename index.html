@@ -231,7 +231,7 @@
               <span class="exchange-card-cost">100<small>SCRAP</small></span>
             </div>
             <p class="exchange-card-desc">สุ่ม 1 สกินระดับ Rare ขึ้นไปที่ยังไม่มี การันตีไม่ต่ำกว่า Rare</p>
-            <button id="exchangeRarePlusBtn" type="button" class="exchange-card-btn">สุ่ม</button>
+            <button id="exchangeRarePlusBtn" type="button" class="exchange-card-btn">แลกแบบสุ่ม</button>
             <div id="exchangeRarePlusConfirmRow" class="exchange-confirm-row hidden">
               <button id="exchangeRarePlusConfirmBtn" type="button" class="exchange-card-btn confirm-btn">ยืนยัน</button>
               <button id="exchangeRarePlusCancelBtn" type="button" class="exchange-card-btn cancel-btn">ยกเลิก</button>
@@ -257,12 +257,12 @@
         <button class="skin-info-close" id="skinInfoCloseBtn" type="button" aria-label="ปิด">✕</button>
         <h3 id="skinInfoTitle">Case &amp; Scrap ทำงานยังไง</h3>
         <div class="skin-info-section">
-          <h4>ได้ Case จากไหน</h4>
-          <p>เคลียร์ Wave 5 / 10 / 15 / 20 ในแต่ละรอบ จะได้ Case ฟรีรอบละ 1 ใบต่อ Wave</p>
+          <h4>หา Case จากไหน</h4>
+          <p>เคลียร์ Wave 5 / 10 / 15 ในแต่ละรอบ จะได้ Case ฟรีรอบละ 1 ใบต่อ Wave</p>
         </div>
         <div class="skin-info-section">
           <h4>เปิด Case แล้วสุ่มยังไง</h4>
-          <p>ระบบสุ่ม "ระดับความแรร์" ตาม % ที่แสดงด้านบนก่อน</p>
+          <p>ระบบสุ่ม "ระดับความแรร์" ตาม % ที่แสดงด้านบนก่อน แล้วค่อยสุ่มสกินภายในระดับนั้นอีกที ยิ่งแรร์สูง โอกาสยิ่งต่ำ</p>
         </div>
         <div class="skin-info-section">
           <h4>Scrap คืออะไร</h4>
@@ -295,6 +295,7 @@
       </div>
 
       <div class="selected-loadout" id="selectedLoadout"></div>
+      <button id="skillNextBtn" class="start hidden" type="button">ถัดไป ›</button>
       <button id="startBtn" class="start" type="button">เริ่มเล่น</button>
       <div class="menu-hint" id="controlHint">P1: เมาส์ · Space: หยุดเกม</div>
     </div>
