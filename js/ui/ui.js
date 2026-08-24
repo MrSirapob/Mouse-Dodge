@@ -1,5 +1,5 @@
-import { CONFIG } from "../core/config.js?v=20260824-oi05";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-oi05";
+import { CONFIG } from "../core/config.js?v=20260824-eo9q";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-eo9q";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -839,7 +839,7 @@ export class UI {
       toast.id = "skinRewardToast";
       document.getElementById("gameRoot")?.appendChild(toast);
     }
-    toast.innerHTML = `<strong>${title}</strong><span>${subtitle}</span>`;
+    toast.innerHTML = subtitle ? `<strong>${title}</strong><span>${subtitle}</span>` : `<span>${title}</span>`;
     toast.classList.remove("hidden");
     clearTimeout(this._skinToastTimer);
     this._skinToastTimer = setTimeout(() => toast.classList.add("hidden"), 2200);

@@ -6,7 +6,7 @@ import {
   SKINS,
   SKINS_BY_RARITY,
   TOTAL_RARITY_WEIGHT,
-} from '../data/skins.js?v=20260824-oi05';
+} from '../data/skins.js?v=20260824-eo9q';
 
 const STORAGE_KEY = 'waveDodgeSkinData';
 const SAVE_VERSION = 1;
@@ -170,7 +170,7 @@ export class SkinSystem {
     }
     this.rewardedWaves.add(n);
     this.addCases(1);
-    this.ui?.showSkinRewardToast?.(`WAVE ${n} CLEAR`, '+1 CASE');
+    this.ui?.showSkinRewardToast?.('CASE +1');
     log('wave case reward granted', { wave: n, cases: this.data.cases });
     return true;
   }

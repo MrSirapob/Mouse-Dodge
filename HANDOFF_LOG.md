@@ -244,6 +244,15 @@ that specific check no longer applies. The unrelated `check-versions`
 FAIL noted above (`skinSystem.js`/`skins.js` missing `?v=`) is still
 outstanding if anyone's nearby.
 
+**Session 11 — Added Case Reward Toast:**
+Added a subtle UI Toast notification when players earn a Case reward.
+- `skinSystem.js`: Updated `awardCaseForWave` to call `this.ui?.showSkinRewardToast?.('CASE +1')`. It only fires after passing the duplicate/already-rewarded check.
+- `ui.js`: Implemented `showSkinRewardToast(msg)` to dynamically create and append the toast element to the UI container. It automatically removes itself on animation end.
+- `main.css`: Added `.reward-toast` class and `@keyframes toastFadeSlide`. It uses the existing teal `--primary` color, sits at the top (top: 15%), and prevents blocking gameplay with `pointer-events: none`.
+This safely addresses the UX without touching the core gameplay loop, collision, wave logic, or award logic.
+**Files:** `js/systems/skinSystem.js`, `js/ui/ui.js`, `css/main.css`.
+**Test result:** `npm test` → **190 PASS / 0 FAIL / 1 WARN**. `npm run check-versions` → PASS.
+
 **Session 10 — Make Case Reel Pointer the Source of Truth (user-requested, "เปลี่ยน Logic ให้ “Skin ที่ Pointer หยุดทับจริง” เป็นผลลัพธ์สุดท้าย"):**
 Changed the Case Reel flow so the UI animation's physical end state genuinely determines the item the player receives, rather than rolling the item first and making the UI fake a spin to it. 
 Flow changed to:
