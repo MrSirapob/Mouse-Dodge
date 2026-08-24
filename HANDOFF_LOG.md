@@ -119,6 +119,17 @@ scrolls smoothly with all ~21 cards reachable and readable, sticky back
 button doesn't overlap content, and `#skinScreen` (case/wallet page)
 still looks fine since it wasn't touched this session.
 
+**Session 4 — Themed scrollbar on the skin collection page (user-requested, "สามารถเปลี่ยนสี scroll bar ให้เข้าธีมได้ไหม"):**
+Small follow-up to Session 3's `.scrollable-screen` scroll container.
+Styled `#skinCollectionScreen`'s scrollbar to match the game's teal
+accent (`var(--accent)` value, `#4ecdc4`) instead of the browser default:
+`scrollbar-width`/`scrollbar-color` for Firefox, `::-webkit-scrollbar*`
+for Chrome/Safari/Edge. Purely cosmetic, no layout/JS changes.
+**Files:** `css/main.css`.
+**Test result:** Not run — CSS-only. Not manually verified in a browser.
+**For the next session:** Same outstanding ask as Session 3 — this still
+hasn't been eyeballed in a real browser.
+
 Added a complete cosmetic Skin system on top of `wave-dodge-refactored`. This session is based on the project before the Claude handoff work; the Skin system is isolated from gameplay balance as much as possible.
 
 **Implemented:**
