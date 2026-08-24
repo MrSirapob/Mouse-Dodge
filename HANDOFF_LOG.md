@@ -845,6 +845,39 @@ to consume the charge. Don't "fix" that without re-reading this entry first.
 
 ---
 
+## 2026-08-24 (4th session): Confirm/collection-complete alerts → bottom sheet
+User asked to move the scrap-exchange CONFIRM/CANCEL buttons to the bottom, and asked whether the
+"collection complete" alert should also go to the bottom (asked for a recommendation). Recommended
+and implemented: both become real bottom sheets (slide up from the edge, rounded top corners, drag
+handle), the actual case/exchange RESULT popup (EQUIP/CLOSE) stays centered since it's the payoff
+moment, not a quick ask. Added `.sheet` (on `#skinCaseResult`, `align-items:flex-end`) and
+`.sheet-panel` (on `.skin-result-popup`, top-rounded/full-width/`sheetSlideUp` entrance) modifiers
+in `css/main.css`; applied both to `showScrapConfirmPopup()` and `showCollectionCompleteAlert()`
+in `ui.js`. `finishCaseReel()`/`exchangeChooseRare()` still reset `className` to plain
+`skin-case-result` (no `sheet`), so the result reveal is unaffected. Ran `npm run bump-version`
+after (`20260824-k7jp`).
+**Files:** `css/main.css`, `js/ui/ui.js`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **190 PASS / 0 FAIL / 1 WARN** (pre-existing, unrelated).
+**For the next session:** Nothing pending.
+
+---
+
+## 2026-08-24 (3rd session): Scrap confirm popup — CONFIRM on top, no fade delay
+User confirmed the reel fix worked, then flagged the confirm popup itself (`showScrapConfirmPopup`
+in `ui.js`) as slow to respond: it was reusing `.result-actions`, which carries a
+`caseTextFade .4s ease-out .55s forwards` animation meant for the case-reveal sequence — buttons
+were invisible for the first ~550ms. Overrode `opacity:1; animation:none` inline on this popup's
+button row so it appears instantly with the popup's own scale-in. Also switched CONFIRM/CANCEL
+from side-by-side to a stacked column with CONFIRM (primary) on top, CANCEL below. Ran
+`npm run bump-version` after (`20260824-zdbh`).
+**Files:** `js/ui/ui.js`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **190 PASS / 0 FAIL / 1 WARN** (pre-existing, unrelated).
+**For the next session:** Nothing pending. Note `showCollectionCompleteAlert()` still reuses the
+same `.result-actions` class with the same fade delay — untouched since it wasn't flagged, but if
+it comes up, same fix pattern applies.
+
+---
+
 ## 2026-08-24 (2nd session): Scrap-100 exchange gets an actual spinning reel
 Follow-up to the same-day entry below — user pointed out the scrap-100 exchange still just did
 confirm-popup → instant result, no visual reel like case opening has. Split the exchange into two

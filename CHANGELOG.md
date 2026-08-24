@@ -1,5 +1,45 @@
 # Changelog
 
+## Scrap confirm + collection-complete alert: bottom sheet instead of center modal (user-requested, "แก้ Noti ตอนกดสุ่มแร์ ยืนยันกับยกเลิกเอาเป็นปุ่มขึ้นข้างล่างก็ได้ ของที่กดสุ่ม และเงื่อนไขถ้าครบแล้วก็ขึ้น alert ด้านล่างดีกว่าไหนแแบบไหนดีแนะนำ")
+User asked for the CONFIRM/CANCEL buttons on the scrap-exchange ask to
+come up from the bottom, and asked for a recommendation on whether the
+"collection complete" (all Rare+ already owned) alert should also move
+to the bottom. Recommendation: yes to both, same treatment — a real
+bottom sheet (slides up from the screen edge, rounded top corners, small
+drag-handle bar) reads as "quick decision/notice" and is thumb-reachable
+on mobile, versus a centered modal which implies a bigger, more
+deliberate moment (kept for the actual case/exchange *result* reveal,
+which still centers — that one's the dramatic payoff, not a quick
+ask/notice, so left untouched).
+Added a `.sheet` / `.sheet-panel` modifier pair in `css/main.css`: the
+shared `#skinCaseResult` backdrop gets `align-items:flex-end` instead of
+centered, and the inner `.skin-result-popup` gets top-only rounded
+corners, full width, safe-area-aware bottom padding, and a
+`sheetSlideUp` transform-based entrance instead of the center `popupScale`
+zoom. Applied `sheet`/`sheet-panel` to both `showScrapConfirmPopup()` and
+`showCollectionCompleteAlert()` in `js/ui/ui.js` (both already had the
+instant-appear/stacked-button fix from the previous session, unchanged).
+Everything else — the case-open reel, the exchange reel, the final
+result popup with EQUIP/CLOSE — still centers, since none of that was
+flagged. Ran `npm run bump-version` after (`20260824-k7jp`); full test
+suite (191 tests) still passes.
+
+## Scrap confirm popup: CONFIRM on top, instant appear (user-requested, "แก้ ตอนกด confirm เอาปุ่ม confirm ไว้ด้านบนแล้่วเพิ่มความเร็วแสดงปุ่ม confirm หน่อย มันช้าไป")
+The 100-scrap "ใช้ 100 Scrap เพื่อสุ่ม Skin 1 ครั้ง?" ask popup
+(`showScrapConfirmPopup` in `js/ui/ui.js`) was reusing the
+`.result-actions` class from the case-result reveal sequence, which has a
+`caseTextFade .4s ease-out .55s forwards` animation baked in — buttons sit
+at opacity 0 for 550ms then fade in over 400ms, ~950ms total. That timing
+makes sense for the case-opening reveal (header → skin → name → status →
+actions staggering in one after another) but was just making the CONFIRM/
+CANCEL buttons feel sluggish on a plain yes/no ask. Overrode
+`opacity: 1; animation: none` inline on this popup's `.result-actions` so
+the buttons appear immediately with the popup's own (fast, 0.6s) scale-in
+instead of waiting on top of it. Also swapped the layout from side-by-side
+CANCEL/CONFIRM to a stacked column with CONFIRM first (primary, on top)
+and CANCEL below it (secondary). Ran `npm run bump-version` after
+(`20260824-zdbh`); full test suite (191 tests) still passes.
+
 ## Scrap-100 exchange: real CS:GO-style spinning reel, not just a random+popup (user-requested, "ใช้สุ่มแบบ csgo สิ ของ 100 scrap อ่ะ ตอนนี้แค่กดสุ่มแล้วก็กด confirm popup เด้งว่าได้อะไรมาเฉยๆ แก้ซะ")
 Follow-up to the entry directly below (that one fixed the *odds* to be
 rarity-weighted; this one fixes the *presentation* — user pointed out it

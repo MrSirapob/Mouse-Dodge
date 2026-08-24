@@ -1,5 +1,5 @@
-import { CONFIG } from "../core/config.js?v=20260824-qsi4";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-qsi4";
+import { CONFIG } from "../core/config.js?v=20260824-k7jp";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-k7jp";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -884,16 +884,16 @@ export class UI {
 
   showCollectionCompleteAlert() {
     if (!this.skinCaseResult) return;
-    this.skinCaseResult.className = `skin-case-result`;
+    this.skinCaseResult.className = `skin-case-result sheet`;
     this.skinCaseResult.classList.remove("hidden");
     
     this.skinCaseResult.innerHTML = `
-      <div class="skin-result-popup" style="width: 320px; text-align: center;">
+      <div class="skin-result-popup sheet-panel" style="max-width: 400px; text-align: center;">
         <div class="result-header">COLLECTION COMPLETE</div>
-        <p style="color: #d8dbe5; font-size: 13px; line-height: 1.6; margin-bottom: 24px;">
+        <p style="color: #d8dbe5; font-size: 13px; line-height: 1.6; margin-bottom: 20px;">
           คุณมี Skin ครบทุกแบบแล้ว<br>ไม่สามารถแลก Scrap เพื่อสุ่ม Skin เพิ่มได้
         </p>
-        <div class="result-actions">
+        <div class="result-actions" style="opacity: 1; animation: none;">
           <button type="button" class="close-btn" style="width: 100%;">OK</button>
         </div>
       </div>
@@ -906,18 +906,18 @@ export class UI {
 
   showScrapConfirmPopup(onConfirm) {
     if (!this.skinCaseResult) return;
-    this.skinCaseResult.className = `skin-case-result`;
+    this.skinCaseResult.className = `skin-case-result sheet`;
     this.skinCaseResult.classList.remove("hidden");
     
     this.skinCaseResult.innerHTML = `
-      <div class="skin-result-popup" style="width: 320px; text-align: center;">
+      <div class="skin-result-popup sheet-panel" style="max-width: 400px; text-align: center;">
         <div class="result-header" style="color: #ffb84d;">RANDOM SKIN</div>
-        <p style="color: #d8dbe5; font-size: 13px; line-height: 1.6; margin-bottom: 24px;">
+        <p style="color: #d8dbe5; font-size: 13px; line-height: 1.6; margin-bottom: 20px;">
           ใช้ 100 Scrap เพื่อสุ่ม Skin 1 ครั้ง?
         </p>
-        <div class="result-actions" style="display: flex; gap: 12px; width: 100%;">
-          <button type="button" class="close-btn" style="flex: 1;">CANCEL</button>
-          <button type="button" class="equip-btn" id="confirmScrapBtn" style="flex: 1; border-color: #ffb84d; color: #ffb84d; background: rgba(255,184,77,0.15);">CONFIRM</button>
+        <div class="result-actions" style="display: flex; flex-direction: column; gap: 10px; width: 100%; opacity: 1; animation: none;">
+          <button type="button" class="equip-btn" id="confirmScrapBtn" style="width: 100%; border-color: #ffb84d; color: #ffb84d; background: rgba(255,184,77,0.15);">CONFIRM</button>
+          <button type="button" class="close-btn" style="width: 100%;">CANCEL</button>
         </div>
       </div>
     `;
