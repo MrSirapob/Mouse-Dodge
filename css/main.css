@@ -397,7 +397,7 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 #devPanel #devSkinRarityRow button[data-rarity="rare"] {border-color: rgba(112,217,255,.4);color: #9fe3ff}
 #devPanel #devSkinRarityRow button[data-rarity="epic"] {border-color: rgba(233,156,255,.4);color: #edb8ff}
 #devPanel #devSkinRarityRow button[data-rarity="legendary"] {border-color: rgba(255,217,93,.45);color: #ffe28a}
-#devPanel #devSkinRarityRow button[data-rarity="mythic"] {border-color: rgba(199,169,255,.5);color: #d9c4ff}
+#devPanel #devSkinRarityRow button[data-rarity="mythic"] {border-color: rgba(255,77,141,.5);color: #ff9dc1}
 #secret-dev-badge {top: auto !important;left: 10px !important;bottom: 10px !important;padding: 5px 8px !important;border-radius: 7px !important;font-size: 11px !important}
 
 /* RESULT SCREEN / SCORING */
@@ -895,6 +895,47 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 }
 
 /* SKIN COLLECTION */
+
+/* === Rarity Frame System ===================================================
+   Single visual language for rarity, shared by every place a skin is shown:
+   Skin Collection (.skin-preview inside .skin-card), the CS:GO-style Case
+   Reel (.skin-reel-item), the Case Result panel (.skin-case-result, incl.
+   its .skin-preview icon), and any other Skin Preview. The rarity class
+   (`rarity-<name>`) is always taken directly from the skin's own `rarity`
+   field in js/data/skins.js by the JS that renders each of these — this
+   block only controls how that class looks, never which one gets applied,
+   so it can't drift from the actual drop rarity.
+   Deliberately just a colored border, no glow/shimmer/animation — Common
+   (the worst tier) gets no border at all, so its absence itself reads as
+   "nothing special" and every other tier's color reads clearly against it. */
+:root {
+  --rarity-common: #a7acb8;
+  --rarity-uncommon: #72d6a0;
+  --rarity-rare: #70d9ff;
+  --rarity-epic: #e99cff;
+  --rarity-legendary: #ffd95c;
+  --rarity-mythic: #ff4d8d; /* red/pink — deliberately far from Epic's purple so the two never get confused at a glance */
+}
+.rarity-common, .skin-card-rarity.rarity-common {color: var(--rarity-common)}
+.rarity-uncommon, .skin-card-rarity.rarity-uncommon {color: var(--rarity-uncommon)}
+.rarity-rare, .skin-card-rarity.rarity-rare {color: var(--rarity-rare)}
+.rarity-epic, .skin-card-rarity.rarity-epic {color: var(--rarity-epic)}
+.rarity-legendary, .skin-card-rarity.rarity-legendary {color: var(--rarity-legendary)}
+.rarity-mythic, .skin-card-rarity.rarity-mythic {color: var(--rarity-mythic)}
+
+.skin-preview.rarity-uncommon, .skin-reel-item.rarity-uncommon {border-color: var(--rarity-uncommon)}
+.skin-preview.rarity-rare, .skin-reel-item.rarity-rare {border-color: var(--rarity-rare)}
+.skin-preview.rarity-epic, .skin-reel-item.rarity-epic {border-color: var(--rarity-epic)}
+.skin-preview.rarity-legendary, .skin-reel-item.rarity-legendary {border-color: var(--rarity-legendary)}
+.skin-preview.rarity-mythic, .skin-reel-item.rarity-mythic {border-color: var(--rarity-mythic)}
+
+.skin-case-result.rarity-common {color: var(--rarity-common)}
+.skin-case-result.rarity-uncommon {border-color: var(--rarity-uncommon);color: var(--rarity-uncommon)}
+.skin-case-result.rarity-rare {border-color: var(--rarity-rare);color: var(--rarity-rare)}
+.skin-case-result.rarity-epic {border-color: var(--rarity-epic);color: var(--rarity-epic)}
+.skin-case-result.rarity-legendary {border-color: var(--rarity-legendary);color: var(--rarity-legendary)}
+.skin-case-result.rarity-mythic {border-color: var(--rarity-mythic);color: var(--rarity-mythic)}
+
 .skin-wallet {display:flex;justify-content:center;gap:10px;margin:0 auto 14px;max-width:420px}
 .skin-wallet > div {min-width:110px;padding:9px 14px;border:1px solid var(--border);border-radius:9px;background:rgba(14,16,26,.72);display:flex;align-items:center;justify-content:space-between;gap:16px}
 .skin-wallet span {font-size:10px;letter-spacing:1.5px;color:#858ba0;font-weight:800}
@@ -911,23 +952,14 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .skin-case-roll::before {content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:linear-gradient(180deg,transparent,#ffd93d,transparent);transform:translateX(-50%);z-index:3;box-shadow:0 0 10px rgba(255,217,61,.65)}
 .skin-case-roll::after {content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.9) 0%,transparent 14%,transparent 86%,rgba(0,0,0,.9) 100%);pointer-events:none;z-index:2}
 .skin-reel-track {position:absolute;top:0;left:50%;height:100%;display:flex;align-items:center;gap:10px;padding:0 10px}
-.skin-reel-item {flex:0 0 auto;width:78px;height:78px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.1)}
+.skin-reel-item {flex:0 0 auto;width:78px;height:78px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.1);box-sizing:border-box;position:relative;transition:border-color .2s ease,box-shadow .2s ease}
 .skin-reel-item .skin-shape {width:34px;height:34px}
-.skin-reel-item.rarity-common {border-color:rgba(167,172,184,.5)}
-.skin-reel-item.rarity-uncommon {border-color:rgba(114,214,160,.55);box-shadow:0 0 8px rgba(114,214,160,.15)}
-.skin-reel-item.rarity-rare {border-color:rgba(112,217,255,.6);box-shadow:0 0 10px rgba(112,217,255,.2)}
-.skin-reel-item.rarity-epic {border-color:rgba(233,156,255,.65);box-shadow:0 0 11px rgba(233,156,255,.25)}
-.skin-reel-item.rarity-legendary {border-color:rgba(255,217,92,.7);box-shadow:0 0 13px rgba(255,217,92,.3)}
-.skin-reel-item.rarity-mythic {border-color:rgba(199,169,255,.75);box-shadow:0 0 15px rgba(199,169,255,.35)}
 .skin-reel-item.winner {animation:skinReelWinnerPop .35s ease-out .05s both}
 @keyframes skinReelWinnerPop {0%{transform:scale(1)}50%{transform:scale(1.22)}100%{transform:scale(1.05)}}
 .skin-reel-item.tick {animation:skinReelTick .16s ease-out}
 @keyframes skinReelTick {0%{transform:scale(1.12);filter:brightness(1.6)}100%{transform:scale(1);filter:brightness(1)}}
-.skin-case-result.rarity-mythic {color:#e2d5ff;box-shadow:0 0 28px rgba(124,77,255,.28)}
-.skin-case-result.rarity-legendary {color:#fff0a6;box-shadow:0 0 24px rgba(255,217,61,.22)}
-.skin-case-result.rarity-epic {color:#f3a4ff}
-.skin-case-result.rarity-rare {color:#70d9ff}
-.skin-case-result {margin-top:12px;padding:13px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(0,0,0,.22);display:flex;flex-direction:column;align-items:center;gap:3px;animation:skinReveal .25s ease-out}
+.skin-case-result {margin-top:12px;padding:13px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(0,0,0,.22);display:flex;flex-direction:column;align-items:center;gap:3px;animation:skinReveal .25s ease-out;box-sizing:border-box}
+.skin-case-result .skin-preview {margin-bottom:2px}
 .skin-case-result span {font-size:9px;letter-spacing:2px;color:#858ba0;font-weight:900}
 .skin-case-result strong {font-size:20px;color:#fff}
 .skin-case-result b {font-size:11px;letter-spacing:1px}
@@ -949,7 +981,7 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .skin-card:hover:not(:disabled) {transform:translateY(-2px);background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.23)}
 .skin-card:disabled {cursor:default;opacity:.48}
 .skin-card.equipped {border-color:var(--accent);box-shadow:0 0 0 1px rgba(78,205,196,.18),0 0 18px rgba(78,205,196,.08)}
-.skin-preview {width:64px;height:64px;display:flex;align-items:center;justify-content:center;position:relative}
+.skin-preview {width:64px;height:64px;display:flex;align-items:center;justify-content:center;position:relative;box-sizing:border-box;border:2px solid transparent;border-radius:14px;transition:border-color .2s ease,box-shadow .2s ease}
 .skin-shape {display:block;width:32px;height:32px;background:var(--skin);box-shadow:0 0 15px var(--skin);border:2px solid #fff}
 .skin-shape-circle {border-radius:50%}
 .skin-shape-diamond {transform:rotate(45deg);border-radius:4px}
@@ -961,7 +993,6 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .skin-card strong {max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
 .skin-card small {font-size:10px;color:#858ba0;letter-spacing:1px;font-weight:800}
 .skin-card-rarity {font-size:9px;letter-spacing:1px;font-weight:900;color:#858ba0}
-.rarity-common {color:#a7acb8}.rarity-uncommon {color:#72d6a0}.rarity-rare {color:#70d9ff}.rarity-epic {color:#e99cff}.rarity-legendary {color:#ffd95c}.rarity-mythic {color:#c7a9ff}
 #skinRewardToast {position:absolute;z-index:45;top:calc(var(--safe-top) + 72px);left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 16px;border:1px solid rgba(78,205,196,.35);border-radius:9px;background:rgba(8,10,18,.92);box-shadow:0 8px 30px #0008;pointer-events:none;animation:skinToastIn .22s ease-out}
 #skinRewardToast.hidden {display:none}
 #skinRewardToast strong {font-size:10px;letter-spacing:1.5px;color:var(--accent)}

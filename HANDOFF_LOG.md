@@ -203,6 +203,72 @@ button clicks inside it (shouldn't collapse itself after every action),
 and the collapsed/expanded state doesn't fight with the mobile
 `#devPanel` width/font-size media query overrides.
 
+**Session 7 — Rarity Border/Frame system for skins (user-requested, "เพิ่ม Rarity Border/Frame ให้ระบบ Skin ... ผู้เล่นต้องมองออกทันทีว่า Skin เป็น Rarity ระดับไหน"):**
+Added one shared "Rarity Frame System" CSS block (`css/main.css`, top of
+the SKIN COLLECTION section) — CSS variables `--rarity-common` ...
+`--rarity-mythic`, escalating border/glow per tier (flat → slight glow →
+clear glow → prominent glow), Legendary gets a soft shimmer sweep,
+Mythic gets a spinning conic-gradient ring + pulsing glow (the two most
+distinctive treatments, as asked). Changed Mythic's color from a purple
+too close to Epic's (`#c7a9ff` vs Epic's `#e99cff`) to red/pink
+(`#ff4d8d`) — that near-collision was the actual root cause behind
+"must tell rarity apart at a glance" not really working before. Applied
+the same `rarity-<name>` class (still computed straight from
+`s.rarity.toLowerCase()` in `js/data/skins.js`, untouched — single
+source of truth, per the ask) to all four requested surfaces: **Skin
+Collection** (added the class to `.skin-preview` inside `.skin-card`,
+previously only the tiny text label had it), **Case Reel**
+(`.skin-reel-item`, pre-existing, now pulls from the shared vars),
+**Case Result** (filled in the missing Common/Uncommon tiers, and added
+a matching `.skin-preview` icon via new `ui.js` helper
+`skinResultIconHTML()` so the result panel actually shows the won
+skin's shape instead of text-only), and **Skin Preview** (same
+`.skin-preview` element, so covered wherever it's used). All animation
+is opacity/`background-position`/`transform`-based, nothing occludes the
+skin shape itself. Also retuned the Dev Mode mythic button color to
+match. Full detail in `CHANGELOG.md`. No RNG/drop-rate/gameplay logic
+touched.
+**Files:** `css/main.css`, `js/ui/ui.js`, `CHANGELOG.md`.
+**Test result:** `npm test` → **190 PASS / 0 FAIL / 1 WARN** (same
+pre-existing WARN as every prior session, unrelated). Ran `npm run
+bump-version` after (ui.js content changed) — `npm run check-versions`
+now reports a single consistent tag, but flags a **pre-existing,
+unrelated** issue that predates this session: `js/systems/skinSystem.js`
+imports `../data/skins.js` with no `?v=` cache-bust string. Didn't touch
+it since it's outside this task's scope, but it's a one-line fix if a
+future session wants to clear it.
+**For the next session:** Not manually verified in a real/mobile browser
+this session — *superseded by Session 8 below*, which simplified away
+the shimmer/spin/pulse effects this note was about to have verified, so
+that specific check no longer applies. The unrelated `check-versions`
+FAIL noted above (`skinSystem.js`/`skins.js` missing `?v=`) is still
+outstanding if anyone's nearby.
+
+**Session 8 — Simplify Rarity Frame to plain colored borders, follow-up to Session 7 (user-requested, "ผมว่าใช้แค่กรอบสีอะดีละ แค่ทำให้มันเด่นชัดก็พอ common ก็ไม่ต้องมีกรอบ เพราะแย่สุดอะไรแบบนี"):**
+User found Session 7's glow/shimmer/spin more than they wanted — asked
+for just a colored border, made clearly distinct, with Common (worst
+tier) having no border at all. Stripped `css/main.css`'s "Rarity Frame
+System" block down accordingly: removed all `box-shadow` glows, the
+Legendary shimmer-sweep pseudo-element + `raritySweep` keyframes, and
+the Mythic spinning-ring pseudo-element + `mythicSpin`/`mythicPulse`
+keyframes entirely. Each tier above Common is now just
+`border-color: var(--rarity-<tier>)` on `.skin-preview`/`.skin-reel-item`/
+`.skin-case-result`; Common has no rarity border rule at all, so it
+falls through to the existing neutral base border (no rarity frame, as
+asked). The CSS variables (incl. Mythic's red/pink from Session 7) and
+the rarity text-color rules are unchanged — only the frame styling was
+simplified. Full detail in `CHANGELOG.md`.
+**Files:** `css/main.css`.
+**End-of-day test result:** `npm test` → **190 PASS / 0 FAIL / 1 WARN**
+(same pre-existing WARN, unrelated).
+**For the next session:** Real-browser verification is still
+outstanding (no headless browser available in this environment this
+session) — open the Skin Collection, Case Reel, and Case Result and
+confirm each rarity tier's border color reads clearly and Common really
+shows no border. The unrelated `check-versions` FAIL from Session 7
+(`skinSystem.js` importing `skins.js` with no `?v=`) is also still
+there.
+
 Added a complete cosmetic Skin system on top of `wave-dodge-refactored`. This session is based on the project before the Claude handoff work; the Skin system is isolated from gameplay balance as much as possible.
 
 **Implemented:**

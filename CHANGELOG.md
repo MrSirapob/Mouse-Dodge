@@ -1,5 +1,73 @@
 # Changelog
 
+## Simplify Rarity Frame system to plain colored borders, follow-up (user-requested, "ผมว่าใช้แค่กรอบสีอะดีละ แค่ทำให้มันเด่นชัดก็พอ common ก็ไม่ต้องมีกรอบ เพราะแย่สุดอะไรแบบนี")
+Follow-up to the Rarity Border/Frame entry directly below. The glow/
+shimmer/spin animation turned out to be more than the user wanted — they
+asked for just a colored border, made clear/distinct, with Common (the
+worst tier) having no border at all so its absence itself signals
+"nothing special." Stripped the "Rarity Frame System" block in
+`css/main.css` down to that: each rarity tier above Common now just sets
+`border-color: var(--rarity-<tier>)` on `.skin-preview`/`.skin-reel-item`/
+`.skin-case-result`, nothing else — removed the box-shadow glows, the
+Legendary `::after` shimmer-sweep pseudo-element + `raritySweep`
+keyframes, and the Mythic `::before` spinning conic-gradient ring +
+`mythicSpin`/`mythicPulse` keyframes entirely. Common gets no
+`.rarity-common` border rule at all (previously had a flat gray border),
+so `.skin-preview`/`.skin-reel-item` fall through to their existing
+neutral base border, i.e. visually no rarity frame. The CSS variables
+(`--rarity-common` ... `--rarity-mythic`, including the red/pink Mythic
+recolor from the previous entry) and the text-color rules for
+`.skin-card-rarity`/case-result labels are unchanged — only the frame
+styling was simplified. Still the same single `rarity-<name>` class
+sourced from `js/data/skins.js`, still applied in all four places (Skin
+Collection, Case Reel, Case Result incl. its `.skin-preview` icon, Skin
+Preview). No RNG/gameplay logic touched.
+**Files:** `css/main.css`.
+**Test result:** `npm test` — 190 PASS / 0 FAIL / 1 pre-existing WARN
+(CSS-only change).
+
+## Rarity Border/Frame system for skins (user-requested, "เพิ่ม Rarity Border/Frame ให้ระบบ Skin")
+Added a single, shared "Rarity Frame System" CSS block (`css/main.css`,
+right above the SKIN COLLECTION section) that gives every skin-rarity
+element a consistent border + glow language driven by CSS variables
+(`--rarity-common` ... `--rarity-mythic`), escalating by tier: Common is a
+flat border with no glow, Uncommon/Rare/Epic step up through
+increasingly visible `box-shadow` glows, Legendary adds a soft diagonal
+shimmer sweep (`::after`, animated `background-position`, ~2.8s loop),
+and Mythic — meant to be unmistakable at a glance — adds a spinning
+conic-gradient ring (`::before`, `mask-composite` cutout so it only shows
+as a ring, animated `transform: rotate`) plus a pulsing `box-shadow`
+glow. Mythic's color was changed from a purple close to Epic's
+(`#c7a9ff`) to a red/pink (`#ff4d8d`) specifically so the two rarest-
+looking tiers (Epic/Mythic) are no longer visually similar — this was the
+main pre-existing readability problem the user's ask was about. The same
+`rarity-<name>` class (already computed from `s.rarity.toLowerCase()`,
+i.e. straight from `js/data/skins.js` — untouched, still the single
+source of truth) is now applied consistently in all four requested
+places: the Skin Collection grid (added to `.skin-preview` inside each
+`.skin-card`, previously only the small text label had a rarity class),
+the Case Reel (`.skin-reel-item`, pre-existing, colors/glow now pull from
+the same shared variables), the Case Result panel (`.skin-case-result` —
+filled in the previously-missing Common/Uncommon border+glow tiers, and
+added a matching `.skin-preview` icon via a new `skinResultIconHTML()`
+helper in `ui.js` so the result panel shows the actual won skin's
+shape/color instead of just text), and the Skin Preview swatch itself
+(the same `.skin-preview` element, so it's covered everywhere it's
+used). All animation is opacity/`background-position`/`transform` based
+(no layout thrash), and every element type only adds a border/glow layer
+around the existing skin shape — nothing occludes the skin itself. Also
+updated the Dev Mode mythic rarity button's color
+(`#devSkinRarityRow button[data-rarity="mythic"]`) to match the new
+red/pink so the whole game speaks one rarity color language. No RNG,
+drop-rate, or gameplay logic touched — `SKIN_RARITIES`/`RARITY_CONFIG`/
+`SKINS` in `js/data/skins.js` are unchanged.
+**Files:** `css/main.css`, `js/ui/ui.js`. Cache-busting version bumped
+(`npm run bump-version`) since `ui.js` content changed.
+**Test result:** `npm test` — 190 PASS / 0 FAIL / 1 pre-existing WARN
+(baseline unchanged; this was a UI/CSS-only change, no gameplay module
+touched). Not manually verified in a real/mobile browser this session —
+see HANDOFF_LOG.md.
+
 ## Swap Act 3 (W16-20) and Act 4 (W21+) visual themes (user-requested, "เอาธีมหลัง wave 20 มาใช้ หลังผ่านบอส wave 15 แล้วเอาธีม wave 15 ไปใช้แทนหลัง wave 20 ก็คือสลับกันอ่ะ")
 Swapped the two `CONFIG.actThemes` entries in `js/core/config.js`: the
 stretch right after the W15 boss (W16-20) now shows what used to be the

@@ -1,5 +1,5 @@
-import { CONFIG } from "../core/config.js?v=20260824-zf8g";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS } from "../data/skins.js?v=20260824-zf8g";
+import { CONFIG } from "../core/config.js?v=20260824-znwq";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS } from "../data/skins.js?v=20260824-znwq";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -573,7 +573,7 @@ export class UI {
       const owned = data.ownedSkins.includes(s.id);
       const isEquipped = equipped === s.id;
       return `<button type="button" class="skin-card ${owned ? "owned" : "locked"} ${isEquipped ? "equipped" : ""}" data-skin-id="${s.id}" ${owned ? "" : "disabled"}>
-        <span class="skin-preview" style="--skin:${s.color};--skin2:${s.secondaryColor}"><i class="skin-shape skin-shape-${s.shape}"></i></span>
+        <span class="skin-preview rarity-${s.rarity.toLowerCase()}" style="--skin:${s.color};--skin2:${s.secondaryColor}"><i class="skin-shape skin-shape-${s.shape}"></i></span>
         <span class="skin-card-rarity rarity-${s.rarity.toLowerCase()}">${s.rarity}</span>
         <strong>${owned ? s.name : "???"}</strong>
         <small>${isEquipped ? "EQUIPPED" : owned ? "EQUIP" : "LOCKED"}</small>
@@ -689,13 +689,24 @@ export class UI {
     this._caseReelRaf = requestAnimationFrame(frame);
   }
 
+  /**
+   * Same .skin-preview icon markup (and rarity class) used in the Skin
+   * Collection grid and Case Reel, reused here so the Case Result panel
+   * speaks the same rarity-frame visual language instead of just colored
+   * text. Purely presentational — reads rarity/shape/color straight off the
+   * rolled item, no gameplay/RNG involvement.
+   */
+  skinResultIconHTML(item) {
+    return `<span class="skin-preview rarity-${item.rarity.toLowerCase()}" style="--skin:${item.color};--skin2:${item.secondaryColor}"><i class="skin-shape skin-shape-${item.shape}"></i></span>`;
+  }
+
   finishCaseReel(result) {
     this.skinCaseBusy = false;
     if (this.openSkinCaseBtn) this.openSkinCaseBtn.disabled = false;
     if (this.skinCaseRoll) this.skinCaseRoll.classList.add("hidden");
     if (this.skinCaseResult) {
       this.skinCaseResult.className = `skin-case-result rarity-${result.item.rarity.toLowerCase()}`;
-      this.skinCaseResult.innerHTML = `<span>${result.duplicate ? "DUPLICATE" : "YOU UNLOCKED"}</span><strong>${result.item.name}</strong><b>${result.item.rarity}</b>${result.duplicate ? `<small>+${result.scrap} SCRAP</small>` : `<small>Added to Inventory</small>`}`;
+      this.skinCaseResult.innerHTML = `${this.skinResultIconHTML(result.item)}<span>${result.duplicate ? "DUPLICATE" : "YOU UNLOCKED"}</span><strong>${result.item.name}</strong><b>${result.item.rarity}</b>${result.duplicate ? `<small>+${result.scrap} SCRAP</small>` : `<small>Added to Inventory</small>`}`;
     }
     this.renderSkinScreen();
   }
@@ -706,7 +717,7 @@ export class UI {
     if (!result.ok) return;
     if (this.skinCaseResult) {
       this.skinCaseResult.className = `skin-case-result rarity-${result.item.rarity.toLowerCase()}`;
-      this.skinCaseResult.innerHTML = `<span>EXCHANGE</span><strong>${result.item.name}</strong><b>${result.item.rarity}</b><small>Added to Inventory</small>`;
+      this.skinCaseResult.innerHTML = `${this.skinResultIconHTML(result.item)}<span>EXCHANGE</span><strong>${result.item.name}</strong><b>${result.item.rarity}</b><small>Added to Inventory</small>`;
     }
     this.renderSkinScreen();
   }
@@ -717,7 +728,7 @@ export class UI {
     if (!result.ok) return;
     if (this.skinCaseResult) {
       this.skinCaseResult.className = `skin-case-result rarity-${result.item.rarity.toLowerCase()}`;
-      this.skinCaseResult.innerHTML = `<span>${result.duplicate ? "DUPLICATE" : "EXCHANGE"}</span><strong>${result.item.name}</strong><b>${result.item.rarity}</b><small>${result.duplicate ? `+${result.scrap} SCRAP` : "Added to Inventory"}</small>`;
+      this.skinCaseResult.innerHTML = `${this.skinResultIconHTML(result.item)}<span>${result.duplicate ? "DUPLICATE" : "EXCHANGE"}</span><strong>${result.item.name}</strong><b>${result.item.rarity}</b><small>${result.duplicate ? `+${result.scrap} SCRAP` : "Added to Inventory"}</small>`;
     }
     this.renderSkinScreen();
   }
