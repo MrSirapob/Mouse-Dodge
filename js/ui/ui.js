@@ -1,5 +1,5 @@
-import { CONFIG } from "../core/config.js?v=20260822-pi3c";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS } from "../data/skins.js?v=20260824-skin1";
+import { CONFIG } from "../core/config.js?v=20260824-88u1";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS } from "../data/skins.js?v=20260824-88u1";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -594,27 +594,110 @@ export class UI {
     this.skinCaseBusy = true;
     if (this.openSkinCaseBtn) this.openSkinCaseBtn.disabled = true;
     if (this.skinCaseResult) this.skinCaseResult.classList.add("hidden");
-    if (this.skinCaseRoll) this.skinCaseRoll.classList.remove("hidden");
-    const labels = ["COMMON", "RARE", "COMMON", "EPIC", "UNCOMMON", "RARE", "COMMON", "LEGENDARY", "UNCOMMON", result.item.rarity.toUpperCase()];
-    let i = 0;
-    const tick = () => {
-      if (!this.skinCaseRoll) return;
-      this.skinCaseRoll.textContent = labels[i];
-      this.skinCaseRoll.dataset.rarity = labels[i].toLowerCase();
-      i += 1;
-      if (i < labels.length) setTimeout(tick, 75 + i * 18);
-      else setTimeout(() => {
-        this.skinCaseBusy = false;
-        if (this.openSkinCaseBtn) this.openSkinCaseBtn.disabled = false;
-        this.skinCaseRoll.classList.add("hidden");
-        if (this.skinCaseResult) {
-          this.skinCaseResult.className = `skin-case-result rarity-${result.item.rarity.toLowerCase()}`;
-          this.skinCaseResult.innerHTML = `<span>${result.duplicate ? "DUPLICATE" : "YOU UNLOCKED"}</span><strong>${result.item.name}</strong><b>${result.item.rarity}</b>${result.duplicate ? `<small>+${result.scrap} SCRAP</small>` : `<small>Added to Inventory</small>`}`;
-        }
-        this.renderSkinScreen();
-      }, 260);
+    this.runCaseReel(result);
+  }
+
+  /**
+   * CS:GO-style case-opening reel: fills #skinCaseRoll with a short strip of
+   * skin items, drops the actual roll `result.item` into a fixed slot near
+   * the end, then drives the strip's position itself via requestAnimationFrame
+   * — fast at first, easing smoothly into a stop with the winning item
+   * centered under the viewport's pointer marker (see .skin-case-roll::before
+   * in main.css).
+   *
+   * Deliberately NOT a CSS transition: driving the position ourselves means
+   * we already have the exact x for this frame, so the "tick" flash (an item
+   * crossing the pointer) can reuse that value instead of reading it back out
+   * with getComputedStyle/DOMMatrix, which forces a style recalc every frame
+   * and is the main source of jank in a naive version of this. The reel also
+   * stays short (tens of items, not hundreds) and never blurs the whole
+   * strip, both of which the "many DOM nodes + full-track blur" GPU cost
+   * would otherwise stack per frame.
+   */
+  runCaseReel(result) {
+    const roll = this.skinCaseRoll;
+    if (!roll) { this.finishCaseReel(result); return; }
+    if (this._caseReelRaf) cancelAnimationFrame(this._caseReelRaf);
+
+    const REEL_LENGTH = 42;
+    const WINNER_INDEX = 34; // fixed slot; leaves a short tail of items past the pointer, like the real reel
+    const SPIN_MS = 5600;
+    const pool = SKINS;
+    const items = [];
+    for (let i = 0; i < REEL_LENGTH; i += 1) {
+      items.push(i === WINNER_INDEX ? result.item : pool[Math.floor(Math.random() * pool.length)]);
+    }
+
+    roll.classList.remove("hidden");
+    roll.innerHTML = `<div class="skin-reel-track">${items.map((s, i) => `
+      <span class="skin-reel-item rarity-${s.rarity.toLowerCase()}${i === WINNER_INDEX ? " winner" : ""}" style="--skin:${s.color};--skin2:${s.secondaryColor}">
+        <i class="skin-shape skin-shape-${s.shape}"></i>
+      </span>`).join("")}</div>`;
+
+    const track = roll.querySelector(".skin-reel-track");
+    // Measure actual rendered item size/gap instead of assuming a fixed
+    // pixel width, so the landing math stays correct across the mobile
+    // breakpoint (where .skin-reel-item shrinks via CSS). This is a one-time
+    // read before the animation starts, not a per-frame cost.
+    const firstRect = track.children[0].getBoundingClientRect();
+    const itemW = firstRect.width;
+    const step = track.children.length > 1
+      ? track.children[1].getBoundingClientRect().left - firstRect.left
+      : itemW + 10;
+    const viewportCenter = roll.clientWidth / 2;
+    // Small random jitter so the winning item doesn't land pixel-identically
+    // centered every time, like the real thing.
+    const jitter = (Math.random() - 0.5) * step * 0.4;
+    const startX = 0;
+    const targetX = viewportCenter - (WINNER_INDEX * step + itemW / 2) - jitter;
+
+    track.style.willChange = "transform";
+    track.style.transform = "translate3d(0px, 0, 0)";
+
+    // Quintic ease-out: fast for most of the spin, then a long smooth
+    // crawl into the stop — the CS:GO/CS2 "will it land here?" feel.
+    const easeOutQuint = (t) => 1 - (1 - t) ** 5;
+
+    let lastTickIndex = -1;
+    const startTime = performance.now();
+    const frame = (now) => {
+      const t = Math.min((now - startTime) / SPIN_MS, 1);
+      const x = startX + (targetX - startX) * easeOutQuint(t);
+      track.style.transform = `translate3d(${x}px, 0, 0)`;
+
+      // Tick: reuse the x we just computed this frame instead of reading the
+      // DOM back out, so this never forces a style/layout recalc.
+      const idx = Math.round((viewportCenter - x - itemW / 2) / step);
+      if (idx !== lastTickIndex && idx >= 0 && idx < items.length) {
+        lastTickIndex = idx;
+        const el = track.children[idx];
+        el.classList.add("tick");
+        setTimeout(() => el.classList.remove("tick"), 140);
+      }
+
+      if (t < 1) {
+        this._caseReelRaf = requestAnimationFrame(frame);
+      } else {
+        // Snap to the exact target so the winner lands pixel-perfect under
+        // the pointer regardless of any rAF timing drift.
+        track.style.transform = `translate3d(${targetX}px, 0, 0)`;
+        track.style.willChange = "auto";
+        this._caseReelRaf = null;
+        setTimeout(() => this.finishCaseReel(result), 400);
+      }
     };
-    tick();
+    this._caseReelRaf = requestAnimationFrame(frame);
+  }
+
+  finishCaseReel(result) {
+    this.skinCaseBusy = false;
+    if (this.openSkinCaseBtn) this.openSkinCaseBtn.disabled = false;
+    if (this.skinCaseRoll) this.skinCaseRoll.classList.add("hidden");
+    if (this.skinCaseResult) {
+      this.skinCaseResult.className = `skin-case-result rarity-${result.item.rarity.toLowerCase()}`;
+      this.skinCaseResult.innerHTML = `<span>${result.duplicate ? "DUPLICATE" : "YOU UNLOCKED"}</span><strong>${result.item.name}</strong><b>${result.item.rarity}</b>${result.duplicate ? `<small>+${result.scrap} SCRAP</small>` : `<small>Added to Inventory</small>`}`;
+    }
+    this.renderSkinScreen();
   }
 
   exchangeChooseRare(id) {

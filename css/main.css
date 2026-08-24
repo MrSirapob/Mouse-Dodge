@@ -904,11 +904,29 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .skin-rarity-odds {display:flex;flex-wrap:wrap;justify-content:center;gap:6px 12px;color:#858ba0;font-size:10px;margin-bottom:12px}
 .skin-open-btn {max-width:300px;margin:auto}
 .skin-open-btn:disabled {opacity:.55;cursor:wait;filter:none;transform:none}
-.skin-case-roll {height:48px;margin-top:12px;border:1px solid rgba(255,255,255,.12);border-radius:9px;background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;letter-spacing:2px;color:#fff;animation:skinRollPulse .12s linear infinite alternate}
-.skin-case-roll[data-rarity="mythic"],.skin-case-result.rarity-mythic {color:#e2d5ff;box-shadow:0 0 28px rgba(124,77,255,.28)}
-.skin-case-roll[data-rarity="legendary"],.skin-case-result.rarity-legendary {color:#fff0a6;box-shadow:0 0 24px rgba(255,217,61,.22)}
-.skin-case-roll[data-rarity="epic"],.skin-case-result.rarity-epic {color:#f3a4ff}
-.skin-case-roll[data-rarity="rare"],.skin-case-result.rarity-rare {color:#70d9ff}
+/* CS:GO-style case-opening reel: a masked viewport with a centered pointer
+   line; a long horizontal strip of skin items is dropped in by JS and eased
+   to a stop with the winning item centered under the pointer. */
+.skin-case-roll {position:relative;height:92px;margin-top:12px;padding:0;border:1px solid rgba(255,255,255,.14);border-radius:9px;background:rgba(0,0,0,.35);overflow:hidden}
+.skin-case-roll::before {content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:linear-gradient(180deg,transparent,#ffd93d,transparent);transform:translateX(-50%);z-index:3;box-shadow:0 0 10px rgba(255,217,61,.65)}
+.skin-case-roll::after {content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.9) 0%,transparent 14%,transparent 86%,rgba(0,0,0,.9) 100%);pointer-events:none;z-index:2}
+.skin-reel-track {position:absolute;top:0;left:50%;height:100%;display:flex;align-items:center;gap:10px;padding:0 10px}
+.skin-reel-item {flex:0 0 auto;width:78px;height:78px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.1)}
+.skin-reel-item .skin-shape {width:34px;height:34px}
+.skin-reel-item.rarity-common {border-color:rgba(167,172,184,.5)}
+.skin-reel-item.rarity-uncommon {border-color:rgba(114,214,160,.55);box-shadow:0 0 8px rgba(114,214,160,.15)}
+.skin-reel-item.rarity-rare {border-color:rgba(112,217,255,.6);box-shadow:0 0 10px rgba(112,217,255,.2)}
+.skin-reel-item.rarity-epic {border-color:rgba(233,156,255,.65);box-shadow:0 0 11px rgba(233,156,255,.25)}
+.skin-reel-item.rarity-legendary {border-color:rgba(255,217,92,.7);box-shadow:0 0 13px rgba(255,217,92,.3)}
+.skin-reel-item.rarity-mythic {border-color:rgba(199,169,255,.75);box-shadow:0 0 15px rgba(199,169,255,.35)}
+.skin-reel-item.winner {animation:skinReelWinnerPop .35s ease-out .05s both}
+@keyframes skinReelWinnerPop {0%{transform:scale(1)}50%{transform:scale(1.22)}100%{transform:scale(1.05)}}
+.skin-reel-item.tick {animation:skinReelTick .16s ease-out}
+@keyframes skinReelTick {0%{transform:scale(1.12);filter:brightness(1.6)}100%{transform:scale(1);filter:brightness(1)}}
+.skin-case-result.rarity-mythic {color:#e2d5ff;box-shadow:0 0 28px rgba(124,77,255,.28)}
+.skin-case-result.rarity-legendary {color:#fff0a6;box-shadow:0 0 24px rgba(255,217,61,.22)}
+.skin-case-result.rarity-epic {color:#f3a4ff}
+.skin-case-result.rarity-rare {color:#70d9ff}
 .skin-case-result {margin-top:12px;padding:13px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(0,0,0,.22);display:flex;flex-direction:column;align-items:center;gap:3px;animation:skinReveal .25s ease-out}
 .skin-case-result span {font-size:9px;letter-spacing:2px;color:#858ba0;font-weight:900}
 .skin-case-result strong {font-size:20px;color:#fff}
@@ -948,10 +966,9 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 #skinRewardToast.hidden {display:none}
 #skinRewardToast strong {font-size:10px;letter-spacing:1.5px;color:var(--accent)}
 #skinRewardToast span {font-size:15px;font-weight:900;color:#fff}
-@keyframes skinRollPulse {from{transform:scale(1)}to{transform:scale(1.02)}}
 @keyframes skinReveal {from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
 @keyframes skinToastIn {from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
-@media (max-width:520px){.skin-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.skin-card{padding:10px 5px}.skin-preview{width:52px;height:52px}.skin-shape{width:26px;height:26px}.skin-card strong{font-size:11px}.skin-card small{font-size:9px}.skin-wallet > div{min-width:100px}.skin-rarity-odds{gap:5px 8px;font-size:9px}}
+@media (max-width:520px){.skin-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.skin-card{padding:10px 5px}.skin-preview{width:52px;height:52px}.skin-shape{width:26px;height:26px}.skin-card strong{font-size:11px}.skin-card small{font-size:9px}.skin-wallet > div{min-width:100px}.skin-rarity-odds{gap:5px 8px;font-size:9px}.skin-case-roll{height:72px}.skin-reel-item{width:60px;height:60px;border-radius:8px}.skin-reel-item .skin-shape{width:26px;height:26px}}
 .choose-rare-exchange {width:100%;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:5px;margin-top:7px}
 .choose-rare-exchange span {width:100%;font-size:8px;color:#858ba0;letter-spacing:1px;font-weight:800}
 .choose-rare-exchange button {padding:5px 8px;border:1px solid rgba(112,217,255,.2);border-radius:6px;background:rgba(112,217,255,.04);color:#70d9ff;font-size:9px;font-weight:800;cursor:pointer}
