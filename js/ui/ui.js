@@ -633,25 +633,40 @@ export class UI {
     if (this._caseReelRaf) cancelAnimationFrame(this._caseReelRaf);
 
     const REEL_LENGTH = 70;
-    const PLANNED_INDEX = 55 + Math.floor(Math.random() * 6); // randomize stop position slightly (55-60)
     const SPIN_MS = 9000;
     const items = [];
     
-    const targetRarityPool = SKINS_BY_RARITY[targetRarity];
-    const targetItem = targetRarityPool[Math.floor(Math.random() * targetRarityPool.length)] || targetRarityPool[0];
-
+    // 1. Generate the entire reel using the natural weighted random
     for (let i = 0; i < REEL_LENGTH; i += 1) {
-      if (i === PLANNED_INDEX) {
-        items.push(targetItem);
-      } else {
-        const r = this.skinSystem.rollRarity();
-        const rp = SKINS_BY_RARITY[r];
-        items.push(rp[Math.floor(Math.random() * rp.length)] || rp[0]);
+      const r = this.skinSystem.rollRarity();
+      const rp = SKINS_BY_RARITY[r];
+      items.push(rp[Math.floor(Math.random() * rp.length)] || rp[0]);
+    }
+
+    // 2. Select a stop zone near the end of the reel
+    const stopZoneStart = 55;
+    const stopZoneEnd = 65;
+    const candidateIndices = [];
+    
+    for (let i = stopZoneStart; i <= stopZoneEnd; i++) {
+      if (items[i].rarity === targetRarity) {
+        candidateIndices.push(i);
       }
     }
 
+    // 3. Ensure the target rarity exists in the stop zone
+    if (candidateIndices.length === 0) {
+      const forcedIndex = stopZoneStart + Math.floor(Math.random() * (stopZoneEnd - stopZoneStart + 1));
+      const targetRarityPool = SKINS_BY_RARITY[targetRarity];
+      items[forcedIndex] = targetRarityPool[Math.floor(Math.random() * targetRarityPool.length)] || targetRarityPool[0];
+      candidateIndices.push(forcedIndex);
+    }
+
+    // 4. Pick our visual target index from the candidates
+    const PLANNED_INDEX = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
+
     roll.classList.remove("hidden");
-    roll.innerHTML = `<div class="skin-reel-track">${items.map((s, i) => `
+    roll.innerHTML = `<div class="skin-reel-track">${items.map((s) => `
       <span class="skin-reel-item rarity-${s.rarity.toLowerCase()}" data-skin-id="${s.id}" style="--skin:${s.color};--skin2:${s.secondaryColor}">
         <i class="skin-shape skin-shape-${s.shape}"></i>
       </span>`).join("")}</div>`;
@@ -746,8 +761,14 @@ export class UI {
           pointedElement.classList.add("winner");
         }
 
-        // Award the item pointed by the reel
-        const skinId = pointedElement ? pointedElement.dataset.skinId : targetItem.id;
+        // Award the item strictly based on the element the pointer landed on
+        const skinId = pointedElement ? pointedElement.dataset.skinId : null;
+        if (!skinId) {
+            console.error("[Case Reel] Failed to find skin element under pointer!");
+            this.finishCaseReel(null);
+            return;
+        }
+
         const finalResult = this.skinSystem.awardSkin(skinId);
 
         if (finalResult.rarity !== targetRarity) {
