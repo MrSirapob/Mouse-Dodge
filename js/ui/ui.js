@@ -256,7 +256,6 @@ export class UI {
     this.skinCaseRoll = document.getElementById("skinCaseRoll");
     this.skinCaseResult = document.getElementById("skinCaseResult");
     this.exchangeRarePlusBtn = document.getElementById("exchangeRarePlusBtn");
-    this.chooseRareExchange = document.getElementById("chooseRareExchange");
     this.skinInfoBtn = document.getElementById("skinInfoBtn");
     this.skinInfoOverlay = document.getElementById("skinInfoOverlay");
     this.skinInfoCloseBtn = document.getElementById("skinInfoCloseBtn");
@@ -572,15 +571,37 @@ export class UI {
     const data = this.skinSystem.snapshot();
     if (this.skinCaseCount) this.skinCaseCount.textContent = data.cases;
     if (this.skinScrapCount) this.skinScrapCount.textContent = data.scrap;
-    if (this.exchangeRarePlusBtn) this.exchangeRarePlusBtn.disabled = data.scrap < 100;
-    if (this.chooseRareExchange) {
-      const rares = SKINS.filter((s) => s.rarity === "Rare" && !data.ownedSkins.includes(s.id));
-      const canAffordRare = data.scrap >= 500;
-      this.chooseRareExchange.innerHTML = rares.length
-        ? rares.map((s) => `<button type="button" class="rarity-rare" data-exchange-rare="${s.id}" ${canAffordRare ? "" : "disabled"}>${s.name}</button>`).join("")
-        : `<span class="exchange-empty">เก็บสกิน Rare ครบทุกใบแล้ว</span>`;
-      this.chooseRareExchange.querySelectorAll("[data-exchange-rare]").forEach((button) => button.addEventListener("click", () => this.exchangeChooseRare(button.dataset.exchangeRare)));
+
+    // Once every Rare-tier-and-up skin is owned, there's nothing left for
+    // the 100-scrap roll to land on — disable it and say so instead of
+    // letting the player spend scrap on a roll that can only ever land on
+    // a duplicate.
+    const rarePlusComplete = SKINS.filter((s) => ['Rare', 'Epic', 'Legendary', 'Mythic'].includes(s.rarity))
+      .every((s) => data.ownedSkins.includes(s.id));
+    if (this.exchangeRarePlusBtn) {
+      if (rarePlusComplete) {
+        this.exchangeRarePlusBtn.textContent = "เก็บสกิน Rare ขึ้นไปครบทุกใบแล้ว";
+        this.exchangeRarePlusBtn.disabled = true;
+      } else {
+        this.exchangeRarePlusBtn.textContent = "แลกแบบสุ่ม";
+        this.exchangeRarePlusBtn.disabled = data.scrap < 100;
+      }
     }
+
+    // Same idea for the case-opening button: once the whole collection is
+    // owned, opening a case can only ever hand back scrap, so say that
+    // plainly instead of inviting another spin.
+    const collectionComplete = SKINS.every((s) => data.ownedSkins.includes(s.id));
+    if (this.openSkinCaseBtn) {
+      if (collectionComplete) {
+        this.openSkinCaseBtn.textContent = "คุณมีสกินครบทุกอันแล้ว";
+        this.openSkinCaseBtn.disabled = true;
+      } else {
+        this.openSkinCaseBtn.textContent = "OPEN CASE";
+        this.openSkinCaseBtn.disabled = this.skinCaseBusy || data.cases <= 0;
+      }
+    }
+
     const equipped = data.equippedSkin;
     const cards = SKINS.map((s) => {
       const owned = data.ownedSkins.includes(s.id);
@@ -856,32 +877,6 @@ export class UI {
     this.renderSkinScreen();
   }
 
-  exchangeChooseRare(id) {
-    if (!this.skinSystem || this.skinSystem.data.scrap < 500 || this.skinCaseBusy) return;
-    const result = this.skinSystem.exchangeChooseRare(id);
-    if (!result.ok) return;
-    if (this.skinCaseResult) {
-      this.skinCaseResult.className = `skin-case-result`;
-      this.skinCaseResult.innerHTML = `
-        <div class="skin-result-popup">
-          <div class="result-header">EXCHANGE RESULT</div>
-          <div class="skin-result-card rarity-${result.item.rarity.toLowerCase()}">
-            <div class="result-skin-visual">${this.skinResultIconHTML(result.item)}</div>
-            <div class="result-rarity-tag rarity-${result.item.rarity.toLowerCase()}">✦ ${result.item.rarity.toUpperCase()} ✦</div>
-          </div>
-          <strong class="result-skin-name">${result.item.name}</strong>
-          <span class="result-status new">EXCHANGE</span>
-          <div class="result-actions">
-            <button type="button" class="equip-btn">EQUIP</button>
-            <button type="button" class="close-btn">CLOSE</button>
-          </div>
-        </div>
-      `;
-      this.bindResultActions(result.item.id);
-    }
-    this.renderSkinScreen();
-  }
-
   showCollectionCompleteAlert() {
     if (!this.skinCaseResult) return;
     this.skinCaseResult.className = `skin-case-result sheet`;
@@ -916,8 +911,8 @@ export class UI {
           ใช้ 100 Scrap เพื่อสุ่ม Skin 1 ครั้ง?
         </p>
         <div class="result-actions" style="display: flex; flex-direction: column; gap: 10px; width: 100%; opacity: 1; animation: none;">
-          <button type="button" class="equip-btn" id="confirmScrapBtn" style="width: 100%; border-color: #ffb84d; color: #ffb84d; background: rgba(255,184,77,0.15);">CONFIRM</button>
-          <button type="button" class="close-btn" style="width: 100%;">CANCEL</button>
+          <button type="button" class="equip-btn" id="confirmScrapBtn" style="width: 100%; border-color: #ffb84d; color: #ffb84d; background: rgba(255,184,77,0.15);">ยืนยัน</button>
+          <button type="button" class="close-btn" style="width: 100%;">ยกเลิก</button>
         </div>
       </div>
     `;

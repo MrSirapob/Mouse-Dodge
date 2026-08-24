@@ -238,24 +238,6 @@ export class SkinSystem {
     return { ok: true, item, duplicate: false, scrap: 0 };
   }
 
-  exchangeChooseRare(id) {
-    const cost = 500;
-    const item = this.getSkin(id);
-    if (this.data.scrap < cost) {
-      warn('scrap exchange rejected: not enough scrap', { cost, scrap: this.data.scrap, skin: id });
-      return { ok: false, reason: 'not_enough_scrap' };
-    }
-    if (!item || item.rarity !== 'Rare' || this.owns(id)) {
-      warn('scrap exchange rejected: invalid Rare skin', { skin: id });
-      return { ok: false, reason: 'invalid_skin' };
-    }
-    this.data.scrap -= cost;
-    this.data.ownedSkins.push(id);
-    this.save();
-    log('scrap exchanged for chosen Rare', { cost, skin: id, scrapRemaining: this.data.scrap });
-    return { ok: true, item };
-  }
-
   buildVisual(id = this.data.equippedSkin) {
     const s = this.getSkin(id);
     if (s.id === 'default') return { id: 'default', tier: 0, color: null, secondaryColor: null, shape: 'circle', glow: 12, trail: 'default', particle: false, deathEffect: 'default' };
