@@ -731,7 +731,9 @@ export class UI {
    * CS:GO-style case-opening reel: fills #skinCaseRoll with a short strip of
    * skin items. We randomly populate the reel matching natural rarity weights,
    * pick a PLANNED_INDEX near the end, and inject an item of the rolled rarity there.
-   * Then we drive the strip's position itself via requestAnimationFrame.
+   * Then we drive the strip's position itself via requestAnimationFrame — a
+   * plain eased slide with no per-item tick effect while it's in motion, so
+   * nothing "pops" until the winner lands.
    *
    * Shared by both the case-open flow (default opts) and the 100-scrap
    * exchange (via exchangeReelOptions()) — same spin/tick/landing mechanics,
@@ -809,7 +811,8 @@ export class UI {
     const viewportCenter = roll.clientWidth / 2;
     const pointerScreenX = rollRect.left + viewportCenter;
     
-    // Precalculate item centers relative to track for exact tick tracking
+    // Precalculate item centers relative to track so we can find the exact
+    // pixel offset needed to land PLANNED_INDEX under the pointer.
     const itemCenters = Array.from(track.children).map(el => {
       const rect = el.getBoundingClientRect();
       return (rect.left - trackRect.left) + (rect.width / 2);
@@ -829,28 +832,11 @@ export class UI {
     // Cubic ease-out: smooth stop without the ultra-long "stuck" crawl of quintic
     const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
-    let lastTickIndex = -1;
     const startTime = performance.now();
     const frame = (now) => {
       const t = Math.min((now - startTime) / SPIN_MS, 1);
       const x = startX + (targetX - startX) * easeOutCubic(t);
       track.style.transform = `translate3d(${x}px, 0, 0)`;
-
-      // Tick logic: find which item's center is closest to the pointer's local X in track coordinates
-      const currentCenterTarget = viewportCenter - x - (trackRect.left - rollRect.left);
-      
-      let idx = lastTickIndex >= 0 ? lastTickIndex : 0;
-      // Advance idx if the next item is closer to the center target
-      while (idx < itemCenters.length - 1 && Math.abs(currentCenterTarget - itemCenters[idx + 1]) <= Math.abs(currentCenterTarget - itemCenters[idx])) {
-        idx++;
-      }
-
-      if (idx !== lastTickIndex && idx >= 0 && idx < items.length) {
-        lastTickIndex = idx;
-        const el = track.children[idx];
-        el.classList.add("tick");
-        setTimeout(() => el.classList.remove("tick"), 140);
-      }
 
       if (t < 1) {
         this._caseReelRaf = requestAnimationFrame(frame);

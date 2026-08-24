@@ -59,6 +59,32 @@ what changed, why, key numbers if any.
 
 ## 2026-08-24 — ChatGPT (GPT-5.6 Luna) — Skin / Case / Inventory system
 
+**Session 20 — Claude (Sonnet 5, claude.ai) — Removed the per-item "tick" bounce on the spinning case reel (user-reported, "ตอนแถบสกินกำลังหมุน มีไอเทมเด้งตลอดเลย เด้งแบบเหมือนตอนเลือก"):**
+Root cause: `runCaseReel()`'s rAF loop tracked which item's center was
+nearest the pointer on every frame and toggled a `.tick` class on it
+(`skinReelTick` keyframe: scale 1.12→1 + brightness flash, 0.16s). With a
+70-item reel and a 6s spin this fired on nearly every item that crossed
+the pointer for the *entire* spin, so something was almost always
+mid-bounce — visually similar to the `.winner` landing pop
+(`skinReelWinnerPop`), making it look like an item kept "getting selected"
+before the reel had actually stopped. This was intentional slot-machine-
+style tick feedback, not a logic bug, but the user asked for it gone
+entirely (smooth slide, no bounce until landing). Removed the tick
+tracking/class-toggle from the rAF frame loop in `js/ui/ui.js` and the
+now-unused `.skin-reel-item.tick` rule + `skinReelTick` keyframes from
+`css/main.css`. The landing `.winner` pop (`skinReelWinnerPop` +
+`rarityGlowPulse` for Epic+) is untouched — that's the only bounce left,
+and only once the reel has actually stopped. `itemCenters`/`viewportCenter`
+etc. are still used (for the pointer-alignment math), just no longer for
+tick tracking — comments updated to reflect that.
+**Files:** `js/ui/ui.js`, `css/main.css`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated).
+**For the next session:** Nothing pending — purely a removal of one
+cosmetic effect, verified against the existing test suite (no test
+exercised `.tick` directly). Worth a quick eyeball in a real browser to
+confirm the reel now feels like a plain smooth slide.
+
 **Session 19 — Claude (Sonnet 5, claude.ai) — Skin Collection: Collection Progress + Missing Skin Silhouette (user-requested, scoped to exactly these 2 UI/UX features, no RNG/reel/scrap/equip changes):**
 Audited first, as instructed. Found the markup/logic for both features
 *already existed* — `index.html`'s `#skinCollectionProgress` div and

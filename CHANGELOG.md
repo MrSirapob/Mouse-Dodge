@@ -1,5 +1,20 @@
 # Changelog
 
+## Case reel no longer bounces items while spinning (user-reported, "ตอนแถบสกินกำลังหมุน มีไอเทมเด้งตลอดเลย เด้งแบบเหมือนตอนเลือก")
+The case-opening reel (`runCaseReel()` in `js/ui/ui.js`) tracked which item
+was nearest the pointer on every animation frame and toggled a `.tick`
+class on it — a quick scale-up + brightness-flash — every time a new item
+crossed the pointer. With 70 items in the reel and a 6-second spin, this
+fired almost continuously for the whole spin, so something always looked
+like it had just "landed", visually similar to the actual winner pop that
+plays once the reel stops. Removed the tick tracking from the frame loop
+and the `.skin-reel-item.tick` / `skinReelTick` CSS rule entirely — the
+reel now just slides smoothly to a stop with no bounce until the winning
+item's landing pop (`.winner` / `skinReelWinnerPop`) plays.
+**Files:** `js/ui/ui.js`, `css/main.css`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated).
+
 ## Skin Collection: Collection Progress + Missing Skin Silhouette (user-requested — add exactly these 2 features, no RNG/case-reel/scrap/equip changes)
 Audited the existing Skin Collection system first, per the request: found
 `index.html` already had a `#skinCollectionProgress` placeholder div and
