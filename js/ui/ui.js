@@ -257,6 +257,9 @@ export class UI {
     this.skinCaseResult = document.getElementById("skinCaseResult");
     this.exchangeRarePlusBtn = document.getElementById("exchangeRarePlusBtn");
     this.chooseRareExchange = document.getElementById("chooseRareExchange");
+    this.skinInfoBtn = document.getElementById("skinInfoBtn");
+    this.skinInfoOverlay = document.getElementById("skinInfoOverlay");
+    this.skinInfoCloseBtn = document.getElementById("skinInfoCloseBtn");
 
     this.el = {
       best: document.getElementById("best"),
@@ -340,6 +343,14 @@ export class UI {
       ?.addEventListener("click", () => this.showSkinScreen());
     this.openSkinCaseBtn?.addEventListener("click", () => this.openSkinCase());
     this.exchangeRarePlusBtn?.addEventListener("click", () => this.exchangeRarePlus());
+    this.skinInfoBtn?.addEventListener("click", () => this.showSkinInfo());
+    this.skinInfoCloseBtn?.addEventListener("click", () => this.hideSkinInfo());
+    this.skinInfoOverlay?.addEventListener("click", (e) => {
+      if (e.target === this.skinInfoOverlay) this.hideSkinInfo();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !this.skinInfoOverlay?.classList.contains("hidden")) this.hideSkinInfo();
+    });
     document
       .getElementById("backSettingsBtn")
       ?.addEventListener("click", () => this.showModeScreen());
@@ -731,6 +742,14 @@ export class UI {
       this.skinCaseResult.innerHTML = `${this.skinResultIconHTML(result.item)}<span>${result.duplicate ? "DUPLICATE" : "EXCHANGE"}</span><strong>${result.item.name}</strong><b>${result.item.rarity}</b><small>${result.duplicate ? `+${result.scrap} SCRAP` : "Added to Inventory"}</small>`;
     }
     this.renderSkinScreen();
+  }
+
+  showSkinInfo() {
+    this.skinInfoOverlay?.classList.remove("hidden");
+  }
+
+  hideSkinInfo() {
+    this.skinInfoOverlay?.classList.add("hidden");
   }
 
   showSkinRewardToast(title, subtitle) {

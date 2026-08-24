@@ -905,9 +905,16 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
    field in js/data/skins.js by the JS that renders each of these — this
    block only controls how that class looks, never which one gets applied,
    so it can't drift from the actual drop rarity.
-   Deliberately just a colored border, no glow/shimmer/animation — Common
-   (the worst tier) gets no border at all, so its absence itself reads as
-   "nothing special" and every other tier's color reads clearly against it. */
+   Common (the worst tier) still gets no border at all, so its absence
+   reads as "nothing special" and every other tier's color reads clearly
+   against it. From Uncommon up, a static colored glow scales with rarity;
+   from Epic up, a slow glow pulse and a soft diagonal shine sweep are
+   layered on top so the top tiers read as "premium" without being loud.
+   The pulse/shine are intentionally left OFF the plain (non-winner)
+   case-reel items — dozens of those render at once mid-spin — and only
+   run on the Skin Collection preview, the winning reel slot once it
+   lands, and the Case Result panel, where at most a couple of elements
+   are ever animating at the same time. */
 :root {
   --rarity-common: #a7acb8;
   --rarity-uncommon: #72d6a0;
@@ -923,18 +930,68 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .rarity-legendary, .skin-card-rarity.rarity-legendary {color: var(--rarity-legendary)}
 .rarity-mythic, .skin-card-rarity.rarity-mythic {color: var(--rarity-mythic)}
 
-.skin-preview.rarity-uncommon, .skin-reel-item.rarity-uncommon {border-color: var(--rarity-uncommon)}
-.skin-preview.rarity-rare, .skin-reel-item.rarity-rare {border-color: var(--rarity-rare)}
-.skin-preview.rarity-epic, .skin-reel-item.rarity-epic {border-color: var(--rarity-epic)}
-.skin-preview.rarity-legendary, .skin-reel-item.rarity-legendary {border-color: var(--rarity-legendary)}
-.skin-preview.rarity-mythic, .skin-reel-item.rarity-mythic {border-color: var(--rarity-mythic)}
+.skin-preview.rarity-uncommon, .skin-reel-item.rarity-uncommon {border-color: var(--rarity-uncommon); box-shadow: 0 0 8px -2px rgba(114,214,160,.45)}
+.skin-preview.rarity-rare, .skin-reel-item.rarity-rare {border-color: var(--rarity-rare); box-shadow: 0 0 10px -1px rgba(112,217,255,.55)}
+.skin-preview.rarity-epic, .skin-reel-item.rarity-epic {border-color: var(--rarity-epic); box-shadow: 0 0 12px -1px rgba(233,156,255,.6)}
+.skin-preview.rarity-legendary, .skin-reel-item.rarity-legendary {border-color: var(--rarity-legendary); box-shadow: 0 0 14px -1px rgba(255,217,92,.65)}
+.skin-preview.rarity-mythic, .skin-reel-item.rarity-mythic {border-color: var(--rarity-mythic); box-shadow: 0 0 16px -1px rgba(255,77,141,.7)}
+
+/* Premium pulse + shine, Epic and up — see note above on why the plain
+   reel items are excluded. Duration shortens slightly per tier so Mythic
+   visibly breathes faster/brighter than Epic without either feeling busy. */
+.skin-preview.rarity-epic, .skin-reel-item.winner.rarity-epic,
+.skin-preview.rarity-legendary, .skin-reel-item.winner.rarity-legendary,
+.skin-preview.rarity-mythic, .skin-reel-item.winner.rarity-mythic {
+  animation: rarityGlowPulse 2.6s ease-in-out infinite;
+}
+.skin-preview.rarity-legendary, .skin-reel-item.winner.rarity-legendary {animation-duration: 2.2s}
+.skin-preview.rarity-mythic, .skin-reel-item.winner.rarity-mythic {animation-duration: 1.8s}
+.skin-reel-item.winner.rarity-epic {animation: skinReelWinnerPop .35s ease-out .05s both, rarityGlowPulse 2.6s ease-in-out .35s infinite}
+.skin-reel-item.winner.rarity-legendary {animation: skinReelWinnerPop .35s ease-out .05s both, rarityGlowPulse 2.2s ease-in-out .35s infinite}
+.skin-reel-item.winner.rarity-mythic {animation: skinReelWinnerPop .35s ease-out .05s both, rarityGlowPulse 1.8s ease-in-out .35s infinite}
+.skin-preview.rarity-epic::before, .skin-reel-item.winner.rarity-epic::before,
+.skin-preview.rarity-legendary::before, .skin-reel-item.winner.rarity-legendary::before,
+.skin-preview.rarity-mythic::before, .skin-reel-item.winner.rarity-mythic::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 32%, rgba(255,255,255,.5) 48%, rgba(255,255,255,.5) 52%, transparent 68%);
+  background-size: 220% 220%;
+  mix-blend-mode: overlay;
+  animation: rarityShine 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+.skin-preview.rarity-legendary::before, .skin-reel-item.winner.rarity-legendary::before {animation-duration: 2.6s}
+.skin-preview.rarity-mythic::before, .skin-reel-item.winner.rarity-mythic::before {
+  animation-duration: 2.1s;
+  background: linear-gradient(115deg, transparent 28%, rgba(255,214,240,.55) 46%, rgba(255,255,255,.65) 50%, rgba(214,199,255,.55) 54%, transparent 72%);
+}
+@keyframes rarityGlowPulse {
+  0%, 100% {filter: brightness(1)}
+  50% {filter: brightness(1.22)}
+}
+@keyframes rarityShine {
+  0% {background-position: 160% 0}
+  100% {background-position: -60% 0}
+}
+@media (prefers-reduced-motion: reduce) {
+  .skin-preview.rarity-epic, .skin-preview.rarity-legendary, .skin-preview.rarity-mythic,
+  .skin-reel-item.winner.rarity-epic, .skin-reel-item.winner.rarity-legendary, .skin-reel-item.winner.rarity-mythic {
+    animation: none;
+  }
+  .skin-preview.rarity-epic::before, .skin-preview.rarity-legendary::before, .skin-preview.rarity-mythic::before,
+  .skin-reel-item.winner.rarity-epic::before, .skin-reel-item.winner.rarity-legendary::before, .skin-reel-item.winner.rarity-mythic::before {
+    display: none;
+  }
+}
 
 .skin-case-result.rarity-common {color: var(--rarity-common)}
-.skin-case-result.rarity-uncommon {border-color: var(--rarity-uncommon);color: var(--rarity-uncommon)}
-.skin-case-result.rarity-rare {border-color: var(--rarity-rare);color: var(--rarity-rare)}
-.skin-case-result.rarity-epic {border-color: var(--rarity-epic);color: var(--rarity-epic)}
-.skin-case-result.rarity-legendary {border-color: var(--rarity-legendary);color: var(--rarity-legendary)}
-.skin-case-result.rarity-mythic {border-color: var(--rarity-mythic);color: var(--rarity-mythic)}
+.skin-case-result.rarity-uncommon {border-color: var(--rarity-uncommon);color: var(--rarity-uncommon); box-shadow: 0 0 16px -4px rgba(114,214,160,.45)}
+.skin-case-result.rarity-rare {border-color: var(--rarity-rare);color: var(--rarity-rare); box-shadow: 0 0 18px -3px rgba(112,217,255,.5)}
+.skin-case-result.rarity-epic {border-color: var(--rarity-epic);color: var(--rarity-epic); box-shadow: 0 0 22px -2px rgba(233,156,255,.55); animation: rarityGlowPulse 2.6s ease-in-out infinite}
+.skin-case-result.rarity-legendary {border-color: var(--rarity-legendary);color: var(--rarity-legendary); box-shadow: 0 0 26px -2px rgba(255,217,92,.6); animation: rarityGlowPulse 2.2s ease-in-out infinite}
+.skin-case-result.rarity-mythic {border-color: var(--rarity-mythic);color: var(--rarity-mythic); box-shadow: 0 0 30px -1px rgba(255,77,141,.65); animation: rarityGlowPulse 1.8s ease-in-out infinite}
 
 .skin-wallet {display:flex;justify-content:center;gap:10px;margin:0 auto 14px;max-width:420px}
 .skin-wallet > div {min-width:110px;padding:9px 14px;border:1px solid var(--border);border-radius:9px;background:rgba(14,16,26,.72);display:flex;align-items:center;justify-content:space-between;gap:16px}
@@ -1005,3 +1062,20 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .choose-rare-exchange button {padding:5px 8px;border:1px solid rgba(112,217,255,.2);border-radius:6px;background:rgba(112,217,255,.04);color:#70d9ff;font-size:9px;font-weight:800;cursor:pointer}
 .choose-rare-exchange button:hover {background:rgba(112,217,255,.09)}
 .skin-exchange-actions > button:disabled {opacity:.4;cursor:not-allowed}
+
+.skin-case-title-row {display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:9px}
+.skin-case-title-row .skin-case-title {margin-bottom:0}
+.skin-info-btn {width:19px;height:19px;flex:0 0 auto;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.06);color:#c7cbd8;font-size:11px;font-weight:900;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s ease,border-color .15s ease,color .15s ease}
+.skin-info-btn:hover {background:rgba(78,205,196,.16);border-color:rgba(78,205,196,.55);color:#fff}
+
+.skin-info-overlay {position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(4,5,10,.72);backdrop-filter:blur(3px);box-sizing:border-box}
+.skin-info-overlay.hidden {display:none}
+.skin-info-modal {position:relative;width:min(420px,100%);max-height:calc(100vh - 32px);overflow-y:auto;box-sizing:border-box;padding:22px 20px 18px;border:1px solid rgba(255,255,255,.14);border-radius:14px;background:linear-gradient(180deg,rgba(20,22,34,.98),rgba(10,11,18,.98));box-shadow:0 20px 60px rgba(0,0,0,.55);animation:skinReveal .18s ease-out}
+.skin-info-modal h3 {margin:0 0 14px;font-size:15px;letter-spacing:.5px;color:#fff;padding-right:22px}
+.skin-info-section {margin-bottom:13px}
+.skin-info-section:last-child {margin-bottom:0}
+.skin-info-section h4 {margin:0 0 4px;font-size:10px;letter-spacing:1.5px;color:var(--accent);font-weight:900;text-transform:uppercase}
+.skin-info-section p {margin:0;font-size:12px;line-height:1.55;color:#c3c7d4}
+.skin-info-scrap-table {display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:6px !important;font-size:10px !important;font-weight:800;letter-spacing:.5px}
+.skin-info-close {position:absolute;top:12px;right:12px;width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);color:#9aa0b2;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.skin-info-close:hover {background:rgba(255,255,255,.1);color:#fff}

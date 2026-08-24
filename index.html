@@ -203,8 +203,11 @@
         <div><span>SCRAP</span><b id="skinScrapCount">0</b></div>
       </div>
       <div class="skin-case-box">
-        <div class="skin-case-title">SKIN CASE</div>
-        <div class="skin-rarity-odds"><span>Common 55%</span><span>Uncommon 25%</span><span>Rare 12%</span><span>Epic 6%</span><span>Legendary 1.8%</span><span>Mythic 0.2%</span></div>
+        <div class="skin-case-title-row">
+          <div class="skin-case-title">SKIN CASE</div>
+          <button id="skinInfoBtn" class="skin-info-btn" type="button" aria-label="วิธีสุ่มสกินและ Scrap คืออะไร" aria-haspopup="dialog">?</button>
+        </div>
+        <div class="skin-rarity-odds"><span class="rarity-common">Common 55%</span><span class="rarity-uncommon">Uncommon 25%</span><span class="rarity-rare">Rare 12%</span><span class="rarity-epic">Epic 6%</span><span class="rarity-legendary">Legendary 1.8%</span><span class="rarity-mythic">Mythic 0.2%</span></div>
         <button id="openSkinCaseBtn" class="start skin-open-btn" type="button">OPEN CASE</button>
         <div id="skinCaseRoll" class="skin-case-roll hidden" aria-live="polite"></div>
         <div id="skinCaseResult" class="skin-case-result hidden"></div>
@@ -227,6 +230,30 @@
         <p>เลือกสกินที่ต้องการสวมใส่</p>
       </div>
       <div id="skinGrid" class="skin-grid"></div>
+    </div>
+
+    <div class="skin-info-overlay hidden" id="skinInfoOverlay">
+      <div class="skin-info-modal" role="dialog" aria-modal="true" aria-labelledby="skinInfoTitle">
+        <button class="skin-info-close" id="skinInfoCloseBtn" type="button" aria-label="ปิด">✕</button>
+        <h3 id="skinInfoTitle">Case &amp; Scrap ทำงานยังไง</h3>
+        <div class="skin-info-section">
+          <h4>ได้ Case จากไหน</h4>
+          <p>เคลียร์ Wave 5 / 10 / 15 ในแต่ละรอบ จะได้ Case ฟรีรอบละ 1 ใบต่อ Wave</p>
+        </div>
+        <div class="skin-info-section">
+          <h4>เปิด Case แล้วสุ่มยังไง</h4>
+          <p>ระบบสุ่ม "ระดับความแรร์" ตาม % ที่แสดงด้านบนก่อน แล้วค่อยสุ่มสกินภายในระดับนั้นอีกที ยิ่งแรร์สูง โอกาสยิ่งต่ำ</p>
+        </div>
+        <div class="skin-info-section">
+          <h4>Scrap คืออะไร</h4>
+          <p>ถ้าสุ่มได้สกินที่มีอยู่แล้ว (Duplicate) สกินนั้นจะถูกแปลงเป็น Scrap แทนโดยอัตโนมัติ ยิ่งสกินซ้ำแรร์สูง ยิ่งได้ Scrap เยอะ</p>
+          <p class="skin-info-scrap-table"><span class="rarity-common">Common +10</span><span class="rarity-uncommon">Uncommon +15</span><span class="rarity-rare">Rare +25</span><span class="rarity-epic">Epic +50</span><span class="rarity-legendary">Legendary +100</span><span class="rarity-mythic">Mythic +250</span></p>
+        </div>
+        <div class="skin-info-section">
+          <h4>ใช้ Scrap ทำอะไรได้บ้าง</h4>
+          <p>• 100 Scrap แลกสกินระดับ Rare ขึ้นไปแบบสุ่ม<br>• 500 Scrap เลือกสกิน Rare ที่ต้องการได้เอง</p>
+        </div>
+      </div>
     </div>
 
     <div class="menu-screen hidden" id="skillScreen">
