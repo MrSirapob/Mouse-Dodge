@@ -904,13 +904,14 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .skin-exchange-actions {display:flex;justify-content:center}
 .skin-exchange-actions button {padding:8px 12px;border:1px solid rgba(255,255,255,.13);border-radius:7px;background:rgba(255,255,255,.045);color:#d8dbe5;font-size:11px;font-weight:800;cursor:pointer}
 .skin-exchange-actions button:hover {background:rgba(255,255,255,.08)}
-.skin-grid {width:min(650px,94vw);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 auto}
-.skin-card {min-width:0;padding:9px 6px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(14,16,26,.72);color:#fff;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:transform .12s,border-color .12s,background .12s}
+.skin-goto-collection-btn {max-width:300px;margin:6px auto 0}
+.skin-grid {width:min(720px,94vw);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 auto}
+.skin-card {min-width:0;padding:14px 8px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(14,16,26,.72);color:#fff;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;transition:transform .12s,border-color .12s,background .12s}
 .skin-card:hover:not(:disabled) {transform:translateY(-2px);background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.23)}
 .skin-card:disabled {cursor:default;opacity:.48}
 .skin-card.equipped {border-color:var(--accent);box-shadow:0 0 0 1px rgba(78,205,196,.18),0 0 18px rgba(78,205,196,.08)}
-.skin-preview {width:48px;height:48px;display:flex;align-items:center;justify-content:center;position:relative}
-.skin-shape {display:block;width:24px;height:24px;background:var(--skin);box-shadow:0 0 13px var(--skin);border:2px solid #fff}
+.skin-preview {width:64px;height:64px;display:flex;align-items:center;justify-content:center;position:relative}
+.skin-shape {display:block;width:32px;height:32px;background:var(--skin);box-shadow:0 0 15px var(--skin);border:2px solid #fff}
 .skin-shape-circle {border-radius:50%}
 .skin-shape-diamond {transform:rotate(45deg);border-radius:4px}
 .skin-shape-square {border-radius:3px}
@@ -918,9 +919,9 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .skin-shape-star {clip-path:polygon(50% 0%,61% 36%,100% 36%,69% 58%,81% 100%,50% 74%,19% 100%,31% 58%,0 36%,39% 36%);border:0}
 .skin-shape-void {border-radius:50%;background:#07070c;border:2px solid var(--skin);box-shadow:0 0 18px var(--skin),inset 0 0 9px var(--skin)}
 .default-preview .skin-shape {background:var(--accent);border-radius:50%;box-shadow:0 0 12px var(--accent)}
-.skin-card strong {max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}
-.skin-card small {font-size:8px;color:#858ba0;letter-spacing:1px;font-weight:800}
-.skin-card-rarity {font-size:7px;letter-spacing:1px;font-weight:900;color:#858ba0}
+.skin-card strong {max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.skin-card small {font-size:10px;color:#858ba0;letter-spacing:1px;font-weight:800}
+.skin-card-rarity {font-size:9px;letter-spacing:1px;font-weight:900;color:#858ba0}
 .rarity-common {color:#a7acb8}.rarity-uncommon {color:#72d6a0}.rarity-rare {color:#70d9ff}.rarity-epic {color:#e99cff}.rarity-legendary {color:#ffd95c}.rarity-mythic {color:#c7a9ff}
 #skinRewardToast {position:absolute;z-index:45;top:calc(var(--safe-top) + 72px);left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 16px;border:1px solid rgba(78,205,196,.35);border-radius:9px;background:rgba(8,10,18,.92);box-shadow:0 8px 30px #0008;pointer-events:none;animation:skinToastIn .22s ease-out}
 #skinRewardToast.hidden {display:none}
@@ -929,7 +930,7 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 @keyframes skinRollPulse {from{transform:scale(1)}to{transform:scale(1.02)}}
 @keyframes skinReveal {from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
 @keyframes skinToastIn {from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
-@media (max-width:520px){.skin-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.skin-card{padding:7px 4px}.skin-preview{width:42px;height:42px}.skin-shape{width:21px;height:21px}.skin-wallet > div{min-width:100px}.skin-rarity-odds{gap:5px 8px;font-size:9px}}
+@media (max-width:520px){.skin-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.skin-card{padding:10px 5px}.skin-preview{width:52px;height:52px}.skin-shape{width:26px;height:26px}.skin-card strong{font-size:11px}.skin-card small{font-size:9px}.skin-wallet > div{min-width:100px}.skin-rarity-odds{gap:5px 8px;font-size:9px}}
 .choose-rare-exchange {width:100%;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:5px;margin-top:7px}
 .choose-rare-exchange span {width:100%;font-size:8px;color:#858ba0;letter-spacing:1px;font-weight:800}
 .choose-rare-exchange button {padding:5px 8px;border:1px solid rgba(112,217,255,.2);border-radius:6px;background:rgba(112,217,255,.04);color:#70d9ff;font-size:9px;font-weight:800;cursor:pointer}

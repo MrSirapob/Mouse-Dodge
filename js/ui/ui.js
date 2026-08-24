@@ -248,6 +248,7 @@ export class UI {
     this.skillScreenSub = document.getElementById("skillScreenSub");
     this.resultScreen = document.getElementById("resultScreen");
     this.skinScreen = document.getElementById("skinScreen");
+    this.skinCollectionScreen = document.getElementById("skinCollectionScreen");
     this.skinGrid = document.getElementById("skinGrid");
     this.skinCaseCount = document.getElementById("skinCaseCount");
     this.skinScrapCount = document.getElementById("skinScrapCount");
@@ -331,6 +332,12 @@ export class UI {
     document
       .getElementById("backSkinBtn")
       ?.addEventListener("click", () => this.showModeScreen());
+    document
+      .getElementById("viewSkinCollectionBtn")
+      ?.addEventListener("click", () => this.showSkinCollectionScreen());
+    document
+      .getElementById("backSkinCollectionBtn")
+      ?.addEventListener("click", () => this.showSkinScreen());
     this.openSkinCaseBtn?.addEventListener("click", () => this.openSkinCase());
     this.exchangeRarePlusBtn?.addEventListener("click", () => this.exchangeRarePlus());
     document
@@ -441,6 +448,7 @@ export class UI {
     this.skillScreen?.classList.add("hidden");
     this.resultScreen?.classList.add("hidden");
     this.skinScreen?.classList.add("hidden");
+    this.skinCollectionScreen?.classList.add("hidden");
     this.updateMouseSensitivityDisplay();
     this.fitOverlayScreens();
   }
@@ -473,6 +481,7 @@ export class UI {
     this.skillScreen?.classList.add("hidden");
     this.resultScreen?.classList.add("hidden");
     this.skinScreen?.classList.add("hidden");
+    this.skinCollectionScreen?.classList.add("hidden");
     this.fitOverlayScreens();
   }
 
@@ -483,6 +492,7 @@ export class UI {
     this.skillScreen?.classList.add("hidden");
     this.resultScreen?.classList.add("hidden");
     this.skinScreen?.classList.add("hidden");
+    this.skinCollectionScreen?.classList.add("hidden");
     this.fitOverlayScreens();
   }
 
@@ -491,6 +501,7 @@ export class UI {
     this.skillScreen?.classList.remove("hidden");
     this.resultScreen?.classList.add("hidden");
     this.skinScreen?.classList.add("hidden");
+    this.skinCollectionScreen?.classList.add("hidden");
 
     const coop = this.currentMode === "coop";
     this.p2SkillPicker?.classList.toggle("hidden", !coop);
@@ -527,7 +538,20 @@ export class UI {
     this.settingsScreen?.classList.add("hidden");
     this.skillScreen?.classList.add("hidden");
     this.resultScreen?.classList.add("hidden");
+    this.skinCollectionScreen?.classList.add("hidden");
     this.skinScreen?.classList.remove("hidden");
+    this.renderSkinScreen();
+    this.fitOverlayScreens();
+  }
+
+  showSkinCollectionScreen() {
+    this.modeScreen?.classList.add("hidden");
+    this.howToPlayScreen?.classList.add("hidden");
+    this.settingsScreen?.classList.add("hidden");
+    this.skillScreen?.classList.add("hidden");
+    this.resultScreen?.classList.add("hidden");
+    this.skinScreen?.classList.add("hidden");
+    this.skinCollectionScreen?.classList.remove("hidden");
     this.renderSkinScreen();
     this.fitOverlayScreens();
   }
@@ -693,6 +717,7 @@ export class UI {
     this.pause?.classList.add("hidden");
     this.hud?.classList.remove("hidden");
     this.skinScreen?.classList.add("hidden");
+    this.skinCollectionScreen?.classList.add("hidden");
   }
 
   /** Hides the HUD/pause overlay and shows the mode-select menu screen. */

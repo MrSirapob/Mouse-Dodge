@@ -59,6 +59,34 @@ what changed, why, key numbers if any.
 
 ## 2026-08-24 — ChatGPT (GPT-5.6 Luna) — Skin / Case / Inventory system
 
+**Session 2 — Claude (Sonnet 5, claude.ai) — Split Skin screen into two pages (user-reported, "แก้ Ui หน้า skin ใหม่ ใช้เป็น 2 หน้าก็ได้ ตอนนี้เหมือนพยายามยัดใน 1 หน้า แล้วมันมองตัวหนังสือ รายละเอียดไม่เห็น"):**
+Root cause: `fitOverlayScreens()` in `js/ui/ui.js` auto-shrinks any
+`.menu-screen` that overflows the viewport via CSS `zoom`, so cramming
+wallet + case box + odds + exchange + the full "MY SKINS" grid into one
+`#skinScreen` forced a heavy zoom-down, making text/details hard to read.
+Split the Session 1 skin screen into two: `#skinScreen` now holds only the
+wallet, SKIN CASE box (odds/open/roll/result) and SCRAP EXCHANGE, plus a
+new "ดูสกินทั้งหมด ›" button; the "MY SKINS" grid moved to a new
+`#skinCollectionScreen` (its own back button, `#backSkinCollectionBtn`,
+returns to `#skinScreen`). Added `showSkinCollectionScreen()` in `ui.js`
+mirroring the other `show*Screen()` methods, wired the new buttons, and
+added `skinCollectionScreen` hide/show calls everywhere the other menu
+screens are toggled so it never gets stuck visible. `renderSkinScreen()`
+itself was left as one function — both screens' elements exist in the DOM
+at once (only one visible via `.hidden`), so no render-logic split was
+needed. Since each page now holds less content, `fitOverlayScreens()`
+rarely needs to zoom the collection page down, so also bumped the skin
+grid's card size up for readability (`.skin-preview` 48px→64px, card
+`strong` 10px→13px, grid gap 8px→12px, mobile breakpoint sizes bumped to
+match). No gameplay/skin-system logic touched.
+**Files:** `index.html`, `js/ui/ui.js`, `css/main.css`.
+**Test result:** Not run (`npm test`) — this was a pure UI/markup change,
+no JS logic under test touched. Not manually verified in a real browser
+this session.
+**For the next session:** Manually check the new "ดูสกินทั้งหมด" → collection
+page → back flow in a real/mobile browser, and confirm `fitOverlayScreens()`
+no longer needs to zoom either skin page down at common viewport sizes.
+
 Added a complete cosmetic Skin system on top of `wave-dodge-refactored`. This session is based on the project before the Claude handoff work; the Skin system is isolated from gameplay balance as much as possible.
 
 **Implemented:**
