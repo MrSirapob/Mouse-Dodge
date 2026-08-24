@@ -369,6 +369,12 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 #devPanel .dev-close {width: 28px !important;min-width: 28px !important;height: 28px;min-height: 28px !important;padding: 0 !important;border: 1px solid #292930 !important;background: #111115 !important;color: #8e8e98 !important;font-size: 18px !important;line-height: 1}
 #devPanel .dev-section {padding: 11px 0 0}
 #devPanel .dev-section-label {margin: 0 0 6px;color: #6f6f79;font-size: 8px;font-weight: 900;letter-spacing: 1.7px}
+#devPanel .dev-section-toggle {width: 100%;min-height: 0 !important;flex: none !important;display: flex;align-items: center;justify-content: space-between;padding: 6px 2px;margin: 0;border: 0;background: transparent;cursor: pointer}
+#devPanel .dev-section-toggle:hover {background: transparent}
+#devPanel .dev-section-toggle .dev-section-label {margin: 0}
+#devPanel .dev-section-toggle .dev-toggle-chevron {color: #6f6f79;font-size: 10px;transition: transform .12s}
+#devPanel .dev-section-toggle[aria-expanded="true"] .dev-toggle-chevron {color: #9a9aa4}
+#devPanel .dev-section-body.hidden {display: none}
 #devPanel .dev-row {grid-template-columns: repeat(3,1fr);margin: 0;display: flex;flex-wrap: wrap;gap: 6px}
 #devPanel button {letter-spacing: .2px;min-height: 34px;flex: 1 1 120px;padding: 7px 10px;border: 1px solid #25252c;border-radius: 7px;background: #151519;color: #e7e7eb;font-size: 10px;font-weight: 800;cursor: pointer;transition: background .12s,border-color .12s,transform .08s}
 #devPanel button:hover {color: #fff;background: #1c1c21;border-color: #3a3a43}
@@ -384,6 +390,14 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 #devPanel .dev-wave-current strong {color: #f0f0f2;font-size: 15px}
 #devPanel .dev-status {display: flex;align-items: center;justify-content: center;gap: 7px;margin-top: 12px;padding-top: 9px;border-top: 1px solid #202026;color: #5f5f69;font-size: 8px;letter-spacing: 1px}
 #devPanel .dev-status b {color: #9a9aa4}
+#devPanel .dev-skin-status {flex: 1 1 100%;min-height: 0;padding: 6px 4px 0;text-align: center;color: #8e8e98;font-size: 9px;letter-spacing: 1px;font-weight: 700}
+#devPanel #devSkinRarityRow button {flex: 1 1 90px}
+#devPanel #devSkinRarityRow button[data-rarity="common"] {border-color: rgba(167,172,184,.4)}
+#devPanel #devSkinRarityRow button[data-rarity="uncommon"] {border-color: rgba(114,214,160,.4);color: #a7e9c6}
+#devPanel #devSkinRarityRow button[data-rarity="rare"] {border-color: rgba(112,217,255,.4);color: #9fe3ff}
+#devPanel #devSkinRarityRow button[data-rarity="epic"] {border-color: rgba(233,156,255,.4);color: #edb8ff}
+#devPanel #devSkinRarityRow button[data-rarity="legendary"] {border-color: rgba(255,217,93,.45);color: #ffe28a}
+#devPanel #devSkinRarityRow button[data-rarity="mythic"] {border-color: rgba(199,169,255,.5);color: #d9c4ff}
 #secret-dev-badge {top: auto !important;left: 10px !important;bottom: 10px !important;padding: 5px 8px !important;border-radius: 7px !important;font-size: 11px !important}
 
 /* RESULT SCREEN / SCORING */

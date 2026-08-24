@@ -130,6 +130,79 @@ for Chrome/Safari/Edge. Purely cosmetic, no layout/JS changes.
 **For the next session:** Same outstanding ask as Session 3 — this still
 hasn't been eyeballed in a real browser.
 
+**Session 5 — Skin dev-mode testing tools (user-requested, "เพิ่ม Dev Mode ของระบบ skin หน่อย ผมจะทส" — wants to test the skin system):**
+Added a new SKIN section to the existing Dev Mode panel
+(`js/systems/devMode.js` renderPanel, F2 to open) so skins can be tested
+without grinding waves/RNG through the normal case economy:
+- `UNLOCK ALL SKINS` — owns every skin in one click.
+- `+5 CASES` / `+500 SCRAP` — quick currency for testing the Skin
+  screen's case-opening and scrap-exchange flows directly.
+- Six rarity buttons (`COMMON`...`MYTHIC`, color-coded borders matching
+  each rarity's existing `.rarity-*` color) — grants (preferring an
+  unowned skin) and equips a random skin of that exact rarity, so
+  Legendary/Mythic visuals (normally 1.8%/0.2% odds) can be checked
+  on demand instead of hoping for a lucky case roll.
+- `CYCLE SKIN` — steps player 1 through every owned skin in order.
+- `RESET SKIN DATA` (danger-styled) — wipes `waveDodgeSkinData` from
+  localStorage and reloads SkinSystem's in-memory state, to test the
+  fresh-install/no-skins-owned path.
+- A small `EQUIPPED: <name> · OWNED: <n>` readout at the bottom of the
+  section, refreshed every frame alongside the existing
+  wave/bullets/FPS readouts in `update()`.
+
+Two things worth knowing for anyone touching this next: (1) normally
+`equip()` only changes what's *saved* — the actual on-screen skin only
+updates on the next `Game.reset()`/wave start (see Session 1's notes).
+These dev actions intentionally bypass that and also write
+`g.players[0].skinVisual` directly so the change is visible immediately
+mid-run, which is dev-only behavior and should NOT be copied into the
+real equip flow in `ui.js`. (2) `tests/unit/devmode-docs.test.mjs`
+statically greps the source for a literal `if (type === '...')` per
+`data-dev` value — the six rarity buttons could not share one
+`RARITY_GIVE_TYPES[type]`-style lookup because the test wouldn't see it
+as "handled" (caught by running `npm test` before finishing); they now
+each have their own literal branch that all call a shared
+`giveAndEquipRarity()` helper.
+**Files:** `js/systems/devMode.js`, `css/main.css`.
+**Test result:** `npm test` → **190 PASS / 0 FAIL / 1 WARN** (same
+pre-existing module-type WARN as every prior session). Confirmed
+specifically that `[DEV MODE & AI DOCUMENTATION]`'s "every data-dev
+button has a matching action() handler" check passes. Also ran `node
+--check js/systems/devMode.js` for a syntax sanity check.
+**For the next session:** Still not manually verified in a real
+browser — please actually open Dev Mode (F2, after the unlock gesture)
+and click through the new SKIN section at least once; this is now the
+fourth session in this file's skin-UI thread and none of them have done
+that yet.
+
+**Session 6 — Collapse SKIN section into an accordion (user-reported, "เมนูเยอะเกิน ทำเป็นปุ่มกดแล้วแยกออกมาหรือทำแบบไหนดี optimize หน่อย" — Dev Mode panel had too many buttons visible at once, asked for a togglable/separated layout):**
+Session 5's SKIN section (11 buttons + a status line across 3 rows) was
+always rendered open, on top of the pre-existing PLAYER/WAVE/SPEED/GAME/
+DEBUG sections, making the panel very button-dense every time it opened.
+Turned SKIN into a collapsible accordion instead of a plain section: its
+`<div class="dev-section-label">` became a clickable
+`<button id="devSkinToggle" class="dev-section-toggle" aria-expanded=...>`
+with a chevron (▸/▾), and its three rows are now wrapped in
+`#devSkinBody` which starts with `class="hidden"` (collapsed by
+default). New `toggleSkinPanel(force)` method flips the `hidden` class,
+`aria-expanded`, and the chevron glyph; wired to the toggle button's
+click in `renderPanel()`. The always-used PLAYER/WAVE/SPEED/GAME/DEBUG
+buttons are unchanged and still open with the panel like before — only
+SKIN (the newest, most specialized section) is now opt-in per-open.
+`updateSkinStatus()` (called every frame from `update()`) still writes
+to `#devSkinStatus` even while collapsed; harmless, and means the
+EQUIPPED/OWNED readout is already current the moment someone expands it.
+**Files:** `js/systems/devMode.js`, `css/main.css`.
+**Test result:** `npm test` → **190 PASS / 0 FAIL / 1 WARN** (same
+pre-existing WARN as every prior session — unrelated). Ran `node
+--check js/systems/devMode.js` for a syntax sanity check.
+**For the next session:** Same outstanding ask as Sessions 3-5 — nobody
+has opened this in a real browser yet. Specifically check: SKIN starts
+collapsed on panel open, the chevron flips and stays expanded across
+button clicks inside it (shouldn't collapse itself after every action),
+and the collapsed/expanded state doesn't fight with the mobile
+`#devPanel` width/font-size media query overrides.
+
 Added a complete cosmetic Skin system on top of `wave-dodge-refactored`. This session is based on the project before the Claude handoff work; the Skin system is isolated from gameplay balance as much as possible.
 
 **Implemented:**

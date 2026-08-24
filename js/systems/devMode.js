@@ -1,4 +1,5 @@
 import { CONFIG } from '../core/config.js?v=20260822-pi3c';
+import { SKINS_BY_RARITY } from '../data/skins.js?v=20260824-skin1';
 
 export class DevMode {
   // Selectable game-speed levels for the SPEED panel (spec: "เร่งความเร็ว
@@ -126,6 +127,33 @@ export class DevMode {
         </div>
       </div>
 
+      <div class="dev-section dev-section-collapsible">
+        <button class="dev-section-toggle" id="devSkinToggle" type="button" aria-expanded="false" aria-controls="devSkinBody">
+          <span class="dev-section-label">SKIN</span>
+          <span class="dev-toggle-chevron">▸</span>
+        </button>
+        <div class="dev-section-body hidden" id="devSkinBody">
+          <div class="dev-row">
+            <button data-dev="skinUnlockAll" class="dev-main-action">UNLOCK ALL SKINS</button>
+            <button data-dev="skinAddCases">+5 CASES</button>
+            <button data-dev="skinAddScrap">+500 SCRAP</button>
+            <button data-dev="skinCycle">CYCLE SKIN</button>
+            <button data-dev="skinResetData" class="dev-danger">RESET SKIN DATA</button>
+          </div>
+          <div class="dev-row" id="devSkinRarityRow">
+            <button data-dev="skinGiveCommon" data-rarity="common">COMMON</button>
+            <button data-dev="skinGiveUncommon" data-rarity="uncommon">UNCOMMON</button>
+            <button data-dev="skinGiveRare" data-rarity="rare">RARE</button>
+            <button data-dev="skinGiveEpic" data-rarity="epic">EPIC</button>
+            <button data-dev="skinGiveLegendary" data-rarity="legendary">LEGENDARY</button>
+            <button data-dev="skinGiveMythic" data-rarity="mythic">MYTHIC</button>
+          </div>
+          <div class="dev-row">
+            <span id="devSkinStatus" class="dev-skin-status">EQUIPPED: —</span>
+          </div>
+        </div>
+      </div>
+
       <div class="dev-status">
         <span>WAVE <b id="devCurrentWaveBottom">1</b></span>
         <span>•</span>
@@ -144,6 +172,7 @@ export class DevMode {
     });
 
     this.panel.querySelector('#devClose')?.addEventListener('click', () => this.toggle(false));
+    this.panel.querySelector('#devSkinToggle')?.addEventListener('click', () => this.toggleSkinPanel());
     this.updateSpeedButtons();
   }
 
@@ -153,6 +182,26 @@ export class DevMode {
 
     const badge = document.getElementById('secret-dev-badge');
     if (badge) badge.style.display = this.enabled ? 'none' : 'block';
+  }
+
+  /**
+   * Collapses/expands the SKIN section's body. Kept collapsed by default
+   * (see renderPanel()'s `hidden` class + `aria-expanded="false"`) so the
+   * always-used PLAYER/WAVE/SPEED/GAME/DEBUG buttons stay the first thing
+   * visible instead of the panel opening straight into an 11-button SKIN
+   * block every time (user feedback: "เมนูเยอะเกิน" — too many buttons at
+   * once). Testers who need the skin tools open it themselves and it stays
+   * open across actions within the same panel instance.
+   */
+  toggleSkinPanel(force) {
+    const body = this.panel?.querySelector('#devSkinBody');
+    const btn = this.panel?.querySelector('#devSkinToggle');
+    if (!body || !btn) return;
+    const expand = typeof force === 'boolean' ? force : body.classList.contains('hidden');
+    body.classList.toggle('hidden', !expand);
+    btn.setAttribute('aria-expanded', String(expand));
+    const chevron = btn.querySelector('.dev-toggle-chevron');
+    if (chevron) chevron.textContent = expand ? '▾' : '▸';
   }
 
   /** Highlights whichever SPEED button matches the current this.timeScale, and refreshes the status-bar readout. */
@@ -166,6 +215,19 @@ export class DevMode {
       // 1.5 -> "1.5×", 2 -> "2×" (no trailing .0)
       readout.textContent = `${this.timeScale % 1 === 0 ? this.timeScale : this.timeScale.toFixed(1)}×`;
     }
+  }
+
+  /** Refreshes the SKIN section's equipped/owned readout in the dev panel. Cheap text-only update, safe to call every frame from update() like FPS/wave/bullets are. */
+  updateSkinStatus() {
+    const el = this.panel?.querySelector('#devSkinStatus');
+    if (!el) return;
+    const skinSystem = this.game.skinSystem;
+    if (!skinSystem) {
+      el.textContent = 'EQUIPPED: —';
+      return;
+    }
+    const equipped = skinSystem.getEquipped();
+    el.textContent = `EQUIPPED: ${equipped.name} · OWNED: ${skinSystem.data.ownedSkins.length}`;
   }
 
   update() {
@@ -197,6 +259,8 @@ export class DevMode {
       }
       fps.textContent = this._fpsValue || 60;
     }
+
+    this.updateSkinStatus();
   }
 
   action(type) {
@@ -289,6 +353,114 @@ export class DevMode {
       this.timeScale = DevMode.SPEED_LEVELS.speedFastest;
       this.updateSpeedButtons();
     }
+
+    // ----- SKIN (dev testing only) -----
+    // These bypass the normal case-opening/scrap-exchange economy entirely
+    // so a tester can reach any skin/rarity instantly without grinding
+    // waves or RNG. They write straight through SkinSystem's public API
+    // (owns/equip/addCases/save) so saves stay valid and the real Skin
+    // screen (js/ui/ui.js renderSkinScreen) reflects the change immediately
+    // if it's open. `g.skinSystem` won't exist yet if DevMode somehow acts
+    // before Game finishes constructing it (see game.js — devMode is built
+    // before skinSystem), so every branch below guards for it.
+    if (type === 'skinUnlockAll') {
+      const skinSystem = g.skinSystem;
+      if (skinSystem) {
+        let added = 0;
+        Object.values(SKINS_BY_RARITY).flat().forEach((s) => {
+          if (!skinSystem.owns(s.id)) {
+            skinSystem.data.ownedSkins.push(s.id);
+            added++;
+          }
+        });
+        if (added > 0) skinSystem.save();
+        this.game.ui?.renderSkinScreen?.();
+        this.updateSkinStatus();
+      }
+    }
+
+    if (type === 'skinAddCases') {
+      g.skinSystem?.addCases(5);
+      this.game.ui?.renderSkinScreen?.();
+    }
+
+    if (type === 'skinAddScrap') {
+      const skinSystem = g.skinSystem;
+      if (skinSystem) {
+        skinSystem.data.scrap += 500;
+        skinSystem.save();
+        this.game.ui?.renderSkinScreen?.();
+      }
+    }
+
+    if (type === 'skinCycle') {
+      // Live-previews the next owned skin on player 1 immediately, without
+      // waiting for a run restart (the normal equip() flow only applies
+      // skinVisual on Game.reset()/startWave — see HANDOFF_LOG 2026-08-24).
+      // Dev-only shortcut: also calls equip() so it persists like normal.
+      const skinSystem = g.skinSystem;
+      if (skinSystem) {
+        const owned = skinSystem.data.ownedSkins;
+        const currentIndex = owned.indexOf(skinSystem.data.equippedSkin);
+        const next = owned[(currentIndex + 1) % owned.length];
+        skinSystem.equip(next);
+        if (g.players[0]) g.players[0].skinVisual = skinSystem.buildVisual(next);
+        this.game.ui?.renderSkinScreen?.();
+        this.updateSkinStatus();
+      }
+    }
+
+    if (type === 'skinResetData') {
+      const skinSystem = g.skinSystem;
+      if (skinSystem) {
+        try {
+          localStorage.removeItem('waveDodgeSkinData');
+        } catch (error) {
+          console.warn('[DevMode] skinResetData: localStorage unavailable', error);
+        }
+        skinSystem.data = skinSystem.load();
+        skinSystem.rewardedWaves.clear();
+        if (g.players[0]) g.players[0].skinVisual = skinSystem.buildVisual();
+        this.game.ui?.renderSkinScreen?.();
+        this.updateSkinStatus();
+      }
+    }
+
+    const RARITY_GIVE_TYPES = {
+      skinGiveCommon: 'Common',
+      skinGiveUncommon: 'Uncommon',
+      skinGiveRare: 'Rare',
+      skinGiveEpic: 'Epic',
+      skinGiveLegendary: 'Legendary',
+      skinGiveMythic: 'Mythic',
+    };
+    // Each rarity gets its own literal `if (type === '...')` branch (same
+    // reason as the SPEED levels above: tests/unit/devmode-docs.test.mjs
+    // statically scans for that exact pattern per data-dev value, so a
+    // shared `RARITY_GIVE_TYPES[type]` lookup alone wouldn't be picked up
+    // as "handled"). They all delegate to the same giveAndEquipRarity().
+    if (type === 'skinGiveCommon') this.giveAndEquipRarity(g, RARITY_GIVE_TYPES.skinGiveCommon);
+    if (type === 'skinGiveUncommon') this.giveAndEquipRarity(g, RARITY_GIVE_TYPES.skinGiveUncommon);
+    if (type === 'skinGiveRare') this.giveAndEquipRarity(g, RARITY_GIVE_TYPES.skinGiveRare);
+    if (type === 'skinGiveEpic') this.giveAndEquipRarity(g, RARITY_GIVE_TYPES.skinGiveEpic);
+    if (type === 'skinGiveLegendary') this.giveAndEquipRarity(g, RARITY_GIVE_TYPES.skinGiveLegendary);
+    if (type === 'skinGiveMythic') this.giveAndEquipRarity(g, RARITY_GIVE_TYPES.skinGiveMythic);
+  }
+
+  /** Shared body for the six skinGive<Rarity> dev actions — grants (preferring an unowned skin) and equips a random skin of the given rarity, then live-previews it on player 1. */
+  giveAndEquipRarity(g, rarity) {
+    const skinSystem = g.skinSystem;
+    const pool = SKINS_BY_RARITY[rarity];
+    if (!skinSystem || !pool || !pool.length) return;
+    const unowned = pool.filter((s) => !skinSystem.owns(s.id));
+    const picked = unowned.length
+      ? unowned[Math.floor(Math.random() * unowned.length)]
+      : pool[Math.floor(Math.random() * pool.length)];
+    if (!skinSystem.owns(picked.id)) skinSystem.data.ownedSkins.push(picked.id);
+    skinSystem.equip(picked.id);
+    if (g.players[0]) g.players[0].skinVisual = skinSystem.buildVisual(picked.id);
+    this.game.ui?.renderSkinScreen?.();
+    this.updateSkinStatus();
   }
 }
 
