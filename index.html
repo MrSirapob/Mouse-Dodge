@@ -214,9 +214,24 @@
       </div>
       <div class="skin-exchange">
         <div class="skin-section-title">SCRAP EXCHANGE</div>
-        <div class="skin-exchange-actions">
-          <button id="exchangeRarePlusBtn" type="button">100 SCRAP · RANDOM RARE+</button>
-          <div id="chooseRareExchange" class="choose-rare-exchange"></div>
+        <p class="skin-exchange-hint">Scrap ได้จากสกินซ้ำตอนเปิด Case — ใช้แลก Rare ขึ้นไปได้ 2 แบบ</p>
+        <div class="skin-exchange-grid">
+          <div class="exchange-card">
+            <div class="exchange-card-head">
+              <span class="exchange-card-title">สุ่ม Rare ขึ้นไป</span>
+              <span class="exchange-card-cost">100<small>SCRAP</small></span>
+            </div>
+            <p class="exchange-card-desc">สุ่ม 1 สกินระดับ Rare ขึ้นไปที่ยังไม่มี การันตีไม่ต่ำกว่า Rare</p>
+            <button id="exchangeRarePlusBtn" type="button" class="exchange-card-btn">แลกแบบสุ่ม</button>
+          </div>
+          <div class="exchange-card exchange-card-choose">
+            <div class="exchange-card-head">
+              <span class="exchange-card-title">เลือกสกิน Rare เอง</span>
+              <span class="exchange-card-cost">500<small>SCRAP</small></span>
+            </div>
+            <p class="exchange-card-desc">เลือกสกิน Rare ที่ยังไม่มีได้เอง ไม่ต้องเสี่ยงสุ่ม — กดชื่อสกินด้านล่าง</p>
+            <div id="chooseRareExchange" class="choose-rare-exchange"></div>
+          </div>
         </div>
       </div>
       <button id="viewSkinCollectionBtn" class="start skin-goto-collection-btn" type="button">ดูสกินทั้งหมด ›</button>

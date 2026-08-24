@@ -576,7 +576,9 @@ export class UI {
     if (this.chooseRareExchange) {
       const rares = SKINS.filter((s) => s.rarity === "Rare" && !data.ownedSkins.includes(s.id));
       const canAffordRare = data.scrap >= 500;
-      this.chooseRareExchange.innerHTML = rares.length ? `<span>500 SCRAP · CHOOSE RARE</span>${rares.map((s) => `<button type="button" data-exchange-rare="${s.id}" ${canAffordRare ? "" : "disabled"}>${s.name}</button>`).join("")}` : `<span>RARE COLLECTION COMPLETE</span>`;
+      this.chooseRareExchange.innerHTML = rares.length
+        ? rares.map((s) => `<button type="button" class="rarity-rare" data-exchange-rare="${s.id}" ${canAffordRare ? "" : "disabled"}>${s.name}</button>`).join("")
+        : `<span class="exchange-empty">เก็บสกิน Rare ครบทุกใบแล้ว</span>`;
       this.chooseRareExchange.querySelectorAll("[data-exchange-rare]").forEach((button) => button.addEventListener("click", () => this.exchangeChooseRare(button.dataset.exchangeRare)));
     }
     const equipped = data.equippedSkin;
@@ -650,17 +652,23 @@ export class UI {
     // pixel width, so the landing math stays correct across the mobile
     // breakpoint (where .skin-reel-item shrinks via CSS). This is a one-time
     // read before the animation starts, not a per-frame cost.
+    const trackRect = track.getBoundingClientRect();
     const firstRect = track.children[0].getBoundingClientRect();
     const itemW = firstRect.width;
     const step = track.children.length > 1
       ? track.children[1].getBoundingClientRect().left - firstRect.left
       : itemW + 10;
+    // .skin-reel-track has its own left padding (see CSS), so item 0 does
+    // NOT sit flush with the track's left edge — it's offset by that
+    // padding. Reading it back from the DOM (instead of hardcoding the
+    // padding value here) keeps this correct even if the CSS changes.
+    const firstItemOffset = firstRect.left - trackRect.left;
     const viewportCenter = roll.clientWidth / 2;
     // Small random jitter so the winning item doesn't land pixel-identically
     // centered every time, like the real thing.
     const jitter = (Math.random() - 0.5) * step * 0.4;
     const startX = 0;
-    const targetX = viewportCenter - (WINNER_INDEX * step + itemW / 2) - jitter;
+    const targetX = viewportCenter - (firstItemOffset + WINNER_INDEX * step + itemW / 2) - jitter;
 
     track.style.willChange = "transform";
     track.style.transform = "translate3d(0px, 0, 0)";
@@ -678,7 +686,7 @@ export class UI {
 
       // Tick: reuse the x we just computed this frame instead of reading the
       // DOM back out, so this never forces a style/layout recalc.
-      const idx = Math.round((viewportCenter - x - itemW / 2) / step);
+      const idx = Math.round((viewportCenter - x - firstItemOffset - itemW / 2) / step);
       if (idx !== lastTickIndex && idx >= 0 && idx < items.length) {
         lastTickIndex = idx;
         const el = track.children[idx];
