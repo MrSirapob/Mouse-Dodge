@@ -26,7 +26,7 @@ export const DEFAULT_SKIN = Object.freeze({
 });
 
 export const SKINS = Object.freeze([
-  skin('mint', 'Mint Pulse', 'Common', 'circle', '#4ecdc4', '#b7fff8', 0, 'none', 'none', 'burst'),
+  skin('mint', 'Mint Pulse', 'Common', 'circle', '#2ecc9d', '#c8ffe8', 0, 'none', 'none', 'burst'),
   skin('ember', 'Ember', 'Common', 'circle', '#ff7b54', '#ffd166', 0, 'none', 'none', 'burst'),
   skin('azure', 'Azure', 'Common', 'diamond', '#5dade2', '#d6f4ff', 0, 'none', 'none', 'burst'),
   skin('violet', 'Violet', 'Common', 'diamond', '#9b7bff', '#e3d9ff', 0, 'none', 'none', 'burst'),

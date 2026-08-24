@@ -1,5 +1,41 @@
 # Changelog
 
+## Reverted skin/case UI back to English (user preference)
+Session 21 had translated the Skin Collection / Case / Exchange result
+microcopy to Thai; the user asked to revert it back to English. Straight
+revert of the strings in `js/ui/ui.js` (EQUIP, EQUIPPED, LOCKED, DEFAULT,
+OPEN CASE, COLLECTED, COLLECTION COMPLETE, CASE RESULT, NEW!, DUPLICATE,
+CLOSE, OK, EXCHANGE RESULT, EXCHANGE) and the matching test assertions in
+`tests/unit/skin-collection-progress.test.mjs`. Mint Pulse's recolor and
+Default's exclusion from Collection Progress (the other two Session 21
+changes) are unaffected.
+**Files:** `js/ui/ui.js`, `tests/unit/skin-collection-progress.test.mjs`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated).
+
+## Mint Pulse recolor, Thai-language skin/case UI, Default excluded from Collection Progress (user-requested)
+Three small user-requested tweaks to the Skin/Case system:
+- **Mint Pulse now visually distinct from Default** — it shared the exact
+  same color (`#4ecdc4`) as the player's base color, plus the same circle
+  shape and no glow/trail, so equipping it looked identical to Default.
+  Recolored to `#2ecc9d` / `#c8ffe8` (still mint-green, clearly different
+  from Default's cyan-teal).
+- **Skin/Case UI now in Thai** — EQUIP/EQUIPPED/LOCKED/DEFAULT/OPEN
+  CASE/COLLECTED/COLLECTION COMPLETE/CASE RESULT/NEW!/DUPLICATE/CLOSE/OK/
+  EXCHANGE RESULT/EXCHANGE all translated (ใส่ / ใส่แล้ว / ล็อกอยู่ /
+  ค่าเริ่มต้น / เปิดกล่อง / สะสมแล้ว / สะสมครบแล้ว / ผลเปิดกล่อง / ใหม่! /
+  ซ้ำ / ปิด / ตกลง / ผลการแลก / แลกสำเร็จ). Rarity-tier names and "SCRAP"
+  kept in English to match how the rest of the UI already treats them as
+  loanwords.
+- **Default confirmed excluded from Collection Progress** — no code
+  change; `SKINS` (the pool the progress bar counts against) never
+  included the Default skin, and that's the right call since Default
+  isn't part of the case/rarity pool being collected.
+**Files:** `js/data/skins.js`, `js/ui/ui.js`,
+`tests/unit/skin-collection-progress.test.mjs`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated).
+
 ## Case reel no longer bounces items while spinning (user-reported, "ตอนแถบสกินกำลังหมุน มีไอเทมเด้งตลอดเลย เด้งแบบเหมือนตอนเลือก")
 The case-opening reel (`runCaseReel()` in `js/ui/ui.js`) tracked which item
 was nearest the pointer on every animation frame and toggled a `.tick`

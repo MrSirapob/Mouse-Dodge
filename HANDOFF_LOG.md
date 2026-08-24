@@ -59,6 +59,64 @@ what changed, why, key numbers if any.
 
 ## 2026-08-24 — ChatGPT (GPT-5.6 Luna) — Skin / Case / Inventory system
 
+**Session 22 — Claude (Sonnet 5, claude.ai) — Reverted Session 21's Thai-language skin/case UI back to English (user preference, "ผมว่าแก้กลับเป็ฯภาษาอังกฤษดีกว่า"):**
+Straight revert of the microcopy strings changed in Session 21 —
+EQUIP/EQUIPPED/LOCKED/DEFAULT/OPEN CASE/COLLECTED/COLLECTION
+COMPLETE/CASE RESULT/NEW!/DUPLICATE/CLOSE/OK/EXCHANGE RESULT/EXCHANGE all
+back to their original English text in `js/ui/ui.js`, and
+`tests/unit/skin-collection-progress.test.mjs`'s assertions reverted to
+match. The other two Session 21 changes (Mint Pulse recolor to
+`#2ecc9d`, Default excluded from Collection Progress) are untouched —
+only the language of the skin/case UI was reverted.
+**Files:** `js/ui/ui.js`, `tests/unit/skin-collection-progress.test.mjs`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated).
+**For the next session:** Nothing pending.
+
+**Session 21 — Claude (Sonnet 5, claude.ai) — 3 user-requested tweaks: Mint Pulse recolor, Thai-language skin/case UI, Default-not-counted-in-collection confirmed:**
+1. **Mint Pulse vs Default (user-reported: they looked identical in-game):**
+   Root cause found in `js/data/skins.js` — Mint Pulse's `color` was
+   `#4ecdc4`, byte-for-byte the same teal as the player's base
+   `config.js` `color` (`#4ecdc4`, used for the Default skin), and both
+   are the `circle` shape with `glow: 0`/`trail: 'none'`, so nothing in
+   `Renderer.drawPlayer()` ever differed between them. Changed Mint
+   Pulse to `#2ecc9d` / secondary `#c8ffe8` (still a mint/green family,
+   clearly distinct from Default's cyan-teal) — shape/glow/trail
+   intentionally left alone to match the rest of the Common tier (all
+   other Commons already have glow 0 too, so this keeps that
+   consistent).
+2. **Thai-language skin/case UI (user-requested, example given:
+   "ใส่แล้ว"):** Translated the English microcopy across the Skin
+   Collection screen and Case/Exchange result popups in `js/ui/ui.js`:
+   EQUIP → ใส่, EQUIPPED → ใส่แล้ว, LOCKED → ล็อกอยู่, DEFAULT (skin-card
+   rarity tag) → ค่าเริ่มต้น, OPEN CASE → เปิดกล่อง, COLLECTED →
+   สะสมแล้ว, COLLECTION COMPLETE → สะสมครบแล้ว, CASE RESULT →
+   ผลเปิดกล่อง, NEW! → ใหม่!, DUPLICATE → ซ้ำ, CLOSE → ปิด, OK → ตกลง,
+   EXCHANGE RESULT → ผลการแลก, EXCHANGE → แลกสำเร็จ. Left rarity-tier
+   names (Common/Uncommon/Rare/Epic/Legendary/Mythic) and "SCRAP" in
+   English — the existing Thai copy elsewhere in `index.html` already
+   treats those as loanwords (e.g. "แลก Scrap เพื่อสุ่ม Skin เพิ่มได้"),
+   so kept that convention rather than inventing new Thai terms for
+   them. Updated `tests/unit/skin-collection-progress.test.mjs`'s string
+   assertions to match the new Thai copy (same checks, just matching the
+   new text).
+3. **Should Default count toward Collection Progress? (user asked for a
+   recommendation):** Recommended **no** — kept current behavior as-is
+   (already correct, no code change needed). `SKINS` (the collectible
+   pool used by `totalSkins`/`collectedSkins`/`collectionComplete`) never
+   included `DEFAULT_SKIN` to begin with; Default isn't earned via a
+   case/rarity roll, it's just the starting skin everyone has, so
+   counting it would make "collection complete" trivially already-true
+   for a brand new save and dilute what the progress bar is meant to
+   track (the actual gacha pool).
+**Files:** `js/data/skins.js`, `js/ui/ui.js`,
+`tests/unit/skin-collection-progress.test.mjs`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated).
+**For the next session:** Nothing pending. Worth a quick real-browser
+glance at the Skin screen/Case popup to confirm the Thai strings don't
+overflow any of the small `<small>`/badge elements at narrow widths.
+
 **Session 20 — Claude (Sonnet 5, claude.ai) — Removed the per-item "tick" bounce on the spinning case reel (user-reported, "ตอนแถบสกินกำลังหมุน มีไอเทมเด้งตลอดเลย เด้งแบบเหมือนตอนเลือก"):**
 Root cause: `runCaseReel()`'s rAF loop tracked which item's center was
 nearest the pointer on every frame and toggled a `.tick` class on it
