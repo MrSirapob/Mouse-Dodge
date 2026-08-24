@@ -1,5 +1,5 @@
-import { CONFIG } from "../core/config.js?v=20260824-3pa8";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-3pa8";
+import { CONFIG } from "../core/config.js?v=20260824-7uzh";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-7uzh";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -791,13 +791,47 @@ export class UI {
     return `<span class="skin-preview rarity-${item.rarity.toLowerCase()}" style="--skin:${item.color};--skin2:${item.secondaryColor}"><i class="skin-shape skin-shape-${item.shape}"></i></span>`;
   }
 
+  bindResultActions(id) {
+    if (!this.skinCaseResult) return;
+    const equipBtn = this.skinCaseResult.querySelector(".equip-btn");
+    const closeBtn = this.skinCaseResult.querySelector(".close-btn");
+    if (equipBtn) {
+      equipBtn.addEventListener("click", () => {
+        if (this.skinSystem.equip(id)) {
+          this.renderSkinScreen();
+          equipBtn.textContent = "EQUIPPED";
+          equipBtn.disabled = true;
+        }
+      });
+    }
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => {
+        this.skinCaseResult.classList.add("hidden");
+        // Also remove the rarity class so it doesn't leak to next use
+        this.skinCaseResult.className = "skin-case-result hidden";
+      });
+    }
+  }
+
   finishCaseReel(result) {
     this.skinCaseBusy = false;
     if (this.openSkinCaseBtn) this.openSkinCaseBtn.disabled = false;
     if (this.skinCaseRoll) this.skinCaseRoll.classList.add("hidden");
     if (this.skinCaseResult) {
       this.skinCaseResult.className = `skin-case-result rarity-${result.item.rarity.toLowerCase()}`;
-      this.skinCaseResult.innerHTML = `${this.skinResultIconHTML(result.item)}<span>${result.duplicate ? "DUPLICATE" : "YOU UNLOCKED"}</span><strong>${result.item.name}</strong><b>${result.item.rarity}</b>${result.duplicate ? `<small>+${result.scrap} SCRAP</small>` : `<small>Added to Inventory</small>`}`;
+      
+      const isDup = result.duplicate;
+      const title = isDup ? "DUPLICATE" : "NEW!";
+      const subText = isDup ? `<small>+${result.scrap} SCRAP</small>` : `<div class="result-actions"><button type="button" class="equip-btn">EQUIP</button><button type="button" class="close-btn">CLOSE</button></div>`;
+      
+      this.skinCaseResult.innerHTML = `
+        <div class="result-skin-wrapper">${this.skinResultIconHTML(result.item)}</div>
+        <span>${title}</span>
+        <strong>${result.item.name}</strong>
+        <b>${result.item.rarity}</b>
+        ${subText}
+      `;
+      this.bindResultActions(result.item.id);
     }
     this.renderSkinScreen();
   }
@@ -808,7 +842,14 @@ export class UI {
     if (!result.ok) return;
     if (this.skinCaseResult) {
       this.skinCaseResult.className = `skin-case-result rarity-${result.item.rarity.toLowerCase()}`;
-      this.skinCaseResult.innerHTML = `${this.skinResultIconHTML(result.item)}<span>EXCHANGE</span><strong>${result.item.name}</strong><b>${result.item.rarity}</b><small>Added to Inventory</small>`;
+      this.skinCaseResult.innerHTML = `
+        <div class="result-skin-wrapper">${this.skinResultIconHTML(result.item)}</div>
+        <span>EXCHANGE</span>
+        <strong>${result.item.name}</strong>
+        <b>${result.item.rarity}</b>
+        <div class="result-actions"><button type="button" class="equip-btn">EQUIP</button><button type="button" class="close-btn">CLOSE</button></div>
+      `;
+      this.bindResultActions(result.item.id);
     }
     this.renderSkinScreen();
   }
@@ -819,7 +860,16 @@ export class UI {
     if (!result.ok) return;
     if (this.skinCaseResult) {
       this.skinCaseResult.className = `skin-case-result rarity-${result.item.rarity.toLowerCase()}`;
-      this.skinCaseResult.innerHTML = `${this.skinResultIconHTML(result.item)}<span>${result.duplicate ? "DUPLICATE" : "EXCHANGE"}</span><strong>${result.item.name}</strong><b>${result.item.rarity}</b><small>${result.duplicate ? `+${result.scrap} SCRAP` : "Added to Inventory"}</small>`;
+      const isDup = result.duplicate;
+      const subText = isDup ? `<small>+${result.scrap} SCRAP</small>` : `<div class="result-actions"><button type="button" class="equip-btn">EQUIP</button><button type="button" class="close-btn">CLOSE</button></div>`;
+      this.skinCaseResult.innerHTML = `
+        <div class="result-skin-wrapper">${this.skinResultIconHTML(result.item)}</div>
+        <span>${isDup ? "DUPLICATE" : "EXCHANGE"}</span>
+        <strong>${result.item.name}</strong>
+        <b>${result.item.rarity}</b>
+        ${subText}
+      `;
+      this.bindResultActions(result.item.id);
     }
     this.renderSkinScreen();
   }

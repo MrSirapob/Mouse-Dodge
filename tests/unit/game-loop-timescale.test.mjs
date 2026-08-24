@@ -27,7 +27,7 @@
 
 import { TestSuite, assert, assertClose } from '../helpers/assertions.mjs';
 import { createGame } from '../helpers/gameFactory.mjs';
-import { GAME_STATES } from '../../js/core/gameState.js?v=20260824-3pa8';
+import { GAME_STATES } from '../../js/core/gameState.js?v=20260824-7uzh';
 
 /** Calls game.loop(now) once, capturing the dt it hands to update(), without letting it reschedule itself. */
 function captureLoopDt(game, { lastTime, now, timeScale }) {

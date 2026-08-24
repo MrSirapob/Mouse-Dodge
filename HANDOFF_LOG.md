@@ -59,6 +59,18 @@ what changed, why, key numbers if any.
 
 ## 2026-08-24 — ChatGPT (GPT-5.6 Luna) — Skin / Case / Inventory system
 
+**Session 15 — Antigravity — Case Result Screen UI Polish:**
+Polished the Case Result Screen based on user request. Did not change any RNG, Winner, Inventory, or Case Reel logic.
+- New Skin: Title is now "NEW!", skin visual scaled up 1.8x, and added EQUIP and CLOSE buttons.
+- Duplicate Skin: Title is now "DUPLICATE", shows scrap amount as before, added EQUIP and CLOSE buttons for consistency (though EQUIP equips the duplicate skin).
+- Reveal Animation: Redesigned the CSS `.skin-case-result` to have a staggered reveal (total 0.6s). Skin pops in, then text fades in sequentially.
+- Rarity Effects: Maintained existing borders, and correctly overlaid `rarityGlowPulse` on the result container for Epic, Legendary, and Mythic so it no longer breaks the reveal animation.
+- Bound EQUIP and CLOSE buttons logic in `ui.js` inside `bindResultActions()`.
+**Files:** `js/ui/ui.js`, `css/main.css`.
+**Test result:** `npm test` → 190 PASS / 0 FAIL / 1 WARN.
+**For the next session:** Nothing pending.
+
+
 **Session 14 — Antigravity — Case Reward Toast Deferred to Start of Next Wave:**
 Updated the timing of the "CASE +1" toast so it avoids clashing visually with the middle-of-screen WAVE clear text.
 - `skinSystem.js`: `awardCaseForWave(n)` still grants the case immediately at the end of waves 5, 10, 15, and 20. For W20, the toast fires immediately (since there is no Wave 21). For 5/10/15, it queues the request by setting `pendingToastForWave = n + 1`.
