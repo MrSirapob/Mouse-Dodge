@@ -1,5 +1,5 @@
-import { ITEM_COLORS } from '../systems/itemSystem.js?v=20260824-yybd';
-import { CONFIG, actForWave } from '../core/config.js?v=20260824-yybd';
+import { ITEM_COLORS } from '../systems/itemSystem.js?v=20260824-oi05';
+import { CONFIG, actForWave } from '../core/config.js?v=20260824-oi05';
 
 /**
  * One draw function per item type, keyed by `item.type` (mirrors the

@@ -248,12 +248,12 @@ outstanding if anyone's nearby.
 Changed the Case Reel flow so the UI animation's physical end state genuinely determines the item the player receives, rather than rolling the item first and making the UI fake a spin to it. 
 Flow changed to:
 1. `skinSystem.consumeCase()` deducts 1 case and rolls ONLY the Rarity based on existing weighted RNG.
-2. `ui.js` generates the 70-item visual reel based on natural rarity weights, but strictly injects a random skin matching the rolled Rarity at the target stopping point (`PLANNED_INDEX`). 
-3. The reel spins and stops (with normal easing and small jitter).
+2. `ui.js` generates the 70-item visual reel based on natural rarity weights. It finds an item of the matching Rarity in the stopping zone (or injects one if needed) to be the `PLANNED_INDEX`.
+3. The reel spins and stops (with `jitter` removed for 100% deterministic pixel-perfect alignment).
 4. Post-animation, `ui.js` loops through the rendered DOM elements to find the one closest to the pointer's center.
 5. `ui.js` reads `data-skin-id` from that exact DOM element.
 6. `skinSystem.awardSkin()` is called with that ID to handle inventory addition and duplicate → scrap conversion.
-This guarantees the visual stopping point and the actual item awarded can never desync. Also fixed the outstanding `check-versions` FAIL (`skinSystem.js` missing `?v=`).
+This guarantees the visual stopping point and the actual item awarded can never desync. Verified by adding `targetIndex / pointedIndex` console logs which must exactly match. Also fixed the outstanding `check-versions` FAIL (`skinSystem.js` missing `?v=`).
 **Files:** `js/ui/ui.js`, `js/systems/skinSystem.js`.
 **Test result:** `npm test` → **190 PASS / 0 FAIL / 1 WARN** (unrelated). `npm run check-versions` → PASS.
 **For the next session:** Nothing pending on this issue.

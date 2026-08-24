@@ -1,5 +1,5 @@
-import { CONFIG } from "../core/config.js?v=20260824-l3kg";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-l3kg";
+import { CONFIG } from "../core/config.js?v=20260824-oi05";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-oi05";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -687,13 +687,8 @@ export class UI {
 
     const plannedCenter = itemCenters[PLANNED_INDEX];
     
-    // Estimate step for jitter calculation
-    const step = itemCenters.length > 1 ? itemCenters[1] - itemCenters[0] : 60;
-
-    // Small random jitter so the winning item doesn't land pixel-identically
-    // centered every time, like the real thing.
-    // Ensure jitter doesn't exceed 40% of step to avoid landing on the wrong item.
-    const jitter = (Math.random() - 0.5) * step * 0.8; 
+    // Remove jitter temporarily for 100% deterministic pixel-perfect alignment
+    const jitter = 0; 
     
     const startX = 0;
     const targetX = pointerScreenX - (trackRect.left + plannedCenter) - jitter;
@@ -771,8 +766,12 @@ export class UI {
 
         const finalResult = this.skinSystem.awardSkin(skinId);
 
-        if (finalResult.rarity !== targetRarity) {
-            console.warn(`[Case Reel] Rarity mismatch due to pointer! Pointer at index ${pointedIndex} (Rarity: ${finalResult.rarity}), expected Rarity: ${targetRarity}.`);
+        // Requested log: targetIndex / pointedIndex / targetSkin / pointedSkin
+        const targetSkin = items[PLANNED_INDEX].id;
+        const pointedSkin = finalResult.item.id;
+        console.log(`[Case Reel Align Test] targetIndex: ${PLANNED_INDEX} / pointedIndex: ${pointedIndex} / targetSkin: ${targetSkin} / pointedSkin: ${pointedSkin}`);
+        if (PLANNED_INDEX !== pointedIndex || targetSkin !== pointedSkin) {
+            console.error(`[Case Reel Mismatch] Expected ${PLANNED_INDEX} (${targetSkin}) but got ${pointedIndex} (${pointedSkin})`);
         }
 
         setTimeout(() => this.finishCaseReel(finalResult), 400);
