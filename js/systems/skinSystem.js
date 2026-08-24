@@ -6,7 +6,7 @@ import {
   SKINS,
   SKINS_BY_RARITY,
   TOTAL_RARITY_WEIGHT,
-} from '../data/skins.js';
+} from '../data/skins.js?v=20260824-yybd';
 
 const STORAGE_KEY = 'waveDodgeSkinData';
 const SAVE_VERSION = 1;
@@ -119,16 +119,29 @@ export class SkinSystem {
     return RARITY_ORDER[RARITY_ORDER.length - 1];
   }
 
-  openCase(random = Math.random) {
+  consumeCase(random = Math.random) {
     if (this.data.cases <= 0) {
-      warn('open case rejected: no cases');
+      warn('consume case rejected: no cases');
       return { ok: false, reason: 'no_cases' };
     }
     const casesBefore = this.data.cases;
     this.data.cases -= 1;
     const rarity = this.rollRarity(random);
-    const pool = SKINS_BY_RARITY[rarity];
-    const item = pool[Math.floor(random() * pool.length)] || pool[0];
+    this.save();
+    log('case consumed', {
+      casesBefore,
+      casesAfter: this.data.cases,
+      rarity
+    });
+    return { ok: true, rarity, cases: this.data.cases };
+  }
+
+  awardSkin(skinId) {
+    const item = SKINS.find(s => s.id === skinId);
+    if (!item) {
+      warn('award skin rejected: invalid skin id', { skinId });
+      return { ok: false, reason: 'invalid_skin' };
+    }
     let duplicate = false;
     let scrap = 0;
     if (this.owns(item.id)) {
@@ -139,16 +152,13 @@ export class SkinSystem {
       this.data.ownedSkins.push(item.id);
     }
     this.save();
-    log('case opened', {
-      casesBefore,
-      casesAfter: this.data.cases,
-      rarity,
+    log('skin awarded', {
       skin: item.id,
       duplicate,
       scrapGained: scrap,
       totalScrap: this.data.scrap,
     });
-    return { ok: true, item, rarity, duplicate, scrap, cases: this.data.cases, totalScrap: this.data.scrap };
+    return { ok: true, item, rarity: item.rarity, duplicate, scrap, cases: this.data.cases, totalScrap: this.data.scrap };
   }
 
   awardCaseForWave(wave) {

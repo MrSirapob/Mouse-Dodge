@@ -9,7 +9,7 @@
 
 import { TestSuite, assert, assertNoNaN, warn } from '../helpers/assertions.mjs';
 import { simulateWave, capturePatternPlan, maxConcurrent } from '../helpers/simulation.mjs';
-import { CONFIG } from '../../js/core/config.js?v=20260824-znwq';
+import { CONFIG } from '../../js/core/config.js?v=20260824-yybd';
 
 export async function run() {
   const s = new TestSuite('BULLET HELL: W1-4 Simulation');

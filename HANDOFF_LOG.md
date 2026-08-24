@@ -244,6 +244,27 @@ that specific check no longer applies. The unrelated `check-versions`
 FAIL noted above (`skinSystem.js`/`skins.js` missing `?v=`) is still
 outstanding if anyone's nearby.
 
+**Session 10 — Make Case Reel Pointer the Source of Truth (user-requested, "เปลี่ยน Logic ให้ “Skin ที่ Pointer หยุดทับจริง” เป็นผลลัพธ์สุดท้าย"):**
+Changed the Case Reel flow so the UI animation's physical end state genuinely determines the item the player receives, rather than rolling the item first and making the UI fake a spin to it. 
+Flow changed to:
+1. `skinSystem.consumeCase()` deducts 1 case and rolls ONLY the Rarity based on existing weighted RNG.
+2. `ui.js` generates the 70-item visual reel based on natural rarity weights, but strictly injects a random skin matching the rolled Rarity at the target stopping point (`PLANNED_INDEX`). 
+3. The reel spins and stops (with normal easing and small jitter).
+4. Post-animation, `ui.js` loops through the rendered DOM elements to find the one closest to the pointer's center.
+5. `ui.js` reads `data-skin-id` from that exact DOM element.
+6. `skinSystem.awardSkin()` is called with that ID to handle inventory addition and duplicate → scrap conversion.
+This guarantees the visual stopping point and the actual item awarded can never desync. Also fixed the outstanding `check-versions` FAIL (`skinSystem.js` missing `?v=`).
+**Files:** `js/ui/ui.js`, `js/systems/skinSystem.js`.
+**Test result:** `npm test` → **190 PASS / 0 FAIL / 1 WARN** (unrelated). `npm run check-versions` → PASS.
+**For the next session:** Nothing pending on this issue.
+
+**Session 9 — Case Reel pointer exactness fix (user-reported, "ตอนเปิด Case ระบบสุ่มได้ Skin หนึ่งตัว แต่ Animation หยุดโดย Pointer ชี้ไปอีก Skin หนึ่ง ทำให้ผู้เล่นเห็นว่าได้ A แต่ Result แสดง B"):**
+Root cause: The Reel calculated the final X offset using `WINNER_INDEX * step`, assuming a uniform pixel width per item. However, CSS rarity borders (which can affect size/layout incrementally), gaps, or responsive shrinking on mobile meant `step * index` drifted from the actual rendered layout. The item under the pointer mismatching the `result.item` visually was caused by this sub-pixel drift accumulating over 58 items.
+Fix: Removed all uniform `step`-based math for calculating the stopping position. Instead, `runCaseReel()` now calls `getBoundingClientRect()` on the specific winning DOM element before the spin starts, and calculates the precise layout offset (`targetX`) required to center that exact element under the pointer. The pointer's center is also read directly from the roll container's DOM rect. At the end of the spin, a post-animation verification loop iterates over all elements to confirm the pointer rests perfectly on the `WINNER_INDEX`. Jitter was retained but scaled to the localized item width, and the tick logic now searches an array of pre-calculated actual DOM centers. No changes were made to the RNG, weighted drops, or `SkinSystem`.
+**Files:** `js/ui/ui.js`.
+**Test result:** `npm test` → **190 PASS / 0 FAIL / 1 WARN** (unrelated `check-versions` WARN from previous sessions).
+**For the next session:** The unrelated `check-versions` FAIL from Session 7 (`skinSystem.js` importing `skins.js` with no `?v=`) is still outstanding.
+
 **Session 8 — Simplify Rarity Frame to plain colored borders, follow-up to Session 7 (user-requested, "ผมว่าใช้แค่กรอบสีอะดีละ แค่ทำให้มันเด่นชัดก็พอ common ก็ไม่ต้องมีกรอบ เพราะแย่สุดอะไรแบบนี"):**
 User found Session 7's glow/shimmer/spin more than they wanted — asked
 for just a colored border, made clearly distinct, with Common (worst

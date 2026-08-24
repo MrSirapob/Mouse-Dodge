@@ -1,5 +1,5 @@
-import { CONFIG } from "../core/config.js?v=20260824-znwq";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS } from "../data/skins.js?v=20260824-znwq";
+import { CONFIG } from "../core/config.js?v=20260824-l3kg";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-l3kg";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -602,73 +602,86 @@ export class UI {
 
   openSkinCase() {
     if (!this.skinSystem || this.skinCaseBusy || this.skinSystem.data.cases <= 0) return;
-    const result = this.skinSystem.openCase();
-    if (!result.ok) return;
+    const caseResult = this.skinSystem.consumeCase();
+    if (!caseResult.ok) return;
     this.skinCaseBusy = true;
     if (this.openSkinCaseBtn) this.openSkinCaseBtn.disabled = true;
     if (this.skinCaseResult) this.skinCaseResult.classList.add("hidden");
-    this.runCaseReel(result);
+    this.runCaseReel(caseResult.rarity);
   }
 
   /**
    * CS:GO-style case-opening reel: fills #skinCaseRoll with a short strip of
-   * skin items, drops the actual roll `result.item` into a fixed slot near
-   * the end, then drives the strip's position itself via requestAnimationFrame
-   * — fast at first, easing smoothly into a stop with the winning item
-   * centered under the viewport's pointer marker (see .skin-case-roll::before
-   * in main.css).
-   *
-   * Deliberately NOT a CSS transition: driving the position ourselves means
-   * we already have the exact x for this frame, so the "tick" flash (an item
-   * crossing the pointer) can reuse that value instead of reading it back out
-   * with getComputedStyle/DOMMatrix, which forces a style recalc every frame
-   * and is the main source of jank in a naive version of this. The reel also
-   * stays short (tens of items, not hundreds) and never blurs the whole
-   * strip, both of which the "many DOM nodes + full-track blur" GPU cost
-   * would otherwise stack per frame.
+   * skin items. We randomly populate the reel matching natural rarity weights,
+   * pick a PLANNED_INDEX near the end, and inject an item of the rolled rarity there.
+   * Then we drive the strip's position itself via requestAnimationFrame.
+   * 
+   * CRITICAL: The item at PLANNED_INDEX is just a visual target. The ACTUAL result
+   * is strictly determined by whatever element physically sits under the pointer
+   * when the animation ends.
    */
-  runCaseReel(result) {
+  runCaseReel(targetRarity) {
     const roll = this.skinCaseRoll;
-    if (!roll) { this.finishCaseReel(result); return; }
+    if (!roll) { 
+      // Fallback if no UI: award a random skin of the target rarity directly
+      const pool = SKINS_BY_RARITY[targetRarity];
+      const fallbackItem = pool[Math.floor(Math.random() * pool.length)] || pool[0];
+      const result = this.skinSystem.awardSkin(fallbackItem.id);
+      this.finishCaseReel(result);
+      return; 
+    }
     if (this._caseReelRaf) cancelAnimationFrame(this._caseReelRaf);
 
     const REEL_LENGTH = 70;
-    const WINNER_INDEX = 58; // fixed slot; leaves a short tail of items past the pointer, like the real reel
+    const PLANNED_INDEX = 55 + Math.floor(Math.random() * 6); // randomize stop position slightly (55-60)
     const SPIN_MS = 9000;
-    const pool = SKINS;
     const items = [];
+    
+    const targetRarityPool = SKINS_BY_RARITY[targetRarity];
+    const targetItem = targetRarityPool[Math.floor(Math.random() * targetRarityPool.length)] || targetRarityPool[0];
+
     for (let i = 0; i < REEL_LENGTH; i += 1) {
-      items.push(i === WINNER_INDEX ? result.item : pool[Math.floor(Math.random() * pool.length)]);
+      if (i === PLANNED_INDEX) {
+        items.push(targetItem);
+      } else {
+        const r = this.skinSystem.rollRarity();
+        const rp = SKINS_BY_RARITY[r];
+        items.push(rp[Math.floor(Math.random() * rp.length)] || rp[0]);
+      }
     }
 
     roll.classList.remove("hidden");
     roll.innerHTML = `<div class="skin-reel-track">${items.map((s, i) => `
-      <span class="skin-reel-item rarity-${s.rarity.toLowerCase()}${i === WINNER_INDEX ? " winner" : ""}" style="--skin:${s.color};--skin2:${s.secondaryColor}">
+      <span class="skin-reel-item rarity-${s.rarity.toLowerCase()}" data-skin-id="${s.id}" style="--skin:${s.color};--skin2:${s.secondaryColor}">
         <i class="skin-shape skin-shape-${s.shape}"></i>
       </span>`).join("")}</div>`;
 
     const track = roll.querySelector(".skin-reel-track");
-    // Measure actual rendered item size/gap instead of assuming a fixed
-    // pixel width, so the landing math stays correct across the mobile
-    // breakpoint (where .skin-reel-item shrinks via CSS). This is a one-time
-    // read before the animation starts, not a per-frame cost.
+    
+    // Calculate actual pixel positions based on layout
+    const rollRect = roll.getBoundingClientRect();
     const trackRect = track.getBoundingClientRect();
-    const firstRect = track.children[0].getBoundingClientRect();
-    const itemW = firstRect.width;
-    const step = track.children.length > 1
-      ? track.children[1].getBoundingClientRect().left - firstRect.left
-      : itemW + 10;
-    // .skin-reel-track has its own left padding (see CSS), so item 0 does
-    // NOT sit flush with the track's left edge — it's offset by that
-    // padding. Reading it back from the DOM (instead of hardcoding the
-    // padding value here) keeps this correct even if the CSS changes.
-    const firstItemOffset = firstRect.left - trackRect.left;
     const viewportCenter = roll.clientWidth / 2;
+    const pointerScreenX = rollRect.left + viewportCenter;
+    
+    // Precalculate item centers relative to track for exact tick tracking
+    const itemCenters = Array.from(track.children).map(el => {
+      const rect = el.getBoundingClientRect();
+      return (rect.left - trackRect.left) + (rect.width / 2);
+    });
+
+    const plannedCenter = itemCenters[PLANNED_INDEX];
+    
+    // Estimate step for jitter calculation
+    const step = itemCenters.length > 1 ? itemCenters[1] - itemCenters[0] : 60;
+
     // Small random jitter so the winning item doesn't land pixel-identically
     // centered every time, like the real thing.
-    const jitter = (Math.random() - 0.5) * step * 0.4;
+    // Ensure jitter doesn't exceed 40% of step to avoid landing on the wrong item.
+    const jitter = (Math.random() - 0.5) * step * 0.8; 
+    
     const startX = 0;
-    const targetX = viewportCenter - (firstItemOffset + WINNER_INDEX * step + itemW / 2) - jitter;
+    const targetX = pointerScreenX - (trackRect.left + plannedCenter) - jitter;
 
     track.style.willChange = "transform";
     track.style.transform = "translate3d(0px, 0, 0)";
@@ -684,9 +697,15 @@ export class UI {
       const x = startX + (targetX - startX) * easeOutQuint(t);
       track.style.transform = `translate3d(${x}px, 0, 0)`;
 
-      // Tick: reuse the x we just computed this frame instead of reading the
-      // DOM back out, so this never forces a style/layout recalc.
-      const idx = Math.round((viewportCenter - x - firstItemOffset - itemW / 2) / step);
+      // Tick logic: find which item's center is closest to the pointer's local X in track coordinates
+      const currentCenterTarget = viewportCenter - x - (trackRect.left - rollRect.left);
+      
+      let idx = lastTickIndex >= 0 ? lastTickIndex : 0;
+      // Advance idx if the next item is closer to the center target
+      while (idx < itemCenters.length - 1 && Math.abs(currentCenterTarget - itemCenters[idx + 1]) <= Math.abs(currentCenterTarget - itemCenters[idx])) {
+        idx++;
+      }
+
       if (idx !== lastTickIndex && idx >= 0 && idx < items.length) {
         lastTickIndex = idx;
         const el = track.children[idx];
@@ -702,7 +721,40 @@ export class UI {
         track.style.transform = `translate3d(${targetX}px, 0, 0)`;
         track.style.willChange = "auto";
         this._caseReelRaf = null;
-        setTimeout(() => this.finishCaseReel(result), 400);
+
+        // VERIFY: The Source of Truth is the DOM element under the pointer
+        // Get the final layout after the target transform
+        const finalRollRect = roll.getBoundingClientRect();
+        const finalPointerX = finalRollRect.left + finalRollRect.width / 2;
+        
+        let pointedElement = null;
+        let minDiff = Infinity;
+        let pointedIndex = -1;
+        for (let i = 0; i < track.children.length; i++) {
+            const el = track.children[i];
+            const rect = el.getBoundingClientRect();
+            const center = rect.left + rect.width / 2;
+            const diff = Math.abs(center - finalPointerX);
+            if (diff < minDiff) {
+                minDiff = diff;
+                pointedElement = el;
+                pointedIndex = i;
+            }
+        }
+        
+        if (pointedElement) {
+          pointedElement.classList.add("winner");
+        }
+
+        // Award the item pointed by the reel
+        const skinId = pointedElement ? pointedElement.dataset.skinId : targetItem.id;
+        const finalResult = this.skinSystem.awardSkin(skinId);
+
+        if (finalResult.rarity !== targetRarity) {
+            console.warn(`[Case Reel] Rarity mismatch due to pointer! Pointer at index ${pointedIndex} (Rarity: ${finalResult.rarity}), expected Rarity: ${targetRarity}.`);
+        }
+
+        setTimeout(() => this.finishCaseReel(finalResult), 400);
       }
     };
     this._caseReelRaf = requestAnimationFrame(frame);
