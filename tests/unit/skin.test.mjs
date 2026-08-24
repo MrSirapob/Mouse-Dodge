@@ -13,8 +13,8 @@
 
 import { TestSuite, assert, assertEqual } from '../helpers/assertions.mjs';
 import { createGame } from '../helpers/gameFactory.mjs';
-import { ParticleSystem } from '../../js/rendering/particles.js?v=20260824-k7jp';
-import { SKIN_BY_ID } from '../../js/data/skins.js?v=20260824-k7jp';
+import { ParticleSystem } from '../../js/rendering/particles.js?v=20260824-edvl';
+import { SKIN_BY_ID } from '../../js/data/skins.js?v=20260824-edvl';
 
 export async function run() {
   const s = new TestSuite('SKIN SYSTEM');
@@ -94,12 +94,27 @@ export async function run() {
     });
   });
 
+  await s.testAsync('equip() updates P1\'s live skinVisual immediately, without a reset()/wave restart', async () => {
+    const { game } = await createGame();
+    game.skinSystem.data.ownedSkins.push('mint');
+    game.reset('solo', 'pulse');
+    assertEqual(game.players[0].skinVisual.id, 'default', 'sanity check: starts on default before equipping', {
+      likely: 'test setup',
+    });
+
+    game.skinSystem.equip('mint');
+
+    assertEqual(game.players[0].skinVisual.id, 'mint', 'equip() should refresh the live player\'s skinVisual right away, so the character in the current run matches the skin-selector preview instead of waiting for the next reset()', {
+      likely: 'js/systems/skinSystem.js equip() / js/systems/game.js onEquip hook',
+    });
+  });
+
   await s.testAsync('constructor: P2 starts on the default skin even before any reset() call', async () => {
     const { game } = await createGame();
     game.skinSystem.data.ownedSkins.push('mint');
     game.skinSystem.equip('mint');
     // Re-create a fresh Game the same way main.js does, without calling reset() first.
-    const { Game } = await import('../../js/systems/game.js?v=20260824-k7jp');
+    const { Game } = await import('../../js/systems/game.js?v=20260824-edvl');
     const fresh = new Game({ renderer: game.renderer, input: game.input, ui: game.ui });
     assertEqual(fresh.players[1].skinVisual.id, 'default', 'P2 should default to the default skin at construction time too', {
       likely: 'js/systems/game.js constructor',

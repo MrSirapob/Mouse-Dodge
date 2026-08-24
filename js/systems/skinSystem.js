@@ -6,7 +6,7 @@ import {
   SKINS,
   SKINS_BY_RARITY,
   TOTAL_RARITY_WEIGHT,
-} from '../data/skins.js?v=20260824-k7jp';
+} from '../data/skins.js?v=20260824-edvl';
 
 const STORAGE_KEY = 'waveDodgeSkinData';
 const SAVE_VERSION = 1;
@@ -28,8 +28,15 @@ function safeInt(value, fallback = 0) {
 }
 
 export class SkinSystem {
-  constructor({ ui = null } = {}) {
+  constructor({ ui = null, onEquip = null } = {}) {
     this.ui = ui;
+    // Called with the newly-equipped skin id whenever equip() succeeds, so
+    // whoever owns the live Player entity (Game) can refresh its skinVisual
+    // immediately instead of waiting for the next reset()/wave start — see
+    // HANDOFF_LOG.md 2026-08-24 for the bug this closes (skin selector
+    // showed the new skin instantly, but the actual in-run character kept
+    // rendering the old one until a run restart).
+    this.onEquip = onEquip;
     this.rewardedWaves = new Set();
     this.data = this.load();
     log('initialized', {
@@ -96,6 +103,7 @@ export class SkinSystem {
     this.data.equippedSkin = id;
     this.save();
     log('skin equipped', { previous, equipped: id });
+    this.onEquip?.(id);
     return true;
   }
 

@@ -1,5 +1,5 @@
-import { CONFIG } from '../core/config.js?v=20260824-k7jp';
-import { SKINS_BY_RARITY } from '../data/skins.js?v=20260824-k7jp';
+import { CONFIG } from '../core/config.js?v=20260824-edvl';
+import { SKINS_BY_RARITY } from '../data/skins.js?v=20260824-edvl';
 
 export class DevMode {
   // Selectable game-speed levels for the SPEED panel (spec: "เร่งความเร็ว
@@ -394,17 +394,15 @@ export class DevMode {
     }
 
     if (type === 'skinCycle') {
-      // Live-previews the next owned skin on player 1 immediately, without
-      // waiting for a run restart (the normal equip() flow only applies
-      // skinVisual on Game.reset()/startWave — see HANDOFF_LOG 2026-08-24).
-      // Dev-only shortcut: also calls equip() so it persists like normal.
+      // Steps player 1 through every owned skin in order. equip() now
+      // refreshes g.players[0].skinVisual itself (see SkinSystem.onEquip in
+      // game.js), so this is just the normal equip flow.
       const skinSystem = g.skinSystem;
       if (skinSystem) {
         const owned = skinSystem.data.ownedSkins;
         const currentIndex = owned.indexOf(skinSystem.data.equippedSkin);
         const next = owned[(currentIndex + 1) % owned.length];
         skinSystem.equip(next);
-        if (g.players[0]) g.players[0].skinVisual = skinSystem.buildVisual(next);
         this.game.ui?.renderSkinScreen?.();
         this.updateSkinStatus();
       }
@@ -458,7 +456,6 @@ export class DevMode {
       : pool[Math.floor(Math.random() * pool.length)];
     if (!skinSystem.owns(picked.id)) skinSystem.data.ownedSkins.push(picked.id);
     skinSystem.equip(picked.id);
-    if (g.players[0]) g.players[0].skinVisual = skinSystem.buildVisual(picked.id);
     this.game.ui?.renderSkinScreen?.();
     this.updateSkinStatus();
   }

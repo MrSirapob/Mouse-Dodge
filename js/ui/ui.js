@@ -1,5 +1,5 @@
-import { CONFIG } from "../core/config.js?v=20260824-k7jp";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-k7jp";
+import { CONFIG } from "../core/config.js?v=20260824-edvl";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-edvl";
 
 const SKILL_NAMES = {
   pulse: "PULSE",

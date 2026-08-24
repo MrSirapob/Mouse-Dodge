@@ -59,6 +59,30 @@ what changed, why, key numbers if any.
 
 ## 2026-08-24 — ChatGPT (GPT-5.6 Luna) — Skin / Case / Inventory system
 
+**Session 18 — Claude (Sonnet 5, claude.ai) — Skin selector preview now matches the character actually played (user-reported, "ช่วยแก้ ให้ Preview ใน skin ตรงกับตัวละครที่เอาไปเล่นจริงๆ"):**
+Fixed the exact bug Session 5's notes flagged as dev-only-workaround
+territory: normal `equip()` (from the Skin screen, or the case/exchange
+result's EQUIP button) only persisted the choice — the live P1
+`skinVisual` didn't refresh until the next `Game.reset()`/wave start, so
+mid-run the selector could show one skin equipped while the actual
+character on screen still wore the old one. `SkinSystem` now accepts an
+`onEquip(id)` callback, fired at the end of a successful `equip()`;
+`Game`'s constructor wires it to `this.players[0].skinVisual =
+this.skinSystem.buildVisual(id)`. Removed the now-redundant manual
+`skinVisual` patches from `devMode.js`'s `skinCycle` and
+`giveAndEquipRarity` (they called `equip()` and then re-did what `equip()`
+now already does) — `skinResetData` keeps its patch since it bypasses
+`equip()` (direct localStorage wipe). Added a regression test asserting
+`equip()` alone updates the live player without a `reset()` call. Ran
+`npm run bump-version` (`20260824-edvl`).
+**Files:** `js/systems/skinSystem.js`, `js/systems/game.js`,
+`js/systems/devMode.js`, `tests/unit/skin.test.mjs`, `CHANGELOG.md`.
+**Test result:** `npm test` → **191 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated).
+**For the next session:** Not manually verified in a real browser —
+equip a skin from the Skin screen mid-run (pause menu) and confirm the
+on-screen character updates without dying/restarting first.
+
 **Session 17 — Antigravity — Case Result UX & Validation Polish:**
 Polished UX details for the Case/Skin UI according to specific user feedback. Did NOT touch Case Reel, RNG, or Skin Ownership logic.
 - Cursor UX: Removed `cursor: wait` from the `OPEN CASE` disabled state. It now falls back to the default cursor when disabled, preventing the ugly loading spinner on hover while still preventing double-clicks.

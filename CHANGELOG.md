@@ -1,5 +1,26 @@
 # Changelog
 
+## Skin selector preview now matches the character actually played (user-reported, "ช่วยแก้ ให้ Preview ใน skin ตรงกับตัวละครที่เอาไปเล่นจริงๆ")
+Fixed a long-documented bug (flagged since the Session 5 dev-mode notes in
+HANDOFF_LOG.md 2026-08-24): equipping a skin from the Skin screen updated
+the *saved* equipped skin and the selector's own preview icon right away,
+but the actual in-run P1 character kept rendering the old skin until the
+next `Game.reset()`/wave restart — so mid-run, the preview and the real
+character could show two different skins. `SkinSystem` now takes an
+`onEquip(id)` callback, invoked at the end of a successful `equip()`;
+`Game` wires this to refresh `players[0].skinVisual` immediately, the same
+way Dev Mode's `CYCLE SKIN`/rarity-give buttons already special-cased for
+themselves. Removed those now-redundant manual `skinVisual` patches from
+`js/systems/devMode.js` (`skinCycle`, `giveAndEquipRarity`) since the real
+`equip()` flow handles it now; `skinResetData` keeps its manual patch since
+it bypasses `equip()` entirely (direct `localStorage` wipe + reload).
+Added a regression test (`tests/unit/skin.test.mjs`) asserting `equip()`
+updates the live player's `skinVisual` without a `reset()` call.
+**Files:** `js/systems/skinSystem.js`, `js/systems/game.js`,
+`js/systems/devMode.js`, `tests/unit/skin.test.mjs`.
+**Test result:** `npm test` → **191 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated). Ran `npm run bump-version` after (`20260824-edvl`).
+
 ## Scrap confirm + collection-complete alert: bottom sheet instead of center modal (user-requested, "แก้ Noti ตอนกดสุ่มแร์ ยืนยันกับยกเลิกเอาเป็นปุ่มขึ้นข้างล่างก็ได้ ของที่กดสุ่ม และเงื่อนไขถ้าครบแล้วก็ขึ้น alert ด้านล่างดีกว่าไหนแแบบไหนดีแนะนำ")
 User asked for the CONFIRM/CANCEL buttons on the scrap-exchange ask to
 come up from the bottom, and asked for a recommendation on whether the

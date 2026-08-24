@@ -1,17 +1,17 @@
-import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260824-k7jp';
-import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260824-k7jp';
-import { circleHit, circleNear } from '../core/collision.js?v=20260824-k7jp';
-import { Player } from '../entities/player.js?v=20260824-k7jp';
-import { BulletManager } from '../entities/bullet.js?v=20260824-k7jp';
-import { Boss } from '../entities/boss.js?v=20260824-k7jp';
-import { ParticleSystem } from '../rendering/particles.js?v=20260824-k7jp';
-import { PatternLibrary } from '../patterns/patterns.js?v=20260824-k7jp';
-import { WaveSystem } from './waveSystem.js?v=20260824-k7jp';
-import { SkillSystem } from './skillSystem.js?v=20260824-k7jp';
-import { LifeSystem } from './lifeSystem.js?v=20260824-k7jp';
-import { DevMode } from './devMode.js?v=20260824-k7jp';
-import { ItemSystem } from './itemSystem.js?v=20260824-k7jp';
-import { SkinSystem } from './skinSystem.js?v=20260824-k7jp';
+import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260824-edvl';
+import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260824-edvl';
+import { circleHit, circleNear } from '../core/collision.js?v=20260824-edvl';
+import { Player } from '../entities/player.js?v=20260824-edvl';
+import { BulletManager } from '../entities/bullet.js?v=20260824-edvl';
+import { Boss } from '../entities/boss.js?v=20260824-edvl';
+import { ParticleSystem } from '../rendering/particles.js?v=20260824-edvl';
+import { PatternLibrary } from '../patterns/patterns.js?v=20260824-edvl';
+import { WaveSystem } from './waveSystem.js?v=20260824-edvl';
+import { SkillSystem } from './skillSystem.js?v=20260824-edvl';
+import { LifeSystem } from './lifeSystem.js?v=20260824-edvl';
+import { DevMode } from './devMode.js?v=20260824-edvl';
+import { ItemSystem } from './itemSystem.js?v=20260824-edvl';
+import { SkinSystem } from './skinSystem.js?v=20260824-edvl';
 
 /** Converts a "#rrggbb" hex string to an "r,g,b" string for use in
  * rgba(...) fill styles (see Renderer.flash()). */
@@ -50,7 +50,16 @@ export class Game {
     this.lifeSystem = new LifeSystem(this);
     this.devMode = new DevMode(this);
     this.itemSystem = new ItemSystem(this);
-    this.skinSystem = new SkinSystem({ ui });
+    this.skinSystem = new SkinSystem({
+      ui,
+      // Keep P1's live skinVisual in sync with whatever's equipped, the
+      // instant equip() succeeds — not just on the next reset()/wave start.
+      // This is what makes the skin-selector preview match the character
+      // actually being played (see HANDOFF_LOG.md 2026-08-24).
+      onEquip: (id) => {
+        if (this.players[0]) this.players[0].skinVisual = this.skinSystem.buildVisual(id);
+      },
+    });
     this.ui.setSkinSystem?.(this.skinSystem);
     // There is only one equip slot, so only P1 wears the equipped skin;
     // P2 stays on the default visual (see HANDOFF_LOG.md 2026-08-24) so the

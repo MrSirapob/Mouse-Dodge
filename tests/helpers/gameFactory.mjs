@@ -16,7 +16,7 @@
 // throw "document is not defined" in Node, not to fake any behavior the
 // tests care about.
 
-import { CONFIG } from '../../js/core/config.js?v=20260824-k7jp';
+import { CONFIG } from '../../js/core/config.js?v=20260824-edvl';
 
 function installBrowserShims() {
   if (typeof globalThis.document === 'undefined') {
@@ -125,7 +125,7 @@ export async function createGame(overrides = {}) {
   if (globalThis.localStorage && typeof globalThis.localStorage.clear === 'function') {
     globalThis.localStorage.clear();
   }
-  const { Game } = await import('../../js/systems/game.js?v=20260824-k7jp');
+  const { Game } = await import('../../js/systems/game.js?v=20260824-edvl');
   const renderer = overrides.renderer || makeFakeRenderer();
   const input = overrides.input || makeFakeInput();
   const ui = overrides.ui || makeFakeUI();
