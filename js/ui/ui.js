@@ -1,7 +1,7 @@
-import { CONFIG } from "../core/config.js?v=20260825-e9ox";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260825-e9ox";
-import { tick as playReelTick } from "../audio/reelTick.js?v=20260825-e9ox";
-import { mountSkinCanvas, mountSkinCanvases } from "../rendering/skinPreview.js?v=20260825-e9ox";
+import { CONFIG } from "../core/config.js?v=20260825-07qi";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260825-07qi";
+import { tick as playReelTick } from "../audio/reelTick.js?v=20260825-07qi";
+import { mountSkinCanvas, mountSkinCanvases } from "../rendering/skinPreview.js?v=20260825-07qi";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -1260,17 +1260,19 @@ export class UI {
       ? `<style>
            .new-score-banner{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 14px;padding:8px 16px;border-radius:999px;background:rgba(255,217,61,.12);border:1px solid rgba(255,217,61,.4);color:var(--gold);font-size:14px;font-weight:900;letter-spacing:1px;animation:new-best-pop .45s cubic-bezier(.2,.8,.2,1) both}
            @keyframes new-best-pop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
-           .best-arrow{margin-left:4px;font-weight:900;color:var(--gold)}
+           .best-arrow{display:inline-block;margin-left:4px;font-weight:900;color:var(--gold);animation:arrow-bounce .9s ease-in-out infinite}
          </style>
-         <div class="new-score-banner">🏆 NEW SCORE</div>`
+         <div class="new-score-banner">🏆 NEW SCORE <span class="best-arrow banner-arrow">↑</span></div>`
       : `<style>
-           .best-arrow{margin-left:4px;font-weight:900;color:var(--gold)}
+           .best-arrow{display:inline-block;margin-left:4px;font-weight:900;color:var(--gold);animation:arrow-bounce .9s ease-in-out infinite}
          </style>`;
 
     // Small up-arrow next to an individual cell's latest value — shown for
     // every stat that broke its record, including all 4 at once (the
     // "NEW SCORE" banner above is an additional highlight, not a
-    // replacement for the per-row arrows).
+    // replacement for the per-row arrows). Both this arrow and the one
+    // inside the NEW SCORE banner share .best-arrow, so they bounce the
+    // same way (arrow-bounce, defined globally in main.css).
     const arrow = (isNew) =>
       isNew ? '<span class="best-arrow">↑</span>' : "";
 
@@ -1356,10 +1358,21 @@ export class UI {
       letterEl.textContent = sequence[i];
       const isLast = i === sequence.length - 1;
       if (isLast) break;
+
+      // Retrigger the "running text" tick on every swap (removing then
+      // re-adding the class forces a reflow so the CSS animation restarts).
+      // Each step's own wait() below grows longer than the last, so the
+      // ticks naturally decelerate into the landing instead of just
+      // instantly swapping.
+      letterEl.classList.remove("rank-tick");
+      void letterEl.offsetWidth;
+      letterEl.classList.add("rank-tick");
+
       await wait(55 + i * 35);
       if (revealToken !== this.rankRevealToken) return; // superseded by a new run
     }
 
+    letterEl.classList.remove("rank-tick");
     this.landRank(rank);
   }
 

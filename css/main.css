@@ -711,6 +711,26 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
   to {opacity: 1;transform: scale(1) translateY(0);filter: blur(0)}
 }
 
+/* rank-tick: applied (and re-triggered via reflow) on every letter swap
+   during the reveal cycle in animateRankReveal(). Gives the rank letter a
+   quick "rolling" blur/slide per step; since the JS loop's own delay grows
+   with each step, the ticks visually decelerate into the final landing. */
+.rank-letter.rank-tick {animation: rank-tick .16s cubic-bezier(.2,.8,.2,1) both}
+
+@keyframes rank-tick {
+  0% {transform: translateY(-20px) scaleY(1.2);filter: blur(5px);opacity: .45}
+  60% {transform: translateY(2px) scaleY(.95);filter: blur(1px);opacity: 1}
+  100% {transform: translateY(0) scaleY(1);filter: blur(0);opacity: 1}
+}
+
+/* arrow-bounce: a small continuous up/down bob for the "new best" up-arrows
+   (both the per-row .best-arrow and the arrow inside the NEW SCORE banner)
+   so they read as an active highlight instead of sitting static. */
+@keyframes arrow-bounce {
+  0%, 100% {transform: translateY(0)}
+  50% {transform: translateY(-4px)}
+}
+
 /* Animation: @keyframes rank-pop-scale — final-landing punch, amplitude set
    per-tier via --rank-pop-scale (defaults to a barely-there pop). */
 @keyframes rank-pop-scale {

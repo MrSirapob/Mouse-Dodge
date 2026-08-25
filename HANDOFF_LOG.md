@@ -10,7 +10,30 @@ yet.
 **Newest entry at the top.** Read the top 1-2 entries before starting work
 so you know what the last session was mid-way through or flagged for you.
 
-## 2026-08-25 — Claude (Sonnet 5, claude.ai) — Epic shine sweep removed, Mythic's broken shine fixed
+## 2026-08-25 — Claude (Sonnet 5, claude.ai) — Game-over rank reveal now "runs" and decelerates; new-best arrows now bounce
+
+From an uploaded zip (`wave-dodge-refactored4.zip`), two Game Over screen animation requests:
+
+1. **Rank/tier reveal should read as running text that gradually stops** (Thai: "เพิ่มอนิเมะชั่นหน้า
+   Gameover ตอนโชวเทียร์ score ให้ทำเป็นตัวหนังสือวิ่งแล้วค่อยๆ หยุด"). `animateRankReveal()` in
+   `js/ui/ui.js` already cycled the rank letter (D→...→final) with a per-step delay that grows
+   (`55 + i*35` ms), but nothing visually played on each swap — `.rank-letter`'s `rank-reveal`
+   animation only fires once, on first mount. Added a `.rank-tick` class (new `@keyframes rank-tick`
+   in `css/main.css`: a quick blur/slide-down per letter) that's removed-and-re-added (forcing a
+   reflow) on every swap in the loop. Since the loop's own delay between swaps is already growing,
+   the ticks now visibly decelerate into `landRank()`'s existing pop/shake/particles landing.
+2. **New-best up-arrows were static; NEW SCORE banner should match** (Thai: "ลูกศรขึ้นตอนทำ new
+   score ให้ขยับได้มีอนิเมชั่นไม่นิ่ง และตรง New Score ด้วย"). Added `@keyframes arrow-bounce`
+   (main.css, small continuous translateY bob) and applied it to `.best-arrow` (used by the
+   per-row ↑ arrows in `showGameOver()`'s inline `<style>` block in `js/ui/ui.js`). Also added a
+   matching `<span class="best-arrow banner-arrow">↑</span>` inside the `🏆 NEW SCORE` banner
+   itself so it bounces the same way instead of sitting still.
+
+Files touched: `css/main.css` (new `rank-tick`/`arrow-bounce` keyframes + `.rank-letter.rank-tick`
+rule), `js/ui/ui.js` (`animateRankReveal()` tick-retrigger loop, `showGameOver()`'s inline style +
+banner markup). Ran `npm run bump-version` afterward (new tag `20260825-07qi`) per the
+cache-busting convention. `npm test`: **196 PASS / 0 FAIL / 1 WARN**, both before and after
+(pre-existing warning, unrelated to this change — did not investigate further).
 
 From an uploaded zip (`wave-dodge-refactored3.zip`), two related requests about the Rarity Frame
 System's `::before` diagonal shine sweep in `css/main.css`:

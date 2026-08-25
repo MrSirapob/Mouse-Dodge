@@ -1,5 +1,19 @@
 # Changelog
 
+## Game-over rank reveal now visibly "runs" before it stops; new-best arrows bounce (user-requested, "เพิ่มอนิเมะชั่นหน้า Gameover ตอนโชวเทียร์ score ให้ทำเป็นตัวหนังสือวิ่งแล้วค่อยๆ หยุด" / "ลูกศรขึ้นตอนทำ new score ให้ขยับได้มีอนิเมชั่นไม่นิ่ง และตรง New Score ด้วย")
+Two Game Over screen animation requests. (1) `animateRankReveal()` already cycled the
+rank letter up to its final value with a growing per-step delay, but each swap was an
+instant text change — the only CSS animation on `.rank-letter` (`rank-reveal`) plays
+once on mount, so the cycling never actually showed motion. Added a `.rank-tick` class
+(new `@keyframes rank-tick`: a quick blur/slide) that's force-reflowed on and off on
+every swap in the loop; since the loop's own delay between swaps already grows, the
+ticks now decelerate visibly into the existing landing pop/shake/particles. (2) The
+per-row `↑` "new best" arrows and the "🏆 NEW SCORE" banner were static. Added
+`@keyframes arrow-bounce` (continuous small translateY bob) to `.best-arrow`, and gave
+the banner its own `<span class="best-arrow banner-arrow">↑</span>` so it bounces too.
+**Files:** `css/main.css`, `js/ui/ui.js`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing, unrelated).
+
 ## Rarity shine sweep: Epic no longer gets it, and Mythic's was silently broken (user-requested, "แก้ระดับ epic preview ไม่ต้องมี วิ้งๆ ให้มีวิ้งตรง legendary กับ mytic / mytic มันค้างแก้ไขด้วย")
 Two fixes to the Rarity Frame System's `::before` diagonal shine sweep in
 `css/main.css`. (1) Epic previously got the same shine sweep as Legendary/
