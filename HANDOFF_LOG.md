@@ -10,6 +10,39 @@ yet.
 **Newest entry at the top.** Read the top 1-2 entries before starting work
 so you know what the last session was mid-way through or flagged for you.
 
+## 2026-08-25 — Antigravity (Claude Sonnet 4.6 Thinking) — Wave 4: spiral arms 4/4/5 → 3/3/3
+
+Follow-up to the spiral/blue-bullet reduction earlier this session. Player feedback: "spiral หมุน
+นานเกิน ไม่มีที่หลบ" → reduced arms (not duration) so more gap space opens between arms.
+
+**Changes made (`js/systems/waveSystem.js`, case 4):**
+- `spiral(5.5, 4.55, 4→3, ...)` — first spiral: 4 arms → 3 arms (120° gaps instead of 90°)
+- `spiral(14.5, 4.9, 4→3, ...)` — second spiral: same
+- `spiral(25.0, 5.6, 5→3, ...)` — third spiral: 5 arms → 3 arms (120° gaps instead of 72°)
+
+**Balance baseline updated (`tests/fixtures/balance-baseline.json`):**
+- W4 `peakActive` 390 → 304, `spawned` 1440 → 1282, `averageActive` 232.65 → 176.93
+
+**`npm test` result:** PASS: 196 / FAIL: 0 / WARN: 1 (pre-existing WARN unrelated to this change)
+
+## 2026-08-25 — Antigravity (Claude Sonnet 4.6 Thinking) — Wave 4: spiral −30%, blue bullets −30%
+
+User requested reducing wave 4 spiral count and blue bullet count by 30%.
+
+**What "blue" means in W4:** `c1 = color(4, 0)` → `colors[4 % 5]` = `"#54a0ff"` (the 5th slot in the
+Act 0 palette). So `c1` is blue in wave 4 — all `c2`/`c3` patterns are unaffected.
+
+**Changes made (`js/systems/waveSystem.js`, case 4):**
+- Spiral `len` values ×0.7 (rounded to 2 dp): 6.5→4.55, 7.0→4.9, 8.0→5.6
+- All `c1` discrete bullet counts ×0.7 (ceil): ring 48→34, splitter 11→8, cross 16→12,
+  aimed 50→35, ring 52→37, aimed 54→38
+
+**Balance baseline updated (`tests/fixtures/balance-baseline.json`):**
+- W4 `spawned` 1713 → 1440 (the actual new simulated count; intentional change per AGENTS.md policy)
+
+**`npm test` result:** PASS: 194 / FAIL: 0 / WARN: 2 (the two remaining WARNs are pre-existing
+non-W4 WARNs unrelated to this change; balance WARN for W4 is now gone after baseline update)
+
 ## 2026-08-25 — Claude (Sonnet 5, claude.ai) — Game-over rank reveal now "runs" and decelerates; new-best arrows now bounce
 
 From an uploaded zip (`wave-dodge-refactored4.zip`), two Game Over screen animation requests:

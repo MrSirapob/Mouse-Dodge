@@ -264,26 +264,31 @@ export class WaveSystem {
         // pattern in the W1-4 toolkit (including laser) is layered with
         // almost no dead air; gaps stay above the historical minimums
         // already proven safe on later waves (see W16-19/default below).
-        ring(0.0, 640, 360, 48, 2.9, c1);
+        // 2026-08-25: spiral len −30% (6.5→4.55, 7.0→4.9, 8.0→5.6) and
+        // all c1 (blue) bullet counts −30% (ring 48→34, splitter 11→8,
+        // cross 16→12, aimed 50→35 & 54→38, ring 52→37).
+        // 2026-08-25 follow-up: spiral arms 4→3, 4→3, 5→3 to open up
+        // dodge gaps between arms (player feedback: nowhere to dodge).
+        ring(0.0, 640, 360, 34, 2.9, c1);
         aimed(0.8, 48, 0.09, 2.95, c2);
         wall(2.5, 3.0, c2, true, 0.05);
-        splitter(4.0, 11, 0.42, 2.4, c1);
-        spiral(5.5, 6.5, 4, 2.4, c2);
-        cross(7.0, 16, 2.95, c1);
+        splitter(4.0, 8, 0.42, 2.4, c1);
+        spiral(5.5, 4.55, 3, 2.4, c2);
+        cross(7.0, 12, 2.95, c1);
         ring(8.5, 300, 220, 50, 2.9, c2);
         laser(10.0, 5, 0.6, c3);
-        aimed(11.0, 50, 0.09, 3.0, c1);
+        aimed(11.0, 35, 0.09, 3.0, c1);
         wall(13.0, 3.05, c1, false, 0.045);
-        spiral(14.5, 7.0, 4, 2.45, c1);
+        spiral(14.5, 4.9, 3, 2.45, c1);
         splitter(16.0, 12, 0.4, 2.45, c2);
         cross(17.5, 17, 3.0, c2);
-        ring(19.0, 980, 500, 52, 2.95, c1);
+        ring(19.0, 980, 500, 37, 2.95, c1);
         aimed(20.5, 52, 0.08, 3.05, c2);
         laser(22.0, 6, 0.55, c3);
         wall(23.5, 3.1, c2, true, 0.045);
-        spiral(25.0, 8.0, 5, 2.5, c1);
+        spiral(25.0, 5.6, 3, 2.5, c1);
         ring(26.5, 640, 360, 54, 3.0, c2);
-        aimed(28.0, 54, 0.08, 3.1, c1);
+        aimed(28.0, 38, 0.08, 3.1, c1);
         break;
       case 6:
         // W6 — dense new gameplay set.
