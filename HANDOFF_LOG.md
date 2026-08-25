@@ -10,6 +10,27 @@ yet.
 **Newest entry at the top.** Read the top 1-2 entries before starting work
 so you know what the last session was mid-way through or flagged for you.
 
+## 2026-08-25 — Claude (Sonnet 5, claude.ai) — Result-screen arrows during "NEW SCORE" + longer Mystery Box bad durations
+
+Two small user-requested fixes in one session, from an uploaded refactored zip:
+
+1. **Result screen arrows:** the per-stat `↑` "new best" arrows on the run-complete
+   screen were being suppressed whenever all 4 stats broke their record at once
+   (that case showed only the "🏆 NEW SCORE" banner). User wanted the arrows to show
+   alongside the banner too. Fixed in `renderResultScreen()` (`js/ui/ui.js`) —
+   `arrow()` no longer special-cases `isAllNewBest`, and the `.best-arrow` CSS was
+   duplicated into the banner branch's `<style>` block so it's actually styled in
+   that state.
+2. **Mystery Box balance:** lengthened the 3 timed bad-outcome durations in
+   `CONFIG.items.mystery` (`js/core/config.js`) — `hitboxDuration`/
+   `controlDebuffDuration` 3.5s → 5s, `staticDuration` 1.2s → 2.5s. Good/bad odds
+   still a hard 50/50 (`ItemSystem.resolveMysteryBox()`); only bad-side duration
+   changed. Chose these numbers myself since the user only said "longer" — worth
+   a look in-game in case they want them tuned further.
+
+`npm test` → 196 PASS / 0 FAIL / 1 WARN (pre-existing, unrelated, same as prior
+session). Ran `npm run bump-version` after (`20260825-la68`).
+
 ## 2026-08-25 — Claude (Sonnet 5, claude.ai) — Fixed stray circle inside diamond/hex/square/star skin previews
 
 **Session 1 — user reported "a weird circle in the Preview" (Thai: "มีวงกลมแปลกๆ ในตัว Preview"):**

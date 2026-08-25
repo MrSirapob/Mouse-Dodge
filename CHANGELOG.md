@@ -1,5 +1,26 @@
 # Changelog
 
+## Per-row "new best" arrows now also show inside the all-4 "NEW SCORE" banner state (user-requested)
+Result screen previously suppressed the per-stat `↑` arrows (time/wave/score/graze)
+whenever *every* stat broke its record, showing only the big "🏆 NEW SCORE" banner
+instead. User wanted the arrows to show next to every stat *in addition to* the
+banner, not be replaced by it. `arrow()` in `renderResultScreen()` no longer checks
+`isAllNewBest` — it shows the arrow whenever that stat's `isNew*` flag is true,
+banner or not. Also moved the `.best-arrow` CSS rule into the `isAllNewBest` branch's
+`<style>` block (it previously only existed in the non-banner branch, so the arrows
+would have rendered unstyled once shown together with the banner).
+**Files:** `js/ui/ui.js`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing, unrelated).
+
+## Lengthened Mystery Box bad-outcome durations (user-requested)
+User felt the Mystery Box's 50/50 gamble's *bad* outcomes ended too quickly relative
+to the risk. All three timed bad effects lengthened: `hitboxDuration` and
+`controlDebuffDuration` 3.5s → 5s, `staticDuration` 1.2s → 2.5s. The good-side
+outcomes (heal/skill-ready/shield/score) are instant, not timed, so nothing there
+changes. Good/bad odds remain a hard 50/50; only how long a bad roll lasts changed.
+**Files:** `js/core/config.js`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing, unrelated).
+
 ## Removed inner secondary-color accent entirely from skin bodies (user-requested)
 Follow-up to the previous entry below: shape-matching the inner tier>=2
 accent (a smaller copy of the body's own shape instead of a fixed circle)

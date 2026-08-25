@@ -1,7 +1,7 @@
-import { CONFIG } from "../core/config.js?v=20260825-0b70";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260825-0b70";
-import { tick as playReelTick } from "../audio/reelTick.js?v=20260825-0b70";
-import { mountSkinCanvas, mountSkinCanvases } from "../rendering/skinPreview.js?v=20260825-0b70";
+import { CONFIG } from "../core/config.js?v=20260825-la68";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260825-la68";
+import { tick as playReelTick } from "../audio/reelTick.js?v=20260825-la68";
+import { mountSkinCanvas, mountSkinCanvases } from "../rendering/skinPreview.js?v=20260825-la68";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -1253,17 +1253,19 @@ export class UI {
       ? `<style>
            .new-score-banner{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 14px;padding:8px 16px;border-radius:999px;background:rgba(255,217,61,.12);border:1px solid rgba(255,217,61,.4);color:var(--gold);font-size:14px;font-weight:900;letter-spacing:1px;animation:new-best-pop .45s cubic-bezier(.2,.8,.2,1) both}
            @keyframes new-best-pop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+           .best-arrow{margin-left:4px;font-weight:900;color:var(--gold)}
          </style>
          <div class="new-score-banner">🏆 NEW SCORE</div>`
       : `<style>
            .best-arrow{margin-left:4px;font-weight:900;color:var(--gold)}
          </style>`;
 
-    // Small up-arrow next to an individual cell's latest value — only used
-    // when it's NOT the case that every stat broke its record (that case
-    // gets the banner above instead).
+    // Small up-arrow next to an individual cell's latest value — shown for
+    // every stat that broke its record, including all 4 at once (the
+    // "NEW SCORE" banner above is an additional highlight, not a
+    // replacement for the per-row arrows).
     const arrow = (isNew) =>
-      isNew && !isAllNewBest ? '<span class="best-arrow">↑</span>' : "";
+      isNew ? '<span class="best-arrow">↑</span>' : "";
 
 
     this.showResultScreen(`

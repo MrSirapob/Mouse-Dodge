@@ -159,10 +159,10 @@ export const CONFIG = {
     mystery: {
       scoreMultiplier: 2, // good/score: cfg.scoreValue * this
       hitboxScale: 1.6, // bad/hitboxUp: player.r *= this, temporarily
-      hitboxDuration: 3.5,
+      hitboxDuration: 5, // 2026-08-25: lengthened from 3.5 (bad outcomes made to last longer)
       controlDebuffMult: 0.4, // bad/controlSlow: mouse+keyboard response *= this
-      controlDebuffDuration: 3.5,
-      staticDuration: 1.2, // bad/static: screen-noise overlay duration
+      controlDebuffDuration: 5, // 2026-08-25: lengthened from 3.5
+      staticDuration: 2.5, // bad/static: screen-noise overlay duration; 2026-08-25: lengthened from 1.2
     },
   },
   storage: {
