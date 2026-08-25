@@ -1012,7 +1012,6 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .skin-case-roll::after {content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.9) 0%,transparent 14%,transparent 86%,rgba(0,0,0,.9) 100%);pointer-events:none;z-index:2}
 .skin-reel-track {position:absolute;top:0;left:0;height:100%;display:flex;align-items:center;gap:10px;padding:0 10px}
 .skin-reel-item {flex:0 0 auto;width:78px;height:78px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.1);box-sizing:border-box;position:relative;transition:border-color .2s ease,box-shadow .2s ease}
-.skin-reel-item .skin-shape {width:34px;height:34px}
 .skin-reel-item.winner {animation:skinReelWinnerPop .35s ease-out .05s both}
 @keyframes skinReelWinnerPop {0%{transform:scale(1)}50%{transform:scale(1.22)}100%{transform:scale(1.05)}}
 
@@ -1038,7 +1037,6 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 @keyframes caseSkinPop {0%{opacity:0;transform:scale(.5)}100%{opacity:1;transform:scale(1)}}
 
 .skin-result-card .skin-preview {width:140px;height:140px;border:none;background:none;box-shadow:none;margin-bottom:15px}
-.skin-result-card .skin-shape {width:90px;height:90px;border-width:4px}
 .result-rarity-tag {font-size:11px;letter-spacing:2px;font-weight:900;text-transform:uppercase}
 
 .skin-result-popup strong {font-size:28px;color:#fff;margin-bottom:6px;opacity:0;animation:caseTextFade .4s ease-out .25s forwards;text-align:center}
@@ -1067,7 +1065,6 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
   .skin-result-popup {padding:24px 16px}
   .skin-result-card {width:170px;height:170px;margin-bottom:16px}
   .skin-result-card .skin-preview {width:90px;height:90px;margin-bottom:10px}
-  .skin-result-card .skin-shape {width:56px;height:56px;border-width:3px}
   .skin-result-popup strong {font-size:22px}
   .skin-result-popup .result-status {font-size:14px}
   .skin-result-popup .result-actions {margin-top:18px}
@@ -1145,14 +1142,13 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .skin-card:disabled {cursor:default;opacity:.48}
 .skin-card.equipped {border-color:var(--accent);box-shadow:0 0 0 1px rgba(78,205,196,.18),0 0 18px rgba(78,205,196,.08)}
 .skin-preview {width:64px;height:64px;display:flex;align-items:center;justify-content:center;position:relative;box-sizing:border-box;border:2px solid transparent;border-radius:14px;transition:border-color .2s ease,box-shadow .2s ease}
-.skin-shape {display:block;width:32px;height:32px;background:var(--skin);box-shadow:0 0 15px var(--skin);border:2px solid #fff}
-.skin-shape-circle {border-radius:50%}
-.skin-shape-diamond {transform:rotate(45deg);border-radius:4px}
-.skin-shape-square {border-radius:3px}
-.skin-shape-hex {clip-path:polygon(25% 6%,75% 6%,100% 50%,75% 94%,25% 94%,0 50%);border:0}
-.skin-shape-star {clip-path:polygon(50% 0%,61% 36%,100% 36%,69% 58%,81% 100%,50% 74%,19% 100%,31% 58%,0 36%,39% 36%);border:0}
-.skin-shape-void {border-radius:50%;background:#07070c;border:2px solid var(--skin);box-shadow:0 0 18px var(--skin),inset 0 0 9px var(--skin)}
-.default-preview .skin-shape {background:var(--accent);border-radius:50%;box-shadow:0 0 12px var(--accent)}
+/* The actual skin body/glow/decorations are drawn on a <canvas class="skin-canvas">
+   by js/rendering/skinPreview.js, through the exact same drawSkinVisual() Gameplay
+   uses (see js/rendering/skinRenderer.js) — CSS no longer draws the shape itself.
+   This box just needs to fill whichever wrapper it's placed in (.skin-preview,
+   .skin-reel-item, .skin-result-card .skin-preview); those wrappers keep their own
+   sizing/border/box-shadow rarity-frame rules below, untouched. */
+.skin-canvas {display:block;width:100%;height:100%}
 .skin-card strong {max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
 .skin-card small {font-size:10px;color:#858ba0;letter-spacing:1px;font-weight:800}
 .skin-card-rarity {font-size:9px;letter-spacing:1px;font-weight:900;color:#858ba0}
@@ -1162,7 +1158,7 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 #skinRewardToast span {font-size:15px;font-weight:900;color:#fff}
 @keyframes skinReveal {from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
 @keyframes skinToastIn {from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
-@media (max-width:520px){.skin-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.skin-card{padding:10px 5px}.skin-preview{width:52px;height:52px}.skin-shape{width:26px;height:26px}.skin-card strong{font-size:11px}.skin-card small{font-size:9px}.skin-wallet > div{min-width:100px}.skin-rarity-odds{gap:5px 8px;font-size:9px}.skin-case-roll{height:72px}.skin-reel-item{width:60px;height:60px;border-radius:8px}.skin-reel-item .skin-shape{width:26px;height:26px}}
+@media (max-width:520px){.skin-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.skin-card{padding:10px 5px}.skin-preview{width:52px;height:52px}.skin-card strong{font-size:11px}.skin-card small{font-size:9px}.skin-wallet > div{min-width:100px}.skin-rarity-odds{gap:5px 8px;font-size:9px}.skin-case-roll{height:72px}.skin-reel-item{width:60px;height:60px;border-radius:8px}}
 
 .skin-case-title-row {display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:9px}
 .skin-case-title-row .skin-case-title {margin-bottom:0}

@@ -8,7 +8,7 @@
 import { TestSuite, assert, assertEqual } from '../helpers/assertions.mjs';
 import { createGame, jumpToWave, tick } from '../helpers/gameFactory.mjs';
 import { withSeededRandom } from '../helpers/seededRandom.mjs';
-import { GRAZE_REWARD } from '../../js/core/config.js?v=20260824-75fj';
+import { GRAZE_REWARD } from '../../js/core/config.js?v=20260825-mx43';
 
 export async function run() {
   const s = new TestSuite('INTEGRATION: Graze -> Combo -> Score');

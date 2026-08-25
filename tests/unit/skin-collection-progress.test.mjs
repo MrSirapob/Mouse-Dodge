@@ -15,9 +15,9 @@
 // browser environment for the rest of the UI class.
 
 import { TestSuite, assert, assertEqual } from '../helpers/assertions.mjs';
-import { UI } from '../../js/ui/ui.js?v=20260824-75fj';
-import { SkinSystem } from '../../js/systems/skinSystem.js?v=20260824-75fj';
-import { SKINS } from '../../js/data/skins.js?v=20260824-75fj';
+import { UI } from '../../js/ui/ui.js?v=20260825-mx43';
+import { SkinSystem } from '../../js/systems/skinSystem.js?v=20260825-mx43';
+import { SKINS } from '../../js/data/skins.js?v=20260825-mx43';
 
 /** Minimal localStorage shim so a real SkinSystem can load()/save() in Node. */
 function makeMemoryStorage() {
@@ -99,21 +99,25 @@ export async function run() {
     assert(!!ownedCardMatch, 'owned card markup should exist');
     assert(!!lockedCardMatch, 'locked card markup should exist');
 
-    assert(ownedCardMatch[0].includes(`skin-shape-${ownedSkin.shape}`), 'an OWNED card should still render the real skin-shape glyph, unchanged', {
+    // Skin previews now render on a <canvas class="skin-canvas"> through the
+    // shared drawSkinVisual() (js/rendering/skinRenderer.js) instead of a
+    // CSS shape glyph baked into the markup string — see HANDOFF_LOG.md
+    // "Skin Preview parity fix". An OWNED card gets that canvas, tagged with
+    // its real skin id so js/rendering/skinPreview.js's mount pass can look
+    // up and draw the real shape/color; a LOCKED card gets NO canvas at all
+    // (only the silhouette), so there is no mount point for a real visual to
+    // ever attach to and the shape/color can never leak into the DOM before
+    // unlock — actually a stronger guarantee than the old inline
+    // style/class check this replaces.
+    assert(ownedCardMatch[0].includes(`<canvas class="skin-canvas" data-skin-id="${ownedSkin.id}"`), 'an OWNED card should mount a real skin-canvas for its own skin id', {
       likely: 'js/ui/ui.js renderSkinScreen() previewInner for owned cards',
-    });
-    assert(ownedCardMatch[0].includes(`--skin:${ownedSkin.color}`), 'an OWNED card should still carry its real --skin color variable, unchanged', {
-      likely: 'js/ui/ui.js renderSkinScreen() previewStyle for owned cards',
     });
 
     assert(lockedCardMatch[0].includes('skin-silhouette'), 'a LOCKED card should render the silhouette placeholder, not the real shape', {
       likely: 'js/ui/ui.js renderSkinScreen() previewInner for locked cards',
     });
-    assert(!lockedCardMatch[0].includes(`skin-shape-${lockedSkin.shape}`), 'a LOCKED card must NOT reveal the real skin-shape glyph before it is unlocked', {
+    assert(!lockedCardMatch[0].includes('skin-canvas'), 'a LOCKED card must NOT mount any skin-canvas (no possible visual leak) before it is unlocked', {
       likely: 'js/ui/ui.js renderSkinScreen() previewInner for locked cards',
-    });
-    assert(!lockedCardMatch[0].includes(`--skin:${lockedSkin.color}`), 'a LOCKED card must NOT reveal the real skin color before it is unlocked', {
-      likely: 'js/ui/ui.js renderSkinScreen() previewStyle for locked cards',
     });
     assert(lockedCardMatch[0].includes(`rarity-${lockedSkin.rarity.toLowerCase()}`), 'a LOCKED card should still show its real rarity class (border/label), just not the exact visual', {
       likely: 'js/ui/ui.js renderSkinScreen() card markup',

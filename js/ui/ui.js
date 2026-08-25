@@ -1,6 +1,7 @@
-import { CONFIG } from "../core/config.js?v=20260824-75fj";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260824-75fj";
-import { tick as playReelTick } from "../audio/reelTick.js?v=20260824-75fj";
+import { CONFIG } from "../core/config.js?v=20260825-mx43";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260825-mx43";
+import { tick as playReelTick } from "../audio/reelTick.js?v=20260825-mx43";
+import { mountSkinCanvas, mountSkinCanvases } from "../rendering/skinPreview.js?v=20260825-mx43";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -691,27 +692,28 @@ export class UI {
     const cards = SKINS.map((s) => {
       const owned = data.ownedSkins.includes(s.id);
       const isEquipped = equipped === s.id;
-      // OWNED cards show the real skin visual (shape + color) exactly as
-      // before. LOCKED cards intentionally never receive the `--skin`/
-      // `--skin2` color variables or the real `skin-shape-*` glyph — only a
-      // generic silhouette + "?" — so the rarity border/label is visible
-      // (players can see *what's* missing) without previewing the actual
-      // color/shape reward (players can't see *exactly* what it looks like
-      // before unlocking it).
+      // OWNED cards render the real skin visual through the same canvas
+      // renderer Gameplay uses (see ../rendering/skinPreview.js) — shape,
+      // colors, glow and rarity decorations all come from drawSkinVisual(),
+      // never a separate CSS shape. LOCKED cards intentionally get no
+      // canvas at all — only a generic silhouette + "?" — so the rarity
+      // border/label is visible (players can see *what's* missing) without
+      // previewing the actual color/shape reward (players can't see
+      // *exactly* what it looks like before unlocking it).
       const previewInner = owned
-        ? `<i class="skin-shape skin-shape-${s.shape}"></i>`
+        ? `<canvas class="skin-canvas" data-skin-id="${s.id}" aria-hidden="true"></canvas>`
         : `<i class="skin-silhouette" aria-hidden="true">?</i>`;
-      const previewStyle = owned ? ` style="--skin:${s.color};--skin2:${s.secondaryColor}"` : "";
       return `<button type="button" class="skin-card ${owned ? "owned" : "locked"} ${isEquipped ? "equipped" : ""}" data-skin-id="${s.id}" ${owned ? "" : "disabled"}>
-        <span class="skin-preview rarity-${s.rarity.toLowerCase()} ${owned ? "" : "locked-preview"}"${previewStyle}>${previewInner}</span>
+        <span class="skin-preview rarity-${s.rarity.toLowerCase()} ${owned ? "" : "locked-preview"}">${previewInner}</span>
         <span class="skin-card-rarity rarity-${s.rarity.toLowerCase()}">${s.rarity}</span>
         <strong>${owned ? s.name : "???"}</strong>
         <small>${isEquipped ? "EQUIPPED" : owned ? "EQUIP" : "LOCKED"}</small>
       </button>`;
     }).join("");
     this.skinGrid.innerHTML = `<button type="button" class="skin-card owned ${equipped === "default" ? "equipped" : ""}" data-skin-id="default">
-      <span class="skin-preview default-preview"><i class="skin-shape skin-shape-circle"></i></span><span class="skin-card-rarity">DEFAULT</span><strong>Default</strong><small>${equipped === "default" ? "EQUIPPED" : "EQUIP"}</small>
+      <span class="skin-preview default-preview"><canvas class="skin-canvas" data-skin-id="default" aria-hidden="true"></canvas></span><span class="skin-card-rarity">DEFAULT</span><strong>Default</strong><small>${equipped === "default" ? "EQUIPPED" : "EQUIP"}</small>
     </button>${cards}`;
+    mountSkinCanvases(this.skinGrid, this.skinSystem, { animate: true });
     this.skinGrid.querySelectorAll("[data-skin-id]").forEach((button) => button.addEventListener("click", () => {
       if (this.skinSystem.equip(button.dataset.skinId)) this.renderSkinScreen();
     }));
@@ -800,9 +802,15 @@ export class UI {
 
     roll.classList.remove("hidden");
     roll.innerHTML = `<div class="skin-reel-track">${items.map((s) => `
-      <span class="skin-reel-item rarity-${s.rarity.toLowerCase()}" data-skin-id="${s.id}" style="--skin:${s.color};--skin2:${s.secondaryColor}">
-        <i class="skin-shape skin-shape-${s.shape}"></i>
+      <span class="skin-reel-item rarity-${s.rarity.toLowerCase()}" data-skin-id="${s.id}">
+        <canvas class="skin-canvas" data-skin-id="${s.id}" aria-hidden="true"></canvas>
       </span>`).join("")}</div>`;
+
+    // Reel slots draw once (no rAF loop) — there can be 60-100+ of these
+    // on screen at once while the reel spins, and Stage 1 of this fix is
+    // about correct *geometry*, not keeping every off-screen decoration
+    // animating during a fast-moving spin.
+    mountSkinCanvases(roll, this.skinSystem, { animate: false });
 
     const track = roll.querySelector(".skin-reel-track");
     
@@ -922,7 +930,7 @@ export class UI {
    * rolled item, no gameplay/RNG involvement.
    */
   skinResultIconHTML(item) {
-    return `<span class="skin-preview rarity-${item.rarity.toLowerCase()}" style="--skin:${item.color};--skin2:${item.secondaryColor}"><i class="skin-shape skin-shape-${item.shape}"></i></span>`;
+    return `<span class="skin-preview rarity-${item.rarity.toLowerCase()}"><canvas class="skin-canvas" data-skin-id="${item.id}" aria-hidden="true"></canvas></span>`;
   }
 
   bindResultActions(id) {
@@ -972,6 +980,7 @@ export class UI {
           </div>
         </div>
       `;
+      mountSkinCanvases(this.skinCaseResult, this.skinSystem, { animate: true });
       this.bindResultActions(result.item.id);
     }
     this.renderSkinScreen();

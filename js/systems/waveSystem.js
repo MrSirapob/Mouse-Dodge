@@ -1,4 +1,4 @@
-import { CONFIG, actForWave } from "../core/config.js?v=20260824-75fj";
+import { CONFIG, actForWave } from "../core/config.js?v=20260825-mx43";
 
 /**
  * ========================= PATTERN GUIDE FOR AI =========================

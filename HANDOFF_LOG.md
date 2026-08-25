@@ -10,6 +10,73 @@ yet.
 **Newest entry at the top.** Read the top 1-2 entries before starting work
 so you know what the last session was mid-way through or flagged for you.
 
+## 2026-08-25: Skin Preview parity fix — Preview now renders through the same code Gameplay uses
+User reported the skin shown in Preview (Shop grid, Case Reel, Case Result) didn't visually match
+the same skin in Gameplay. Root cause: two completely separate implementations. Gameplay drew skins
+on `<canvas>` in `Renderer.drawPlayer()` (real shape math, glow, orbiting rarity decorations).
+Every Preview was pure CSS — `<i class="skin-shape skin-shape-hex">` styled via `clip-path`/
+`border-radius`/`background:var(--skin)`. Two independent "what does this skin look like" code
+paths will always drift.
+
+**Stage 1 (base skin, no effects) + Stage 2 (effects restored) done in one pass, since the fix is
+architectural — both stages share the same new code, there was no separate "disable effects, ship,
+come back later" step that made sense here.**
+
+Extracted ALL skin-drawing logic (shape switch, glow, tier>=2 inner detail, tier>=3 orbiting
+sparkle/star/diamond/shard/comet decorations — previously `Renderer.drawSkinDecorations()` +
+`drawSparkle`/`drawStarPoint`/`drawDiamondPoint`/`drawShardPoint`/`drawComet` methods) out of
+`renderer.js` into a new `js/rendering/skinRenderer.js`, exposing one entry point:
+`drawSkinVisual(ctx, skin, x, y, r, options)`. `renderer.js`'s `drawPlayer()` now calls it instead
+of its own inline copy; the duplicated methods were deleted from the Renderer class (net -231 lines
+in renderer.js). Includes `SKIN_DEBUG.disableEffects` (default `false`) — a kept, not deleted,
+debug switch that forces every skin to render as body-only (shape/color/stroke/internal detail,
+no glow/no decorations) for re-verifying geometry parity later without touching the effects code.
+
+New `js/rendering/skinPreview.js` mounts real `<canvas class="skin-canvas" data-skin-id="...">`
+elements (added to the Skin Collection grid, Case Reel, Case Result, and Default card in `ui.js`,
+replacing the CSS shape markup) and draws them via the SAME `drawSkinVisual()`, with proper
+devicePixelRatio-aware backing-buffer sizing. Deliberately draws at the real gameplay radius
+(`CONFIG.player.radius`, not a radius scaled up to fill each icon's box) — the decorations use
+fixed pixel offsets from `r` (e.g. `r+16`), so scaling `r` per-context would itself reintroduce a
+subtly different look between Gameplay and Preview, exactly the class of bug this fix removes.
+Tier>=3 previews (Skin Collection grid, Case Result) opt into a shared rAF animation loop so
+decorations actually orbit like they do in Gameplay; Case Reel slots draw once (static) since dozens
+render at once mid-spin — Stage 1 is about correct geometry, not animating every reel slot.
+
+`css/main.css`: replaced the old `.skin-shape`/`.skin-shape-*` rules (CSS-drawn shapes, now
+unreferenced by any markup) with one `.skin-canvas{width:100%;height:100%}` rule; the outer
+`.skin-preview`/`.skin-reel-item`/`.skin-result-card .skin-preview` wrappers (border/glow rarity
+frame) are untouched.
+
+**Verification:** `npm test` → all-PASS (see below). Also wrote a one-off headless verification
+script, `scripts/verify-skin-preview-parity.mjs` (needs `npm install canvas --no-save`, NOT wired
+into `npm test`/package.json — this project has no other native-module dependency and shouldn't
+gain one just for dev tooling), which renders every skin (all shapes/rarities) through the real
+`drawSkinVisual()` at both a Gameplay-like canvas setup and a Preview-like DPR-scaled canvas setup,
+then checks actual pixel bounding boxes for aspect ratio / DPR-scaling correctness / decoration
+centering — 106/106 checks passed. `scripts/visual-check.mjs` renders a side-by-side PNG (Gameplay-
+scale row vs Preview-scale row) for a human to eyeball; confirmed visually identical.
+
+**Not changed (per the fix's own scope):** `player.r`/`baseR`, hitbox, collision, movement, wave
+mechanics, gameplay balance, the rarity-frame CSS (border/box-shadow per tier), and no skin's actual
+design (shape/color/decoration content) was altered — only which code draws it and where.
+
+**Files:** `js/rendering/skinRenderer.js` (new), `js/rendering/skinPreview.js` (new),
+`js/rendering/renderer.js`, `js/ui/ui.js`, `css/main.css`, `tests/unit/skin-collection-progress.test.mjs`
+(updated 2 assertions that checked for the old CSS-shape markup string — replaced with assertions
+that an OWNED card mounts a real `skin-canvas` for its own id and a LOCKED card mounts none at all,
+which is actually a *stronger* no-leak guarantee than the old inline-style check it replaces),
+`scripts/verify-skin-preview-parity.mjs` (new, dev-only), `scripts/visual-check.mjs` (new, dev-only).
+Ran `npm run bump-version` after (`20260825-mx43`).
+**End-of-day test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing, unrelated —
+same WARN noted in prior entries).
+**For the next session:** Nothing pending. If the skin-preview look is ever reported as mismatched
+again, the bug is either (a) something calling a different draw path than `drawSkinVisual()` in
+`skinRenderer.js`, or (b) a canvas-size/DPR setup issue in whatever's calling in — it's no longer
+possible for it to be "the effects were redesigned differently for Preview," since there's only one
+implementation now. `SKIN_DEBUG.disableEffects` in `skinRenderer.js` is there if geometry-only
+re-verification is ever needed again.
+
 ## Rules
 
 - **When you start a session:** read the newest entry (and any it points

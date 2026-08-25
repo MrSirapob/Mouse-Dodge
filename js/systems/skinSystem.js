@@ -6,7 +6,7 @@ import {
   SKINS,
   SKINS_BY_RARITY,
   TOTAL_RARITY_WEIGHT,
-} from '../data/skins.js?v=20260824-75fj';
+} from '../data/skins.js?v=20260825-mx43';
 
 const STORAGE_KEY = 'waveDodgeSkinData';
 const SAVE_VERSION = 1;
