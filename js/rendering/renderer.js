@@ -1,6 +1,6 @@
 import { ITEM_COLORS } from '../systems/itemSystem.js?v=20260825-la68';
 import { CONFIG, actForWave } from '../core/config.js?v=20260825-la68';
-import { drawSkinVisual } from './skinRenderer.js?v=20260825-la68';
+import { drawSkinVisual, drawSparkle, drawStarPoint, drawDiamondPoint } from './skinRenderer.js?v=20260825-la68';
 
 /**
  * One draw function per item type, keyed by `item.type` (mirrors the
@@ -1171,6 +1171,27 @@ export class Renderer {
       c.globalAlpha = isDefault ? 1 : a * 0.28;
       c.fill();
       c.globalAlpha = 1;
+    }
+
+    // Rarity particle trail: the fading dot-trail above already follows
+    // every skin (including Default), but Rare+ skins additionally define a
+    // `particle` identity (spark/star/void, see js/data/skins.js) that was
+    // being carried all the way to buildVisual() and then never actually
+    // drawn anywhere. This makes that field real: a handful of small
+    // accents (reusing the exact shapes used for the orbiting rarity
+    // decorations) riding the same p.trail points as the dot-trail, so
+    // higher-tier skins get a movement trail that visibly matches their
+    // identity instead of just plain fading circles.
+    if (v && !isDefault && v.particle && v.particle !== 'none') {
+      for (let i = 0; i < p.trail.length; i++) {
+        const t = p.trail[i], a = i / p.trail.length;
+        if (a < 0.4) continue; // skip the oldest/faintest points entirely
+        const twinkle = (a - 0.4) * 1.2;
+        const size = 2 + a * 2.4;
+        if (v.particle === 'spark') drawSparkle(c, t.x, t.y, size, secondary, twinkle);
+        else if (v.particle === 'star') drawStarPoint(c, t.x, t.y, size, secondary, twinkle);
+        else if (v.particle === 'void') drawDiamondPoint(c, t.x, t.y, size, primary, twinkle * 0.85, a * Math.PI * 2);
+      }
     }
 
     if (v && !isDefault && v.trail !== 'none') {
