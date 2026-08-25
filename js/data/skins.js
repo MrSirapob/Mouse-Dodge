@@ -50,6 +50,20 @@ export const SKINS = Object.freeze([
 
   skin('celestial', 'Celestial', 'Legendary', 'star', '#fff6cf', '#ffd93d', 26, 'orbit', 'star', 'nova'),
   skin('singularity', 'Singularity', 'Mythic', 'void', '#d8c7ff', '#7c4dff', 34, 'blackhole', 'void', 'singularity'),
+
+  // --- High-tier additions ---
+  skin('bloodmoon', 'Blood Moon', 'Epic', 'circle', '#ff2e2e', '#1a0000', 18, 'rainbow', 'star', 'ring'),
+  skin('venomshard', 'Venomshard', 'Epic', 'diamond', '#7cff3d', '#0b3d0b', 18, 'glitch', 'spark', 'glitch'),
+  skin('deepweb', 'Deep Web', 'Epic', 'square', '#00c2ff', '#001a2e', 16, 'glitch', 'spark', 'glitch'),
+
+  skin('phoenixflare', 'Phoenix Flare', 'Legendary', 'star', '#ff9f43', '#ff2e2e', 28, 'orbit', 'star', 'nova'),
+  skin('glacialcrown', 'Glacial Crown', 'Legendary', 'hex', '#bdf3ff', '#5dade2', 27, 'orbit', 'star', 'ring'),
+  skin('shadowmonarch', 'Shadow Monarch', 'Legendary', 'star', '#3a2a5c', '#8f6bff', 27, 'orbit', 'spark', 'nova'),
+  skin('solarforge', 'Solar Forge', 'Legendary', 'hex', '#ffd93d', '#ff7b00', 28, 'orbit', 'star', 'nova'),
+
+  skin('voidreaper', 'Void Reaper', 'Mythic', 'void', '#1a0033', '#c77dff', 34, 'blackhole', 'void', 'singularity'),
+  skin('chronoshift', 'Chronoshift', 'Mythic', 'void', '#00fff2', '#0a1e3f', 34, 'blackhole', 'star', 'prism'),
+  skin('astralsovereign', 'Astral Sovereign', 'Mythic', 'star', '#ffffff', '#ffd166', 36, 'rainbow', 'star', 'prism'),
 ]);
 
 export const SKIN_BY_ID = Object.freeze(
