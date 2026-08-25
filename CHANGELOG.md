@@ -1,5 +1,19 @@
 # Changelog
 
+## Normalized all skin visual sizes to match Default (user-requested)
+Every skin's main character silhouette is now guaranteed to render at the
+same size as the Default skin. Two things previously made some skins look
+bigger: the `square` shape (Glitch) had corners reaching `~1.16 * r`
+instead of `r`, and every Uncommon+ skin drew a filled, blurred halo
+circle behind the body (plus Legendary+ had a rotating ring around it) —
+both fixed. Rarity is now expressed only through small, discrete external
+decorations (sparkles, stars, diamonds, shards, a comet) orbiting outside
+the body, never a ring/halo/filled circle. `p.r`, hitbox, and collision
+are unchanged — cosmetic-only.
+**Files:** `js/rendering/renderer.js`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated).
+
 ## Added CS:GO-style tick sound to the case reel (user-requested)
 The case-opening reel had its visual "tick" bounce removed earlier (see
 below) for looking too much like a premature win. This adds a matching

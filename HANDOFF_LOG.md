@@ -57,6 +57,45 @@ what changed, why, key numbers if any.
 
 ---
 
+## 2026-08-25 — Claude (Sonnet 5, claude.ai) — Normalized all skin visual sizes to match Default
+
+**Session 1 — Fixed skin silhouettes exceeding Default's radius, replaced ring/halo rarity effects with non-ring decorations (user-requested, Thai prompt asking every skin's main character to render at the same size as Default while keeping rarity flair as external decoration):**
+Two real size bugs in `Renderer.drawPlayer()` (`js/rendering/renderer.js`):
+(1) the `square` shape (Glitch, Epic) used a `r * 0.82` half-width, whose
+corners actually reach `~1.16 * r` — bigger than every other shape's `r`
+extent, i.e. bigger than Default. Fixed by using `r * Math.SQRT1_2` so the
+corners land exactly on `r`, same as the other shapes (verified with a
+throwaway geometry check — all shapes now max out at exactly `r`).
+(2) every non-default skin with `glow > 0` (Uncommon+) drew a *filled*
+circle at `r + 5` with alpha 0.28 and up to `shadowBlur: 34` before the
+main shape — a solid halo that visually enlarges the silhouette, plus a
+`tier >= 5` (Legendary+) rotating dashed ring at `r + 10`, and a `tier >=
+4` orbiting-square particle loop. Removed all three; added
+`drawSkinDecorations()` + small shape helpers (`drawSparkle`,
+`drawStarPoint`, `drawDiamondPoint`, `drawShardPoint`, `drawComet`) that
+draw a handful of small, discrete, non-ring accents scaled by rarity tier
+(Rare: 2 faint sparkles; Epic: 3 star/spark accents; Legendary: 4
+diamond/shard accents + a drifting comet; Mythic: 7 accents across two
+independently-rotating orbits). `p.r`, hitbox, and collision are
+untouched — this is rendering-only. Didn't touch the shield-charge ring,
+invulnerability blink ring, hit-flash ring, or revive arc — those are
+game-state indicators shown identically regardless of equipped skin, not
+skin cosmetics, so they weren't in scope for "every skin's character
+should be Default-sized."
+**Files:** `js/rendering/renderer.js`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated — repo has no rendering assertions, `renderer.js` is only
+exercised through fakes per `tests/README.md`). `node
+scripts/check-versions.mjs` → PASS (no new files, no version bump
+needed).
+**For the next session:** Not visually verified in a real browser (no
+canvas rendering in this sandbox) — please open the skin screen/equip a
+few Rare through Mythic skins in an actual run and confirm the new
+decorations read well (position, size, animation speed/opacity) and that
+no shape's silhouette looks bigger than Default's at a glance.
+
+---
+
 ## 2026-08-24 — ChatGPT (GPT-5.6 Luna) — Skin / Case / Inventory system
 
 **Session 23 — Claude (Sonnet 5, claude.ai) — Added CS:GO-style tick sound to the case reel (user-requested, "เพิ่มเสียง Tick แบบ csgo ขอแบบเหมือนๆ"):**

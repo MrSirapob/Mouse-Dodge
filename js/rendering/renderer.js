@@ -1197,17 +1197,11 @@ export class Renderer {
       }
     }
 
-    if (!isDefault && v.glow > 0) {
-      c.save();
-      c.globalAlpha = 0.28;
-      c.beginPath();
-      c.arc(p.x, p.y, p.r + 5 + Math.sin(now / 140) * 1.5, 0, Math.PI * 2);
-      c.fillStyle = primary;
-      c.shadowColor = primary;
-      c.shadowBlur = v.glow;
-      c.fill();
-      c.restore();
-    }
+    // Every skin's main body is drawn at exactly `visualRadius` (= p.r) —
+    // the same footprint as the Default skin. Rarity is communicated
+    // entirely through the external decorations drawn below (see
+    // drawSkinDecorations), never by growing the body itself.
+    const visualRadius = p.r;
 
     c.save();
     c.translate(p.x, p.y);
@@ -1217,13 +1211,21 @@ export class Renderer {
     c.strokeStyle = '#fff';
     c.lineWidth = 2;
 
-    const r = p.r;
+    const r = visualRadius;
     c.beginPath();
     switch (v?.shape || 'circle') {
       case 'diamond':
         c.moveTo(0, -r); c.lineTo(r, 0); c.lineTo(0, r); c.lineTo(-r, 0); c.closePath(); break;
-      case 'square':
-        c.rect(-r * 0.82, -r * 0.82, r * 1.64, r * 1.64); break;
+      case 'square': {
+        // Half-width r/sqrt(2) puts the square's corners exactly on the
+        // p.r boundary (same as every other shape's outer extent) instead
+        // of poking past it — a plain r*0.82 half-width previously let the
+        // corners reach ~1.16*r, making this skin's silhouette bigger than
+        // Default's.
+        const hw = r * Math.SQRT1_2;
+        c.rect(-hw, -hw, hw * 2, hw * 2);
+        break;
+      }
       case 'hex':
         for (let i = 0; i < 6; i++) { const a = Math.PI / 6 + i * Math.PI / 3; const x = Math.cos(a) * r; const y = Math.sin(a) * r; if (i === 0) c.moveTo(x, y); else c.lineTo(x, y); } c.closePath(); break;
       case 'star':
@@ -1245,36 +1247,14 @@ export class Renderer {
       c.globalAlpha = 1;
     }
 
-    if (!isDefault && tier >= 5) {
-      const spin = now / 900;
-      c.save();
-      c.rotate(spin);
-      c.setLineDash([5, 4]);
-      c.beginPath();
-      c.arc(0, 0, r + 10, 0, Math.PI * 2);
-      c.strokeStyle = secondary;
-      c.lineWidth = 1.8;
-      c.globalAlpha = 0.75;
-      c.stroke();
-      c.restore();
-    }
-
     c.stroke();
     c.restore();
 
-    if (!isDefault && v.particle && tier >= 4) {
-      const count = tier >= 6 ? 5 : 3;
-      c.save();
-      c.globalAlpha = 0.6;
-      for (let i = 0; i < count; i++) {
-        const a = now / 700 + (i * Math.PI * 2) / count;
-        const rr = p.r + 8 + Math.sin(now / 180 + i) * 3;
-        const x = p.x + Math.cos(a) * rr;
-        const y = p.y + Math.sin(a) * rr;
-        c.fillStyle = i % 2 ? secondary : primary;
-        c.fillRect(x - 1.5, y - 1.5, 3, 3);
-      }
-      c.restore();
+    // Rarity is expressed here — as small orbiting sparkle/star/diamond/shard
+    // accents around the body — never as a ring, halo, or filled circle that
+    // would read as part of the character's silhouette.
+    if (!isDefault && tier >= 3) {
+      this.drawSkinDecorations(p, v, tier, primary, secondary, now);
     }
 
     if (p.hitFlash > 0) {
@@ -1306,6 +1286,172 @@ export class Renderer {
       c.arc(p.x, p.y, p.r, 0, Math.PI * 2);
       c.stroke();
     }
+  }
+
+  /**
+   * Rarity-scaled *external* skin decorations: a handful of small
+   * sparkle / star / diamond / shard / comet accents orbiting just outside
+   * the main body. This is the only place skin rarity shows up visually —
+   * intentionally never a filled circle or a continuous ring around the
+   * character, since that reads as an enlarged silhouette rather than a
+   * decoration. Rare gets a couple of faint pinpoints; Mythic gets the
+   * full ensemble across two independently rotating orbits.
+   */
+  drawSkinDecorations(p, v, tier, primary, secondary, now) {
+    const r = p.r;
+
+    if (tier === 3) {
+      const count = 2;
+      for (let i = 0; i < count; i++) {
+        const a = now / 1400 + (i * Math.PI * 2) / count;
+        const rr = r + 6;
+        const x = p.x + Math.cos(a) * rr;
+        const y = p.y + Math.sin(a) * rr;
+        const twinkle = 0.35 + 0.35 * Math.sin(now / 260 + i * 2);
+        this.drawSparkle(x, y, 2.2, primary, twinkle);
+      }
+      return;
+    }
+
+    if (tier === 4) {
+      const count = 3;
+      for (let i = 0; i < count; i++) {
+        const a = now / 1000 + (i * Math.PI * 2) / count;
+        const rr = r + 7 + Math.sin(now / 200 + i) * 1.5;
+        const x = p.x + Math.cos(a) * rr;
+        const y = p.y + Math.sin(a) * rr;
+        const twinkle = 0.5 + 0.4 * Math.sin(now / 180 + i * 2);
+        if (i % 2 === 0) this.drawStarPoint(x, y, 3, secondary, twinkle);
+        else this.drawSparkle(x, y, 2.6, primary, twinkle);
+      }
+      return;
+    }
+
+    if (tier === 5) {
+      const count = 4;
+      for (let i = 0; i < count; i++) {
+        const a = now / 850 + (i * Math.PI * 2) / count;
+        const rr = r + 9 + Math.sin(now / 260 + i) * 2;
+        const x = p.x + Math.cos(a) * rr;
+        const y = p.y + Math.sin(a) * rr;
+        const twinkle = 0.55 + 0.4 * Math.sin(now / 150 + i * 2);
+        if (i % 2 === 0) this.drawDiamondPoint(x, y, 3.4, secondary, twinkle, a);
+        else this.drawShardPoint(x, y, 4, primary, twinkle, a);
+      }
+      const ca = now / 650;
+      const cr = r + 14;
+      this.drawComet(p.x + Math.cos(ca) * cr, p.y + Math.sin(ca) * cr, ca, primary);
+      return;
+    }
+
+    // tier >= 6 (Mythic): the full ensemble across two orbits spinning in
+    // opposite directions.
+    const inner = 4, outer = 3;
+    for (let i = 0; i < inner; i++) {
+      const a = now / 800 + (i * Math.PI * 2) / inner;
+      const rr = r + 8 + Math.sin(now / 220 + i) * 2;
+      const x = p.x + Math.cos(a) * rr;
+      const y = p.y + Math.sin(a) * rr;
+      const twinkle = 0.55 + 0.4 * Math.sin(now / 140 + i * 2);
+      const kind = i % 3;
+      if (kind === 0) this.drawStarPoint(x, y, 3.4, secondary, twinkle);
+      else if (kind === 1) this.drawDiamondPoint(x, y, 3, primary, twinkle, a);
+      else this.drawSparkle(x, y, 2.6, secondary, twinkle);
+    }
+    for (let i = 0; i < outer; i++) {
+      const a = -now / 620 + (i * Math.PI * 2) / outer;
+      const rr = r + 16 + Math.sin(now / 300 + i) * 3;
+      const x = p.x + Math.cos(a) * rr;
+      const y = p.y + Math.sin(a) * rr;
+      this.drawShardPoint(x, y, 4.2, primary, 0.75, a);
+    }
+  }
+
+  /** Small 4-point sparkle (✦-style), used for Rare+ skin decorations. */
+  drawSparkle(x, y, size, color, alpha = 1) {
+    const c = this.ctx;
+    c.save();
+    c.globalAlpha = Math.max(0, alpha);
+    c.fillStyle = color;
+    c.beginPath();
+    c.moveTo(x, y - size); c.lineTo(x + size * 0.28, y - size * 0.28);
+    c.lineTo(x + size, y); c.lineTo(x + size * 0.28, y + size * 0.28);
+    c.lineTo(x, y + size); c.lineTo(x - size * 0.28, y + size * 0.28);
+    c.lineTo(x - size, y); c.lineTo(x - size * 0.28, y - size * 0.28);
+    c.closePath();
+    c.fill();
+    c.restore();
+  }
+
+  /** Small 5-point star, used for Epic+ skin decorations. */
+  drawStarPoint(x, y, size, color, alpha = 1) {
+    const c = this.ctx;
+    c.save();
+    c.globalAlpha = Math.max(0, alpha);
+    c.fillStyle = color;
+    c.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + i * Math.PI / 5;
+      const rr = i % 2 ? size * 0.42 : size;
+      const px = x + Math.cos(a) * rr, py = y + Math.sin(a) * rr;
+      if (i === 0) c.moveTo(px, py); else c.lineTo(px, py);
+    }
+    c.closePath();
+    c.fill();
+    c.restore();
+  }
+
+  /** Small diamond / crystal shard point, used for Legendary+ decorations. */
+  drawDiamondPoint(x, y, size, color, alpha = 1, rotation = 0) {
+    const c = this.ctx;
+    c.save();
+    c.globalAlpha = Math.max(0, alpha);
+    c.translate(x, y);
+    c.rotate(rotation);
+    c.fillStyle = color;
+    c.beginPath();
+    c.moveTo(0, -size); c.lineTo(size * 0.6, 0); c.lineTo(0, size); c.lineTo(-size * 0.6, 0);
+    c.closePath();
+    c.fill();
+    c.restore();
+  }
+
+  /** Small angular lightning/crystal shard, used for Legendary+ decorations. */
+  drawShardPoint(x, y, size, color, alpha = 1, angle = 0) {
+    const c = this.ctx;
+    c.save();
+    c.globalAlpha = Math.max(0, alpha);
+    c.translate(x, y);
+    c.rotate(angle + Math.PI / 2);
+    c.fillStyle = color;
+    c.beginPath();
+    c.moveTo(0, -size); c.lineTo(size * 0.35, size * 0.6); c.lineTo(-size * 0.35, size * 0.6);
+    c.closePath();
+    c.fill();
+    c.restore();
+  }
+
+  /** Tiny drifting comet streak, used for Legendary skin decorations. */
+  drawComet(x, y, angle, color) {
+    const c = this.ctx;
+    c.save();
+    c.translate(x, y);
+    c.rotate(angle + Math.PI);
+    const grad = c.createLinearGradient(0, 0, 10, 0);
+    grad.addColorStop(0, color);
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    c.strokeStyle = grad;
+    c.lineWidth = 1.6;
+    c.globalAlpha = 0.8;
+    c.beginPath();
+    c.moveTo(0, 0);
+    c.lineTo(10, 0);
+    c.stroke();
+    c.beginPath();
+    c.arc(0, 0, 1.6, 0, Math.PI * 2);
+    c.fillStyle = '#fff';
+    c.fill();
+    c.restore();
   }
 
   /** Looks up and runs the matching entry in SKILL_EFFECT_DRAWERS for fx.type. */
