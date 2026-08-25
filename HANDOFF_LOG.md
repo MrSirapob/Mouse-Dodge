@@ -10,6 +10,32 @@ yet.
 **Newest entry at the top.** Read the top 1-2 entries before starting work
 so you know what the last session was mid-way through or flagged for you.
 
+## 2026-08-25 — Claude (Sonnet 5, claude.ai) — Epic shine sweep removed, Mythic's broken shine fixed
+
+From an uploaded zip (`wave-dodge-refactored3.zip`), two related requests about the Rarity Frame
+System's `::before` diagonal shine sweep in `css/main.css`:
+
+1. **Epic no longer gets the shine sweep** (Thai: "แก้ระดับ epic preview ไม่ต้องมี วิ้งๆ ให้มีวิ้งตรง
+   legendary กับ mytic") — user wants the sweep reserved for Legendary/Mythic only. Removed
+   `.rarity-epic`/`.skin-reel-item.winner.rarity-epic` from the `::before` shine selector list; Epic
+   keeps its `rarityGlowPulse` glow-pulse animation (untouched, not what was asked to be removed).
+2. **Mythic's shine was stuck** (Thai: "mytic มันค้างแก้ไขด้วย") — root cause: Mythic's tier-specific
+   `::before` override used the `background` SHORTHAND to swap in its own gradient colors, which
+   silently resets `background-size` back to `auto`, wiping out the shared rule's `220% 220%`
+   oversize just above it. With the gradient sized to fit the frame exactly once, the
+   `@keyframes rarityShine` background-position sweep had almost nowhere to travel — Mythic barely
+   appeared to move while Legendary swept normally right next to it. Changed `background:` to
+   `background-image:` so only the gradient colors change and `background-size` stays inherited.
+   Also trimmed the `prefers-reduced-motion` block's `::before` selector list to match (Epic
+   removed, since it no longer has a `::before` shine rule to hide).
+
+**Files:** `css/main.css`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing, unrelated —
+CSS-only change). Ran `npm run bump-version` after (`20260825-e9ox`).
+**For the next session:** Nothing pending. If another tier's `::before` override is ever added,
+use `background-image:`, not the `background:` shorthand, or it'll silently drop `background-size`
+the same way Mythic's did here.
+
 ## 2026-08-25 — Claude (Sonnet 5, claude.ai) — Result-screen arrows during "NEW SCORE" + longer Mystery Box bad durations
 
 Two small user-requested fixes in one session, from an uploaded refactored zip:

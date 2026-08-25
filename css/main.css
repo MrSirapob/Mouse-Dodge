@@ -938,9 +938,12 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .skin-preview.rarity-legendary, .skin-reel-item.rarity-legendary {border-color: var(--rarity-legendary); box-shadow: 0 0 14px -1px rgba(255,217,92,.65)}
 .skin-preview.rarity-mythic, .skin-reel-item.rarity-mythic {border-color: var(--rarity-mythic); box-shadow: 0 0 16px -1px rgba(255,77,141,.7)}
 
-/* Premium pulse + shine, Epic and up — see note above on why the plain
-   reel items are excluded. Duration shortens slightly per tier so Mythic
-   visibly breathes faster/brighter than Epic without either feeling busy. */
+/* Premium pulse, Epic and up; diagonal shine sweep, Legendary and up only
+   — see note above on why the plain reel items are excluded. Duration
+   shortens slightly per tier so Mythic visibly breathes faster/brighter
+   than Epic without either feeling busy. Epic keeps the glow pulse but NOT
+   the shine sweep (user-requested: shine reserved for Legendary/Mythic so
+   those two top tiers read as a clear step up from Epic). */
 .skin-preview.rarity-epic, .skin-reel-item.winner.rarity-epic,
 .skin-preview.rarity-legendary, .skin-reel-item.winner.rarity-legendary,
 .skin-preview.rarity-mythic, .skin-reel-item.winner.rarity-mythic {
@@ -951,7 +954,6 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .skin-reel-item.winner.rarity-epic {animation: skinReelWinnerPop .35s ease-out .05s both, rarityGlowPulse 2.6s ease-in-out .35s infinite}
 .skin-reel-item.winner.rarity-legendary {animation: skinReelWinnerPop .35s ease-out .05s both, rarityGlowPulse 2.2s ease-in-out .35s infinite}
 .skin-reel-item.winner.rarity-mythic {animation: skinReelWinnerPop .35s ease-out .05s both, rarityGlowPulse 1.8s ease-in-out .35s infinite}
-.skin-preview.rarity-epic::before, .skin-reel-item.winner.rarity-epic::before,
 .skin-preview.rarity-legendary::before, .skin-reel-item.winner.rarity-legendary::before,
 .skin-preview.rarity-mythic::before, .skin-reel-item.winner.rarity-mythic::before {
   content: "";
@@ -967,7 +969,14 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .skin-preview.rarity-legendary::before, .skin-reel-item.winner.rarity-legendary::before {animation-duration: 2.6s}
 .skin-preview.rarity-mythic::before, .skin-reel-item.winner.rarity-mythic::before {
   animation-duration: 2.1s;
-  background: linear-gradient(115deg, transparent 28%, rgba(255,214,240,.55) 46%, rgba(255,255,255,.65) 50%, rgba(214,199,255,.55) 54%, transparent 72%);
+  /* Was the `background` SHORTHAND here, which silently resets
+     background-size back to its `auto` default and wipes out the 220%
+     220% oversize set above — with the gradient sized to fit the box
+     exactly once, the background-position sweep in @keyframes rarityShine
+     had almost nowhere to travel, so Mythic's shine looked stuck/frozen
+     instead of sweeping like Legendary's. `background-image` only swaps
+     the gradient itself and leaves background-size intact. */
+  background-image: linear-gradient(115deg, transparent 28%, rgba(255,214,240,.55) 46%, rgba(255,255,255,.65) 50%, rgba(214,199,255,.55) 54%, transparent 72%);
 }
 @keyframes rarityGlowPulse {
   0%, 100% {filter: brightness(1)}
@@ -982,8 +991,8 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
   .skin-reel-item.winner.rarity-epic, .skin-reel-item.winner.rarity-legendary, .skin-reel-item.winner.rarity-mythic {
     animation: none;
   }
-  .skin-preview.rarity-epic::before, .skin-preview.rarity-legendary::before, .skin-preview.rarity-mythic::before,
-  .skin-reel-item.winner.rarity-epic::before, .skin-reel-item.winner.rarity-legendary::before, .skin-reel-item.winner.rarity-mythic::before {
+  .skin-preview.rarity-legendary::before, .skin-preview.rarity-mythic::before,
+  .skin-reel-item.winner.rarity-legendary::before, .skin-reel-item.winner.rarity-mythic::before {
     display: none;
   }
 }

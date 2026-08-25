@@ -1,5 +1,25 @@
 # Changelog
 
+## Rarity shine sweep: Epic no longer gets it, and Mythic's was silently broken (user-requested, "แก้ระดับ epic preview ไม่ต้องมี วิ้งๆ ให้มีวิ้งตรง legendary กับ mytic / mytic มันค้างแก้ไขด้วย")
+Two fixes to the Rarity Frame System's `::before` diagonal shine sweep in
+`css/main.css`. (1) Epic previously got the same shine sweep as Legendary/
+Mythic — user wanted the sweep reserved for the top two tiers only, so Epic
+keeps its glow pulse (`rarityGlowPulse`) but the `::before` shine rule no
+longer targets `.rarity-epic`. (2) Mythic's shine looked stuck/frozen: its
+tier-specific override was declared with the `background` SHORTHAND
+(`background: linear-gradient(...)`), which silently resets `background-size`
+back to its `auto` default — wiping out the `220% 220%` oversize set by the
+shared rule above it. With the gradient sized to fit the frame exactly once,
+the `@keyframes rarityShine` background-position sweep had almost nowhere to
+travel, so Mythic barely appeared to move while Legendary swept normally.
+Changed it to `background-image: linear-gradient(...)`, which only swaps the
+gradient colors and leaves `background-size` intact. Also trimmed the
+`prefers-reduced-motion` block's `::before` selector list to match (Legendary/
+Mythic only, Epic removed).
+**Files:** `css/main.css`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated; CSS-only change).
+
 ## Per-row "new best" arrows now also show inside the all-4 "NEW SCORE" banner state (user-requested)
 Result screen previously suppressed the per-stat `↑` arrows (time/wave/score/graze)
 whenever *every* stat broke its record, showing only the big "🏆 NEW SCORE" banner
