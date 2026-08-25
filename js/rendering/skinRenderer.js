@@ -37,26 +37,15 @@ export const SKIN_DEBUG = {
  * (x, y) drawn in; this function does its own save/translate/restore so it
  * never leaks state onto the caller's ctx.
  */
-export function drawSkinBody(ctx, v, x, y, r, { now = performance.now(), effects = !SKIN_DEBUG.disableEffects, isDefault } = {}) {
-  const resolvedIsDefault = isDefault ?? (!v || v.id === 'default');
-  const primary = v?.color || '#4ecdc4';
-  const secondary = v?.secondaryColor || '#ffffff';
-  const tier = v?.tier || 0;
-
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.fillStyle = primary;
-  if (effects) {
-    ctx.shadowColor = primary;
-    ctx.shadowBlur = resolvedIsDefault ? 12 : Math.min(30, 8 + (v?.glow || 0));
-  } else {
-    ctx.shadowBlur = 0;
-  }
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 2;
-
-  ctx.beginPath();
-  switch (v?.shape || 'circle') {
+/**
+ * Traces one skin body shape's outline into `ctx`'s current path, centered
+ * on the current origin, at radius `r`. Shared by the main body fill and
+ * the tier>=2 inner accent below so the accent is always "a smaller copy
+ * of this skin's own shape", never a shape mismatched to the body (e.g. a
+ * plain circle glued inside a diamond/hex/square/star body).
+ */
+function traceSkinShape(ctx, shape, r) {
+  switch (shape || 'circle') {
     case 'diamond':
       ctx.moveTo(0, -r); ctx.lineTo(r, 0); ctx.lineTo(0, r); ctx.lineTo(-r, 0); ctx.closePath(); break;
     case 'square': {
@@ -76,17 +65,39 @@ export function drawSkinBody(ctx, v, x, y, r, { now = performance.now(), effects
     default:
       ctx.arc(0, 0, r, 0, Math.PI * 2);
   }
+}
+
+export function drawSkinBody(ctx, v, x, y, r, { now = performance.now(), effects = !SKIN_DEBUG.disableEffects, isDefault } = {}) {
+  const resolvedIsDefault = isDefault ?? (!v || v.id === 'default');
+  const primary = v?.color || '#4ecdc4';
+  const secondary = v?.secondaryColor || '#ffffff';
+  const tier = v?.tier || 0;
+  const shape = v?.shape || 'circle';
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = primary;
+  if (effects) {
+    ctx.shadowColor = primary;
+    ctx.shadowBlur = resolvedIsDefault ? 12 : Math.min(30, 8 + (v?.glow || 0));
+  } else {
+    ctx.shadowBlur = 0;
+  }
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+
+  ctx.beginPath();
+  traceSkinShape(ctx, shape, r);
   ctx.fill();
   ctx.shadowBlur = 0;
 
-  if (!resolvedIsDefault && tier >= 2) {
-    ctx.beginPath();
-    ctx.arc(0, 0, r * 0.42 + Math.sin(now / 100) * 1.5, 0, Math.PI * 2);
-    ctx.fillStyle = secondary;
-    ctx.globalAlpha = 0.7;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-  }
+  // No inner secondary-color accent here (removed per user request — even
+  // shape-matched, a smaller copy of the body drawn inside itself reads as
+  // a stray dot/circle in the middle, most obviously on circle-shaped
+  // skins like Frost where it's a literal circle-in-circle bullseye).
+  // Rarity is expressed purely through the small orbiting decorations in
+  // drawSkinDecorations() below (tier>=3) and the rarity-frame CSS glow —
+  // never anything drawn inside the body itself.
 
   ctx.stroke();
   ctx.restore();

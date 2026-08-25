@@ -1,5 +1,40 @@
 # Changelog
 
+## Removed inner secondary-color accent entirely from skin bodies (user-requested)
+Follow-up to the previous entry below: shape-matching the inner tier>=2
+accent (a smaller copy of the body's own shape instead of a fixed circle)
+fixed diamond/hex/square/star skins, but circle-shaped Uncommon+ skins
+(e.g. Frost) still showed it as a literal circle-inside-a-circle — read
+as a stray white dot/bullseye in the middle no matter what. User asked
+for it gone completely. Deleted the whole inner-accent block from
+`drawSkinBody()` — skin bodies are now a single solid shape with no
+interior decoration; rarity is still expressed via the tier>=3 orbiting
+decorations and the rarity-frame CSS glow, unchanged. `traceSkinShape()`
+helper stays (still used for the one remaining body outline).
+**Files:** `js/rendering/skinRenderer.js`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated).
+
+## Fixed stray circle inside diamond/hex/square/star skin previews (user-requested)
+User reported a "weird circle" inside the Skin Preview icons. Root cause:
+`drawSkinBody()`'s tier>=2 inner secondary-color detail was hard-coded to
+`ctx.arc()` — a plain circle drawn inside the body regardless of the
+skin's actual shape. For circle-bodied skins this was invisible as a
+mismatch, but for diamond/hex/square/star skins (e.g. Azure, Sakura, Sun)
+it showed up as a stray dot glued inside a shape it didn't belong to, in
+both Gameplay and every Preview (they share the same draw path). Extracted
+the shape switch into a new `traceSkinShape(ctx, shape, r)` helper, reused
+by both the main body outline and the inner accent (traced at the smaller
+accent radius instead of an unconditional circle) — the accent is now
+always a smaller copy of the body's own shape. Verified with a headless
+`canvas`-based render of every non-circle skin shape at both tier 1 and
+tier 2+ before/after. No shape/size/hitbox/gameplay change — this is the
+same fix scope as the earlier Skin Preview parity work, just closing a
+gap that fix didn't cover.
+**Files:** `js/rendering/skinRenderer.js`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing,
+unrelated).
+
 ## Normalized all skin visual sizes to match Default (user-requested)
 Every skin's main character silhouette is now guaranteed to render at the
 same size as the Default skin. Two things previously made some skins look

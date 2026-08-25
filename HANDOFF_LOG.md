@@ -10,6 +10,44 @@ yet.
 **Newest entry at the top.** Read the top 1-2 entries before starting work
 so you know what the last session was mid-way through or flagged for you.
 
+## 2026-08-25 — Claude (Sonnet 5, claude.ai) — Fixed stray circle inside diamond/hex/square/star skin previews
+
+**Session 1 — user reported "a weird circle in the Preview" (Thai: "มีวงกลมแปลกๆ ในตัว Preview"):**
+Reproduced headlessly (installed `canvas` via `npm install canvas --no-save`, same approach as
+`scripts/visual-check.mjs`, then rendered every skin through the real `drawSkinVisual()` at Preview
+scale) — instantly visible: any tier>=2 skin whose body isn't a circle (Azure/Violet = diamond,
+Sun/Rose/Sakura = hex) showed a plain circular dot floating inside the shape. Root cause in
+`drawSkinBody()` (`js/rendering/skinRenderer.js`): the tier>=2 inner secondary-color accent was
+unconditionally `ctx.arc(...)` — never matched to the body's own shape. This is shared by Gameplay
+and every Preview (that's the whole point of the earlier parity fix, see the entry below), so it
+was present everywhere, just easiest to notice zoomed-in in a Preview icon. Fixed by extracting the
+shape switch (diamond/square/hex/star/void/circle) into `traceSkinShape(ctx, shape, r)` and reusing
+it for both the outer body fill and the inner accent (traced at the smaller accent radius) — the
+accent is now always a smaller copy of the body's own shape, never a mismatched circle. Re-rendered
+the same headless repro after the fix to confirm (diamond skins now show a small diamond inside,
+hex skins a small hexagon, etc.). `p.r`, hitbox, collision, shape geometry, and decoration logic are
+untouched — purely the inner-accent shape. Ran `npm run bump-version` after (`20260825-k3ep`).
+
+**Session 2 — user said it still wasn't gone; circle-shaped skins still showed it:**
+Shape-matching (Session 1) fixed diamond/hex/square/star, but a circle-shaped Uncommon+ skin (e.g.
+Frost) traces circle-inside-circle both times — still reads as a plain white dot/bullseye in the
+middle regardless of matching. User asked to remove it completely rather than refine it further.
+Deleted the whole `if (!resolvedIsDefault && tier >= 2) {...}` inner-accent block from
+`drawSkinBody()` — bodies are now a single solid shape, no interior decoration at any tier.
+`traceSkinShape()` is kept (still used for the one remaining body-outline draw). Re-rendered the
+headless repro across all six rarities (Common circle-check through Mythic) to confirm no tier shows
+any interior mark. Rarity is still conveyed via the existing tier>=3 orbiting decorations
+(`drawSkinDecorations()`) and the rarity-frame CSS glow, neither of which this session touched. Ran
+`npm run bump-version` after (`20260825-0b70`).
+**Files:** `js/rendering/skinRenderer.js`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing, unrelated).
+**For the next session:** Nothing pending. If any "mark/dot/circle inside the body" report comes
+back, note there's no longer an inner-accent code path to fix — it was deleted; check whether it's
+actually one of the orbiting decorations (`drawSkinDecorations()`, tier>=3) sitting close enough to
+the body to look interior, not the same bug reappearing.
+
+---
+
 ## 2026-08-25: Skin Preview parity fix — Preview now renders through the same code Gameplay uses
 User reported the skin shown in Preview (Shop grid, Case Reel, Case Result) didn't visually match
 the same skin in Gameplay. Root cause: two completely separate implementations. Gameplay drew skins
