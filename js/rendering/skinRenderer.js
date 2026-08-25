@@ -283,8 +283,11 @@ export function drawSkinVisual(ctx, v, x, y, r, opts = {}) {
   const effects = opts.effects ?? !SKIN_DEBUG.disableEffects;
   const now = opts.now ?? performance.now();
   const meta = drawSkinBody(ctx, v, x, y, r, { now, effects, isDefault: opts.isDefault });
-  if (effects && !meta.isDefault && meta.tier >= 3) {
-    drawSkinDecorations(ctx, v, x, y, r, now);
-  }
+  // Rarity-tier orbiting decorations (sparkles/stars/diamonds/shards/comets)
+  // intentionally disabled per user request — skins now render as just the
+  // base body (shape/color/glow). The only remaining player-facing effect
+  // is the damage hit-flash, drawn separately in renderer.js and untouched
+  // by this change. drawSkinDecorations() is kept below (unused) in case
+  // this ever needs to be re-enabled.
   return meta;
 }

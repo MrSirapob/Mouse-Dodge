@@ -689,7 +689,14 @@ export class UI {
       `;
     }
 
-    const cards = SKINS.map((s) => {
+    // Grid is grouped strictly by rarity tier (Common -> Mythic), not by
+    // definition order in skins.js — the "High-tier additions" skins are
+    // appended after the original Epic/Legendary/Mythic entries in that
+    // file, so without this sort they'd render as a second, out-of-order
+    // batch further down the grid instead of alongside their own tier.
+    const cards = [...SKINS]
+      .sort((a, b) => RARITY_CONFIG[a.rarity].tier - RARITY_CONFIG[b.rarity].tier)
+      .map((s) => {
       const owned = data.ownedSkins.includes(s.id);
       const isEquipped = equipped === s.id;
       // OWNED cards render the real skin visual through the same canvas
