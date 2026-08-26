@@ -1,5 +1,27 @@
 # Changelog
 
+## Legendary & Mythic skins redesigned to feel more striking (user-requested, "ระดับ legen กับ mytic มันดูเฉยๆ ไม่น่าดึงดูด ออกแบบมาใหม่หน่อย")
+The two top tiers had drifted into visual sameness: 3 of 5 Legendaries were
+`star`-shaped, 3 of 4 Mythics were `void`-shaped, and several palettes
+clustered in the same gold/orange or muted-purple family, so equipping a
+different top-tier skin barely changed the silhouette. Redesigned every
+Legendary and Mythic's shape + color pair (ids/names/rarity/tier unchanged,
+so ownership, drop odds, and scrap values are untouched):
+- Legendary now uses 5 different shapes (hex/star/diamond/square/circle),
+  each a bold two-tone pair from a different hue family: `prism` icy-white
+  + hot magenta, `celestial` cream + amber gold, `solarforge` orange +
+  crimson, `phoenixflare` red-orange + bright yellow, `shadowmonarch`
+  near-black + neon violet.
+- Mythic now uses 4 different shapes (void/diamond/circle/star), each
+  pushed to a darkest-dark or brightest-bright base with a saturated
+  accent: `singularity` pale lavender + deep violet, `chronoshift` cyan +
+  near-black navy, `voidreaper` near-black + neon magenta, `astralsovereign`
+  white + indigo (the highest glow value in the game).
+`trail`/`particle`/`deathEffect` combinations were kept on their existing,
+already-distinct recipes (orbit/blackhole trails, star/void particles,
+nova/prism/singularity deaths) — only the body shape and color pair
+changed.
+
 ## Skin rarities re-ranked by color-theme quality (user-requested, "แก้ไขสกินแต่ละอัน โดยเรียงระดับ ความหายากจาก ความเท่ สวย ธีมสี")
 Re-sorted all 30 skins by how cool/pretty their color palette reads (plain
 single-hue pastels → richer contrast/thematic pairs → cosmic-grade palettes)

@@ -12,7 +12,7 @@
 import { TestSuite, assert, assertEqual } from '../helpers/assertions.mjs';
 import { createGame, jumpToWave } from '../helpers/gameFactory.mjs';
 import { capturePatternPlan, maxConcurrent } from '../helpers/simulation.mjs';
-import { CONFIG } from '../../js/core/config.js?v=20260826-9lvi';
+import { CONFIG } from '../../js/core/config.js?v=20260826-eyx3';
 
 const PLAYER_R = CONFIG.player.radius; // 10, per patterns.js bulletHellGapSkip() comment
 const WALL_BULLET_R = 6; // matches the radius wall() spawns bullets with
@@ -92,7 +92,7 @@ export async function run() {
     game.patterns.wall(0, 3.0, '#fff', true, 0.06);
     fireDueActions(game);
 
-    const { circleHit } = await import('../../js/core/collision.js?v=20260826-9lvi');
+    const { circleHit } = await import('../../js/core/collision.js?v=20260826-eyx3');
     const virtualPlayerInGap = { x: player.x, y: 0, r: PLAYER_R };
     const anyHitInGap = game.bullets.items.some((b) => circleHit(b, { ...virtualPlayerInGap, y: b.y }));
     assert(!anyHitInGap, 'a player centered at the intended gap position must not collide with any wall segment', {

@@ -59,18 +59,22 @@ export const SKINS = Object.freeze([
   skin('starfall', 'Starfall', 'Epic', 'diamond', '#fff1a8', '#b8a1ff', 18, 'star', 'star', 'ring'),
   skin('bloodmoon', 'Blood Moon', 'Epic', 'circle', '#ff2e2e', '#1a0000', 18, 'rainbow', 'star', 'ring'),
 
-  // --- Legendary: rich, iconic, high-glow palettes ---
-  skin('prism', 'Prism', 'Legendary', 'hex', '#ffffff', '#ff8bd1', 27, 'orbit', 'star', 'prism'),
-  skin('celestial', 'Celestial', 'Legendary', 'star', '#fff6cf', '#ffd93d', 26, 'orbit', 'star', 'nova'),
-  skin('solarforge', 'Solar Forge', 'Legendary', 'hex', '#ffd93d', '#ff7b00', 28, 'orbit', 'star', 'nova'),
-  skin('phoenixflare', 'Phoenix Flare', 'Legendary', 'star', '#ff9f43', '#ff2e2e', 28, 'orbit', 'star', 'nova'),
-  skin('shadowmonarch', 'Shadow Monarch', 'Legendary', 'star', '#3a2a5c', '#8f6bff', 27, 'orbit', 'spark', 'nova'),
+  // --- Legendary: bold two-tone palettes, no repeated hue family, each
+  //     paired with a shape that hasn't already been used at this tier so
+  //     every Legendary reads as its own distinct silhouette + color ---
+  skin('prism', 'Prism', 'Legendary', 'hex', '#eafcff', '#ff2fe0', 28, 'orbit', 'star', 'prism'),
+  skin('celestial', 'Celestial', 'Legendary', 'star', '#fff8e1', '#ffb300', 27, 'orbit', 'star', 'nova'),
+  skin('solarforge', 'Solar Forge', 'Legendary', 'diamond', '#ff8c00', '#d7263d', 28, 'orbit', 'star', 'nova'),
+  skin('phoenixflare', 'Phoenix Flare', 'Legendary', 'square', '#ff3d00', '#ffea00', 28, 'orbit', 'star', 'nova'),
+  skin('shadowmonarch', 'Shadow Monarch', 'Legendary', 'circle', '#120021', '#c026ff', 27, 'orbit', 'spark', 'nova'),
 
-  // --- Mythic: most striking, cosmic-grade color themes ---
-  skin('singularity', 'Singularity', 'Mythic', 'void', '#d8c7ff', '#7c4dff', 34, 'blackhole', 'void', 'singularity'),
-  skin('chronoshift', 'Chronoshift', 'Mythic', 'void', '#00fff2', '#0a1e3f', 34, 'blackhole', 'star', 'prism'),
-  skin('voidreaper', 'Void Reaper', 'Mythic', 'void', '#1a0033', '#c77dff', 34, 'blackhole', 'void', 'singularity'),
-  skin('astralsovereign', 'Astral Sovereign', 'Mythic', 'star', '#ffffff', '#ffd166', 36, 'rainbow', 'star', 'prism'),
+  // --- Mythic: darkest darks / brightest brights, high-saturation accent
+  //     against a near-black or near-white base so each reads as
+  //     unmistakably the top of the pyramid, no two sharing a shape ---
+  skin('singularity', 'Singularity', 'Mythic', 'void', '#ece3ff', '#5b21b6', 34, 'blackhole', 'void', 'singularity'),
+  skin('chronoshift', 'Chronoshift', 'Mythic', 'diamond', '#00e5ff', '#050a24', 34, 'blackhole', 'star', 'prism'),
+  skin('voidreaper', 'Void Reaper', 'Mythic', 'circle', '#0d0016', '#f000ff', 34, 'blackhole', 'void', 'singularity'),
+  skin('astralsovereign', 'Astral Sovereign', 'Mythic', 'star', '#ffffff', '#635bff', 36, 'rainbow', 'star', 'prism'),
 ]);
 
 export const SKIN_BY_ID = Object.freeze(
