@@ -1,5 +1,25 @@
 # Changelog
 
+## Skin rarities re-ranked by color-theme quality (user-requested, "แก้ไขสกินแต่ละอัน โดยเรียงระดับ ความหายากจาก ความเท่ สวย ธีมสี")
+Re-sorted all 30 skins by how cool/pretty their color palette reads (plain
+single-hue pastels → richer contrast/thematic pairs → cosmic-grade palettes)
+and re-assigned rarity tiers to match, keeping the original tier sizes
+(6/5/4/6/5/4) so drop odds and scrap values are unaffected. Net changes vs.
+the old hand-picked tiers:
+- `aurora` Rare → Epic (green/blue aurora pairing reads richer than the other
+  Rares); glow/trail/particle/deathEffect bumped to Epic norms (rainbow/star/prism).
+- `venomshard` Epic → Rare (flat acid-green/dark-green pair is plainer than
+  the other Epics); effects stepped down to Rare norms (line/spark/ring).
+- `prism` Epic → Legendary (white/pink + rainbow trail is one of the most
+  elegant palettes in the set); glow/trail bumped to Legendary norms (orbit).
+- `glacialcrown` Legendary → Epic (icy blue-on-blue is tasteful but reads
+  flatter next to the other Legendaries); effects stepped down to Epic norms
+  (star trail, ring death).
+All other skins keep their existing tier — arrays were only reordered inside
+each tier to reflect the new best-to-worst color ranking. Colors, shapes,
+and ids are untouched; only `rarity`, `glow`, `trail`, `particle`, and
+`deathEffect` changed on the four swapped skins.
+
 ## Rank reveal rattles in place at a fixed rapid pace for ~2s instead of a distance-dependent build-up (user-requested, "อนิเมชั่สให้สุ่มๆ อยู่กับที่รัวๆ ก่อนสัก 2 วิ")
 `animateRankReveal()` previously cycled letters along the D→actual-rank climb
 with a growing per-step delay (fast for low ranks, slow build-up for high
