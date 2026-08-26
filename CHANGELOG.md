@@ -1,5 +1,34 @@
 # Changelog
 
+## Rank reveal rattles in place at a fixed rapid pace for ~2s instead of a distance-dependent build-up (user-requested, "อนิเมชั่สให้สุ่มๆ อยู่กับที่รัวๆ ก่อนสัก 2 วิ")
+`animateRankReveal()` previously cycled letters along the D→actual-rank climb
+with a growing per-step delay (fast for low ranks, slow build-up for high
+ranks) — so the "spin" length and feel depended entirely on the result.
+Replaced with a fixed-duration rattle: `RANK_REVEAL_DURATION_MS` (2000) of
+random ranks at a constant `RANK_REVEAL_TICK_MS` (70) cadence, landing
+exactly on the real rank on the final tick. Every result — D through SSS —
+now spins in place for the same ~2s before stopping, rather than the old
+skip-straight-through for ranks close to D or a slow decelerating climb for
+high ones.
+**Files:** `js/ui/ui.js`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing, unrelated).
+
+## Game-over rank reveal now spins even on low ranks (D/C previously showed no animation at all, user-requested — "ตรง Rank ไม่เห็นอนิเมชั่นเลย ที่แบบสุ่ม rank ไปก่อนแล้วค่อยหยุด")
+The previous session added `.rank-tick` so the rank reveal's build-up would
+actually show motion, but `animateRankReveal()` only cycled the letters
+*between* D and the run's actual rank — for a D result (nowhere to climb
+from) that's zero ticks, and for C it's one, so the majority of runs (any
+early/low-scoring game) landed on the rank instantly with no spin visible
+at all, exactly as if the earlier fix had never shipped. Added
+`RANK_REVEAL_MIN_TICKS` (4): when the real D→rank climb is shorter than
+that, the sequence is padded with random ranks at the front so every
+result — D included — visibly spins for a few ticks before landing on the
+correct rank exactly as before. Verified via a headless Playwright check
+(`showGameOver()` called directly, sampling `#rankLetterEl` per frame) for
+both a D-rank and an SSS-rank run.
+**Files:** `js/ui/ui.js`.
+**Test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN** (pre-existing, unrelated).
+
 ## Game-over rank reveal now visibly "runs" before it stops; new-best arrows bounce (user-requested, "เพิ่มอนิเมะชั่นหน้า Gameover ตอนโชวเทียร์ score ให้ทำเป็นตัวหนังสือวิ่งแล้วค่อยๆ หยุด" / "ลูกศรขึ้นตอนทำ new score ให้ขยับได้มีอนิเมชั่นไม่นิ่ง และตรง New Score ด้วย")
 Two Game Over screen animation requests. (1) `animateRankReveal()` already cycled the
 rank letter up to its final value with a growing per-step delay, but each swap was an

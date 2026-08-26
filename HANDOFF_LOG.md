@@ -10,38 +10,80 @@ yet.
 **Newest entry at the top.** Read the top 1-2 entries before starting work
 so you know what the last session was mid-way through or flagged for you.
 
-## 2026-08-25 — Antigravity (Claude Sonnet 4.6 Thinking) — Wave 4: spiral arms 4/4/5 → 3/3/3
+## 2026-08-26 — Claude (Sonnet 5, claude.ai) — Rank reveal switched to a fixed ~2s rapid-fire rattle (follow-up to same-day D/C fix below)
 
-Follow-up to the spiral/blue-bullet reduction earlier this session. Player feedback: "spiral หมุน
-นานเกิน ไม่มีที่หลบ" → reduced arms (not duration) so more gap space opens between arms.
+Immediate follow-up to this same day's earlier entry. That fix (padding short
+climbs with random ranks) worked, but the underlying pacing — a per-step
+delay that grows (`55 + i*35`ms) tied to how far the real rank is from
+D — meant the "feel" of the spin still varied a lot by result. User asked
+for the reveal to just rattle in place, fast, for about 2 seconds, regardless
+of rank (Thai: "อนิเมชั่สให้สุ่มๆ อยู่กับที่รัวๆ ก่อนสัก 2 วิ" — "make the
+animation randomize in place rapid-fire for about 2 seconds first").
 
-**Changes made (`js/systems/waveSystem.js`, case 4):**
-- `spiral(5.5, 4.55, 4→3, ...)` — first spiral: 4 arms → 3 arms (120° gaps instead of 90°)
-- `spiral(14.5, 4.9, 4→3, ...)` — second spiral: same
-- `spiral(25.0, 5.6, 5→3, ...)` — third spiral: 5 arms → 3 arms (120° gaps instead of 72°)
+**Change:** Replaced the distance-dependent climb+padding logic entirely
+with a fixed-duration loop: `RANK_REVEAL_DURATION_MS` (2000) worth of ticks
+at a constant `RANK_REVEAL_TICK_MS` (70) cadence, each showing a random rank
+from `RANK_ORDER`, with the final tick always landing exactly on the real
+result. `RANK_REVEAL_MIN_TICKS`/the climb+prefix arrays from the earlier fix
+are gone — no longer needed since every reveal now takes the same path
+(rattle → land) regardless of which rank it lands on.
 
-**Balance baseline updated (`tests/fixtures/balance-baseline.json`):**
-- W4 `peakActive` 390 → 304, `spawned` 1440 → 1282, `averageActive` 232.65 → 176.93
+**Verified via the same headless-Playwright approach** as the earlier
+entry: served over `python3 -m http.server`, real `js/ui/ui.js` imported
+in-page, `showGameOver()` called with a D-rank score, `#rankLetterEl`
+sampled every animation frame for 2.4s. Confirmed ~25 distinct random-letter
+changes over a fixed ~2000ms window, landing exactly on "D" at the 2020ms
+sample.
 
-**`npm test` result:** PASS: 196 / FAIL: 0 / WARN: 1 (pre-existing WARN unrelated to this change)
+**Files touched:** `js/ui/ui.js` (`animateRankReveal()` rewritten,
+`RANK_REVEAL_MIN_TICKS` replaced by `RANK_REVEAL_DURATION_MS`/
+`RANK_REVEAL_TICK_MS`), `CHANGELOG.md`. Ran `npm run bump-version` after
+(new tag `20260826-k2vw`).
+`npm test`: **196 PASS / 0 FAIL / 1 WARN**, before and after (same
+pre-existing warning as prior sessions).
 
-## 2026-08-25 — Antigravity (Claude Sonnet 4.6 Thinking) — Wave 4: spiral −30%, blue bullets −30%
+**For the next session:** Nothing pending. If the 2s duration or 70ms tick
+rate ever needs tuning, both are single named constants at the top of
+`js/ui/ui.js` right above `RANK_FX`.
 
-User requested reducing wave 4 spiral count and blue bullet count by 30%.
+## 2026-08-26 — Claude (Sonnet 5, claude.ai) — Rank reveal now spins on D/C too (previous session's fix only covered mid-to-high ranks)
 
-**What "blue" means in W4:** `c1 = color(4, 0)` → `colors[4 % 5]` = `"#54a0ff"` (the 5th slot in the
-Act 0 palette). So `c1` is blue in wave 4 — all `c2`/`c3` patterns are unaffected.
+From an uploaded zip (`wave-dodge-refactored5.zip`), user reported the rank-reveal
+animation from the 2026-08-25 session wasn't visible (Thai: "ตรง Rank ไม่เห็นอนิเมชั่นเลย
+ที่แบบสุ่ม rank ไปก่อนแล้วค่อยหยุด" — "the Rank part shows no animation at all, the one that
+randomizes rank before stopping").
 
-**Changes made (`js/systems/waveSystem.js`, case 4):**
-- Spiral `len` values ×0.7 (rounded to 2 dp): 6.5→4.55, 7.0→4.9, 8.0→5.6
-- All `c1` discrete bullet counts ×0.7 (ceil): ring 48→34, splitter 11→8, cross 16→12,
-  aimed 50→35, ring 52→37, aimed 54→38
+**Root cause:** `animateRankReveal()` only ever cycled the letters *between* D and the
+run's actual rank (`RANK_ORDER.slice(0, targetIndex + 1)`). For a D result — which has
+nowhere to climb from — that's a 1-long sequence, so the loop's `isLast` check fires on
+the very first iteration and breaks before any tick ever plays; C is only 2-long. Any
+early/low-scoring run (the common case during casual testing) landed on the rank
+instantly with zero visible spin, i.e. exactly as if the 08-25 fix had never shipped —
+that fix genuinely worked, it just only became visible at B and above.
 
-**Balance baseline updated (`tests/fixtures/balance-baseline.json`):**
-- W4 `spawned` 1713 → 1440 (the actual new simulated count; intentional change per AGENTS.md policy)
+**Fix:** Added `RANK_REVEAL_MIN_TICKS` (4). When the real D→rank climb is shorter than
+that, the sequence is padded with random ranks spliced onto the front (purely cosmetic —
+no bearing on the landed result), so every rank including D now visibly spins for a few
+ticks before landing correctly.
 
-**`npm test` result:** PASS: 194 / FAIL: 0 / WARN: 2 (the two remaining WARNs are pre-existing
-non-W4 WARNs unrelated to this change; balance WARN for W4 is now gone after baseline update)
+**Verified without a real browser session** (no user in the loop to click through the
+UI) via a headless Playwright check: served the repo over `python3 -m http.server`,
+loaded `index.html` for its real DOM/CSS, then in-page `import()`'d `js/ui/ui.js`
+directly and called `showGameOver()` with both a low score (D) and a high score (SSS),
+sampling `#rankLetterEl`'s text/class every animation frame. Confirmed D now cycles
+through several random letters with `.rank-tick` active before landing, matching SSS's
+pre-existing behavior.
+
+**Files touched:** `js/ui/ui.js` (`animateRankReveal()` padding logic + new
+`RANK_REVEAL_MIN_TICKS` constant), `CHANGELOG.md`. Ran `npm run bump-version` after
+(new tag `20260826-dw21`). `npm test`: **196 PASS / 0 FAIL / 1 WARN**, before and after
+(same pre-existing warning as prior sessions — not investigated, unrelated to this
+change).
+
+**For the next session:** Nothing pending on this. If another mostly-cosmetic "does this
+actually animate" bug report comes in, the Playwright-serve-and-sample-per-frame approach
+above (no manual browser click-through needed) is a fast way to verify motion is really
+happening rather than reasoning about the CSS/JS in the abstract.
 
 ## 2026-08-25 — Claude (Sonnet 5, claude.ai) — Game-over rank reveal now "runs" and decelerates; new-best arrows now bounce
 

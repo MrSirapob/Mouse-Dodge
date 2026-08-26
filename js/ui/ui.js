@@ -1,7 +1,7 @@
-import { CONFIG } from "../core/config.js?v=20260825-07qi";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260825-07qi";
-import { tick as playReelTick } from "../audio/reelTick.js?v=20260825-07qi";
-import { mountSkinCanvas, mountSkinCanvases } from "../rendering/skinPreview.js?v=20260825-07qi";
+import { CONFIG } from "../core/config.js?v=20260826-k2vw";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260826-k2vw";
+import { tick as playReelTick } from "../audio/reelTick.js?v=20260826-k2vw";
+import { mountSkinCanvas, mountSkinCanvases } from "../rendering/skinPreview.js?v=20260826-k2vw";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -90,10 +90,17 @@ const RANK_PHRASES = {
 
 let lastRankPhrase = {};
 
-// Rank reveal build-up: lowest to highest, used to drive the slot-style
-// cycle in animateRankReveal() below (D always starts the cycle, landing
-// stops at the run's actual rank).
+// Pool of rank letters the slot-style reveal rattles through in
+// animateRankReveal() below before landing on the run's actual rank.
 const RANK_ORDER = ["D", "C", "B", "A", "S", "SS", "SSS"];
+
+// Every reveal spins in place for this long, at this fixed rapid-fire
+// cadence, before landing on the run's actual rank — a constant-speed
+// slot-machine "rattle" rather than the old distance-dependent build-up
+// (which meant D/C barely spun at all since there was nowhere to climb
+// from). Every rank, D included, now gets the same ~2s spin.
+const RANK_REVEAL_DURATION_MS = 2000;
+const RANK_REVEAL_TICK_MS = 70;
 
 // Per-tier landing intensity: shake (px), particle burst count/color, and
 // pop-scale amplitude. Low ranks stay quiet on purpose — the escalation
@@ -1340,35 +1347,43 @@ export class UI {
   }
 
   /**
-   * Slot-machine style rank reveal for the game-over screen: cycles the
-   * rank letter up from D to the run's actual rank (skipped/instant for D
-   * itself), decelerating on each step, then "lands" with a per-tier pop,
-   * shake, and particle burst (see RANK_FX). Runs after showResultScreen()
-   * has already inserted the placeholder elements into the DOM.
+   * Slot-machine style rank reveal for the game-over screen: rattles
+   * through random ranks in place at a fixed rapid-fire cadence for
+   * RANK_REVEAL_DURATION_MS, then lands exactly on the run's actual rank
+   * with a per-tier pop, shake, and particle burst (see RANK_FX). Runs
+   * after showResultScreen() has already inserted the placeholder
+   * elements into the DOM.
    */
   async animateRankReveal(rank) {
     const letterEl = this.resultScreen?.querySelector("#rankLetterEl");
     if (!letterEl) return;
 
-    const targetIndex = Math.max(0, RANK_ORDER.indexOf(rank));
-    const sequence = RANK_ORDER.slice(0, targetIndex + 1);
     const revealToken = (this.rankRevealToken = (this.rankRevealToken || 0) + 1);
+    const steps = Math.max(
+      1,
+      Math.round(RANK_REVEAL_DURATION_MS / RANK_REVEAL_TICK_MS),
+    );
 
-    for (let i = 0; i < sequence.length; i++) {
-      letterEl.textContent = sequence[i];
-      const isLast = i === sequence.length - 1;
+    for (let i = 0; i < steps; i++) {
+      const isLast = i === steps - 1;
+      // Every step but the last shows a random rank (the "rattle"); the
+      // last step always lands on the real result so the spin never
+      // appears to stop on the wrong letter.
+      letterEl.textContent = isLast
+        ? rank
+        : RANK_ORDER[Math.floor(Math.random() * RANK_ORDER.length)];
       if (isLast) break;
 
       // Retrigger the "running text" tick on every swap (removing then
       // re-adding the class forces a reflow so the CSS animation restarts).
-      // Each step's own wait() below grows longer than the last, so the
-      // ticks naturally decelerate into the landing instead of just
-      // instantly swapping.
+      // Fixed cadence (RANK_REVEAL_TICK_MS) the whole way through, so the
+      // rattle stays in place at a constant rapid pace instead of
+      // decelerating.
       letterEl.classList.remove("rank-tick");
       void letterEl.offsetWidth;
       letterEl.classList.add("rank-tick");
 
-      await wait(55 + i * 35);
+      await wait(RANK_REVEAL_TICK_MS);
       if (revealToken !== this.rankRevealToken) return; // superseded by a new run
     }
 
