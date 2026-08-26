@@ -1076,6 +1076,7 @@ export class Game {
             const allowed = Math.max(0, Math.min(recovery, budget - p.grazeCooldownReduced));
             p.skillCooldown = Math.max(0, p.skillCooldown - allowed);
             p.grazeCooldownReduced += allowed;
+            if (allowed > 0) this.ui.showSkillCooldownPopup?.(p, allowed);
           }
 
           const mult = 1 + Math.min(p.combo, 10) * 0.12;

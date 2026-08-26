@@ -241,6 +241,7 @@ export class UI {
     this.hudCenter = document.getElementById("hudCenter");
     this.gameRoot = document.getElementById("gameRoot");
     this.scorePopupLayer = document.getElementById("scorePopupLayer");
+    this.skillCdPopupOverlay = document.getElementById("skillCdPopupOverlay");
     this.pause = document.getElementById("pauseOverlay");
     this.bannerEl = document.getElementById("waveBanner");
     this.modeScreen = document.getElementById("modeScreen");
@@ -1571,6 +1572,66 @@ export class UI {
     popup.addEventListener("animationend", () => popup.remove(), {
       once: true,
     });
+  }
+
+  /** Small "SKILL -0.15s" callout near a player's skill chip when a graze
+   * shaves real time off an active cooldown. `amount` is always the actual
+   * seconds subtracted (read from the graze/skill system) — never a
+   * hardcoded number, and this is only ever called while the skill is on
+   * cooldown, so it never fires once the skill is READY.
+   *
+   * The popup is appended to a fixed, viewport-level overlay (not inside
+   * the skill chip) and positioned via the chip's live
+   * getBoundingClientRect(), centered just below it. The chip itself has
+   * overflow:hidden (to mask its rounded corners/bar), so a popup rendered
+   * as its descendant gets clipped mid-text; rendering it in an unclipped
+   * overlay and anchoring it to the chip's real on-screen position avoids
+   * that regardless of chip size or breakpoint.
+   *
+   * Rapid graze chains call this many times a frame apart; instead of
+   * stacking a new DOM node (and animation) per graze, hits that land
+   * while a popup is still animating are merged into that same popup by
+   * bumping its total and updating its text. That keeps a fast graze
+   * streak to a single lightweight element per ~0.75s window, avoiding
+   * popup spam / FPS impact. Reuses the same popup layer + animation
+   * pattern as showScorePopup() rather than a new system. */
+  showSkillCooldownPopup(player, amount) {
+    if (!amount || amount <= 0) return;
+    const overlay = this.skillCdPopupOverlay;
+    if (!overlay) return;
+    const chip = document.getElementById(
+      player?.id === 2 ? "p2SkillChip" : "skillChip",
+    );
+    if (!chip) return;
+
+    if (!this._skillCdPopups) this._skillCdPopups = {};
+    const pid = player.id;
+    const active = this._skillCdPopups[pid];
+
+    if (active?.el?.isConnected) {
+      active.amount += amount;
+      active.el.textContent = `SKILL -${active.amount.toFixed(2)}s`;
+      return;
+    }
+
+    const rect = chip.getBoundingClientRect();
+    const el = document.createElement("span");
+    el.className = "skill-cd-popup";
+    el.textContent = `SKILL -${amount.toFixed(2)}s`;
+    // Centered below the chip (not above/beside it) — same anchor logic
+    // for both players.
+    el.style.left = `${rect.left + rect.width / 2}px`;
+    el.style.top = `${rect.bottom + 4}px`;
+    overlay.appendChild(el);
+    this._skillCdPopups[pid] = { el, amount };
+    el.addEventListener(
+      "animationend",
+      () => {
+        el.remove();
+        if (this._skillCdPopups[pid]?.el === el) this._skillCdPopups[pid] = null;
+      },
+      { once: true },
+    );
   }
 
   updateScores(s, players, mode) {

@@ -60,6 +60,14 @@
     </div>
   </section>
 
+  <!-- Fixed-position overlay for the skill-cooldown graze popup ("SKILL
+       -0.15s"). Lives outside the skill chip on purpose: the chip has
+       overflow:hidden (to mask its rounded corners/bar), which clips any
+       popup rendered as a descendant. ui.js positions each popup here via
+       getBoundingClientRect() of the chip, so it always renders in full
+       regardless of chip size/breakpoint. -->
+  <div id="skillCdPopupOverlay" class="skill-cd-popup-overlay" aria-hidden="true"></div>
+
   <!-- #bossLabel text is a fallback only — the real boss name is set at
        runtime from CONFIG.bossNames (js/core/config.js) via UI.setBossName(). -->
   <section id="bossWrap" class="hidden"><div id="bossLabel">⚠ BOSS INCOMING</div><div id="bossBar"><div id="bossBarFill"></div></div></section>
