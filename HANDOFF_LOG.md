@@ -19,16 +19,29 @@ cumulative, not a `Math.max` "best"), passed through to `ui.showGameOver()`
 which renders it via the existing `.howto-tip` box style. Deliberately
 excluded from `resetBestStats()`'s wipe loop (it's a lifetime total, not a
 resettable record) — verified with a dedicated test.
-**Session 3 — Antigravity — W4 spiral reduced: fewer arms, shorter duration:**
-User asked to reduce the rapid-fire rotating spiral in W4 by 20% bullets and
-cap its spin to 2 seconds. Three `spiral()` calls in `waveSystem.js` case 4:
-- `spiral(5.5, 6.5→2.0, 4→3, ...)` — arms 4→3 (−25%, rounds within 20% ask), duration 6.5→2s
-- `spiral(14.5, 7.0→2.0, 4→3, ...)` — same
-- `spiral(25.0, 8.0→2.0, 5→4, ...)` — arms 5→4 (−20%), duration 8→2s
-W4 spiral bullet total dropped from 260/280/400 steps × arms → 20/20/20 steps × arms.
-Regenerated `tests/fixtures/balance-baseline.json` deliberately via the documented
-procedure (W4 peakActive 386→295, spawned 1713→1213; W1/W2/W3 unchanged).
+**Session 4 — Antigravity — W4 spiral duration bumped 2s→3s→5s:**
+User tested 2s, found it too short, tried 3s, then settled on 5s. All three
+`spiral()` calls in case 4 now use `duration=5.0` with arms 3/3/4 (20% fewer
+than original). Regenerated balance-baseline (W4 peakActive 295→338, spawned
+1213→1441). `npm test` → **198 PASS / 0 FAIL / 1 WARN**.
 **Files:** `js/systems/waveSystem.js`, `tests/fixtures/balance-baseline.json`.
+
+**Session 5 — Antigravity — Legendary & Mythic palette full redesign:**
+User noticed color duplicates in Legendary/Mythic: solarforge≈phoenixflare
+(both orange-red fire), voidreaper (#f000ff)≈prism (#ff2fe0) (both magenta),
+voidreaper/shadowmonarch both near-black primary, chronoshift cyan = cyber Rare
+exactly, and three skins (prism/singularity/astralsovereign) all white-primary.
+Redesigned all 9 skins so every skin has a unique hue family:
+- `prism` #eafcff/#ff2fe0 → `#f8f0ff`/`#ff0090` (lavender white + hot pink)
+- `celestial` #fff8e1/#ffb300 → `#0a0e27`/`#ffcc00` (midnight navy + gold)
+- `solarforge` #ff8c00/#d7263d → `#b0bec5`/`#0091ea` (silver + steel blue)
+- `phoenixflare` #ff3d00/#ffea00 → `#ff6f00`/`#ff1744` (deep orange + crimson)
+- `shadowmonarch` #120021/#c026ff → `#1a0033`/`#64ffda` (purple-black + neon teal)
+- `singularity` #ece3ff/#5b21b6 → `#000000`/`#ce93d8` (pure black + lilac)
+- `chronoshift` #00e5ff/#050a24 → `#e0f7fa`/`#d500f9` (crystal + electric magenta)
+- `voidreaper` #0d0016/#f000ff → `#001122`/`#00e676` (deep night + neon green)
+- `astralsovereign` #ffffff/#635bff → `#fffde7`/`#1565c0` (cream + royal blue)
+**Files:** `js/data/skins.js`.
 **End-of-day test result:** `npm test` → **198 PASS / 0 FAIL / 1 WARN**
 (pre-existing W6+ default-case warning, unrelated).
 

@@ -59,22 +59,28 @@ export const SKINS = Object.freeze([
   skin('starfall', 'Starfall', 'Epic', 'diamond', '#fff1a8', '#b8a1ff', 18, 'star', 'star', 'ring'),
   skin('bloodmoon', 'Blood Moon', 'Epic', 'circle', '#ff2e2e', '#1a0000', 18, 'rainbow', 'star', 'ring'),
 
-  // --- Legendary: bold two-tone palettes, no repeated hue family, each
-  //     paired with a shape that hasn't already been used at this tier so
-  //     every Legendary reads as its own distinct silhouette + color ---
-  skin('prism', 'Prism', 'Legendary', 'hex', '#eafcff', '#ff2fe0', 28, 'orbit', 'star', 'prism'),
-  skin('celestial', 'Celestial', 'Legendary', 'star', '#fff8e1', '#ffb300', 27, 'orbit', 'star', 'nova'),
-  skin('solarforge', 'Solar Forge', 'Legendary', 'diamond', '#ff8c00', '#d7263d', 28, 'orbit', 'star', 'nova'),
-  skin('phoenixflare', 'Phoenix Flare', 'Legendary', 'square', '#ff3d00', '#ffea00', 28, 'orbit', 'star', 'nova'),
-  skin('shadowmonarch', 'Shadow Monarch', 'Legendary', 'circle', '#120021', '#c026ff', 27, 'orbit', 'spark', 'nova'),
+  // --- Legendary: each skin has its own distinct hue family — no two share
+  //     a dominant color tone. Redesigned 2026-08-27 to eliminate the
+  //     solarforge/phoenixflare orange-fire overlap and prism/celestial
+  //     white-primary overlap. See HANDOFF_LOG for old→new values.
+  //     prism=lavender+hot-pink  celestial=midnight+gold  solarforge=silver+steel-blue
+  //     phoenixflare=deep-orange+crimson  shadowmonarch=purple-black+neon-teal
+  skin('prism', 'Prism', 'Legendary', 'hex', '#f8f0ff', '#ff0090', 28, 'orbit', 'star', 'prism'),
+  skin('celestial', 'Celestial', 'Legendary', 'star', '#0a0e27', '#ffcc00', 27, 'orbit', 'star', 'nova'),
+  skin('solarforge', 'Solar Forge', 'Legendary', 'diamond', '#b0bec5', '#0091ea', 28, 'orbit', 'star', 'nova'),
+  skin('phoenixflare', 'Phoenix Flare', 'Legendary', 'square', '#ff6f00', '#ff1744', 28, 'orbit', 'star', 'nova'),
+  skin('shadowmonarch', 'Shadow Monarch', 'Legendary', 'circle', '#1a0033', '#64ffda', 27, 'orbit', 'spark', 'nova'),
 
-  // --- Mythic: darkest darks / brightest brights, high-saturation accent
-  //     against a near-black or near-white base so each reads as
-  //     unmistakably the top of the pyramid, no two sharing a shape ---
-  skin('singularity', 'Singularity', 'Mythic', 'void', '#ece3ff', '#5b21b6', 34, 'blackhole', 'void', 'singularity'),
-  skin('chronoshift', 'Chronoshift', 'Mythic', 'diamond', '#00e5ff', '#050a24', 34, 'blackhole', 'star', 'prism'),
-  skin('voidreaper', 'Void Reaper', 'Mythic', 'circle', '#0d0016', '#f000ff', 34, 'blackhole', 'void', 'singularity'),
-  skin('astralsovereign', 'Astral Sovereign', 'Mythic', 'star', '#ffffff', '#635bff', 36, 'rainbow', 'star', 'prism'),
+  // --- Mythic: each skin has its own distinct hue family — no two share
+  //     a dominant color tone. Redesigned 2026-08-27 to eliminate the
+  //     voidreaper/prism magenta overlap, voidreaper/shadowmonarch near-black
+  //     overlap, chronoshift/cyber identical cyan, and triple white-primary.
+  //     singularity=pure-black+lilac  chronoshift=crystal+electric-magenta
+  //     voidreaper=deep-night+neon-green  astralsovereign=cream+royal-blue
+  skin('singularity', 'Singularity', 'Mythic', 'void', '#000000', '#ce93d8', 34, 'blackhole', 'void', 'singularity'),
+  skin('chronoshift', 'Chronoshift', 'Mythic', 'diamond', '#e0f7fa', '#d500f9', 34, 'blackhole', 'star', 'prism'),
+  skin('voidreaper', 'Void Reaper', 'Mythic', 'circle', '#001122', '#00e676', 34, 'blackhole', 'void', 'singularity'),
+  skin('astralsovereign', 'Astral Sovereign', 'Mythic', 'star', '#fffde7', '#1565c0', 36, 'rainbow', 'star', 'prism'),
 ]);
 
 export const SKIN_BY_ID = Object.freeze(

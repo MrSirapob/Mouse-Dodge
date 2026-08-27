@@ -47,9 +47,9 @@
     },
     "wave4": {
       "cap": 420,
-      "peakActive": 295,
-      "averageActive": 168.72,
-      "spawned": 1213,
+      "peakActive": 338,
+      "averageActive": 196.08,
+      "spawned": 1441,
       "patterns": [
         "aimed",
         "cross",
