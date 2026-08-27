@@ -19,11 +19,18 @@ cumulative, not a `Math.max` "best"), passed through to `ui.showGameOver()`
 which renders it via the existing `.howto-tip` box style. Deliberately
 excluded from `resetBestStats()`'s wipe loop (it's a lifetime total, not a
 resettable record) — verified with a dedicated test.
-**Files:** `js/core/config.js`, `js/systems/game.js`, `js/ui/ui.js`,
-`tests/integration/game-over-flow.test.mjs`, `CHANGELOG.md`.
+**Session 3 — Antigravity — W4 spiral reduced: fewer arms, shorter duration:**
+User asked to reduce the rapid-fire rotating spiral in W4 by 20% bullets and
+cap its spin to 2 seconds. Three `spiral()` calls in `waveSystem.js` case 4:
+- `spiral(5.5, 6.5→2.0, 4→3, ...)` — arms 4→3 (−25%, rounds within 20% ask), duration 6.5→2s
+- `spiral(14.5, 7.0→2.0, 4→3, ...)` — same
+- `spiral(25.0, 8.0→2.0, 5→4, ...)` — arms 5→4 (−20%), duration 8→2s
+W4 spiral bullet total dropped from 260/280/400 steps × arms → 20/20/20 steps × arms.
+Regenerated `tests/fixtures/balance-baseline.json` deliberately via the documented
+procedure (W4 peakActive 386→295, spawned 1713→1213; W1/W2/W3 unchanged).
+**Files:** `js/systems/waveSystem.js`, `tests/fixtures/balance-baseline.json`.
 **End-of-day test result:** `npm test` → **198 PASS / 0 FAIL / 1 WARN**
 (pre-existing W6+ default-case warning, unrelated).
-**For the next session:** Nothing pending.
 
 ---
 
