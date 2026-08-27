@@ -7,7 +7,7 @@
 
 import { TestSuite, assert, assertEqual } from '../helpers/assertions.mjs';
 import { createGame, jumpToWave, tick } from '../helpers/gameFactory.mjs';
-import { CONFIG } from '../../js/core/config.js?v=20260826-eyx3';
+import { CONFIG } from '../../js/core/config.js?v=20260827-zjts';
 
 export async function run() {
   const s = new TestSuite('INTEGRATION: Game Over Flow');
@@ -101,6 +101,41 @@ export async function run() {
     });
     assertEqual(p1.reviveProgress, 0, 'reviveProgress should decay back to (and floor at) 0 when no ally is nearby', {
       likely: 'js/systems/lifeSystem.js updateRevive() decay branch',
+    });
+  });
+
+  await s.testAsync('gameOver() increments totalDeaths by 1 and persists it to localStorage, across multiple runs', async () => {
+    const { game } = await createGame();
+    jumpToWave(game, 1);
+    const before = game.totalDeaths;
+    game.gameOver();
+    assertEqual(game.totalDeaths, before + 1, 'gameOver() should add exactly 1 death for the run that just ended', {
+      likely: 'js/systems/game.js gameOver()',
+    });
+    assertEqual(
+      Number(localStorage.getItem(CONFIG.storage.totalDeaths)),
+      before + 1,
+      'totalDeaths should be persisted to localStorage under CONFIG.storage.totalDeaths',
+    );
+
+    game.reset('solo', 'pulse', 'pulse');
+    jumpToWave(game, 1);
+    game.gameOver();
+    assertEqual(game.totalDeaths, before + 2, 'a second run ending in Game Over should add another death (cumulative, not a max/best)', {
+      likely: 'js/systems/game.js gameOver(): this.totalDeaths += 1 (not a Math.max/">" best comparison)',
+    });
+  });
+
+  await s.testAsync('resetBestStats() does NOT clear totalDeaths (it is a lifetime counter, not a "best")', async () => {
+    const { game } = await createGame();
+    jumpToWave(game, 1);
+    game.gameOver();
+    const deathsBefore = game.totalDeaths;
+    assert(deathsBefore > 0, 'precondition: at least one death recorded');
+
+    game.resetBestStats();
+    assertEqual(game.totalDeaths, deathsBefore, 'resetBestStats() must leave totalDeaths untouched', {
+      likely: 'js/systems/game.js resetBestStats(): the CONFIG.storage wipe loop should skip the totalDeaths key',
     });
   });
 

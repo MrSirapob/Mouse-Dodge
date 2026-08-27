@@ -1,7 +1,7 @@
-import { CONFIG } from "../core/config.js?v=20260826-eyx3";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260826-eyx3";
-import { tick as playReelTick } from "../audio/reelTick.js?v=20260826-eyx3";
-import { mountSkinCanvas, mountSkinCanvases } from "../rendering/skinPreview.js?v=20260826-eyx3";
+import { CONFIG } from "../core/config.js?v=20260827-zjts";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260827-zjts";
+import { tick as playReelTick } from "../audio/reelTick.js?v=20260827-zjts";
+import { mountSkinCanvas, mountSkinCanvases } from "../rendering/skinPreview.js?v=20260827-zjts";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -1236,6 +1236,7 @@ export class UI {
     bestTime = 0,
     bestWave = 0,
     bestGraze = 0,
+    totalDeaths = 0,
   ) {
     this.currentMode = mode;
     const p1 = Math.round(players[0]?.score || 0);
@@ -1328,6 +1329,7 @@ export class UI {
         </div>
 
         ${scoreRows}
+        <div class="howto-tip death-tip">💀 ตายไปแล้วทั้งหมด <strong>${totalDeaths.toLocaleString()}</strong> ครั้ง (นับทุกรอบที่เคยเล่น)</div>
         ${tipBlock}
         <div class="result-actions">
           <button id="startBtn" class="start restart-btn" type="button"><span>↻</span> เล่นอีกครั้ง</button>

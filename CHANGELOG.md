@@ -1,5 +1,46 @@
 # Changelog
 
+## Total-deaths lifetime counter added to the Game Over screen (user-requested, "เพิ่มนับจำนวนการตายทั้งหมด ใส่ไว้ที่หน้า Gameover หน่อย")
+Added a persistent, lifetime "total deaths" counter (not a per-run "best")
+that increments by 1 every time a run ends in Game Over and is shown on the
+Game Over screen. `CONFIG.storage.totalDeaths` (`js/core/config.js`) is the
+new localStorage key; `Game` loads it on startup and increments+persists it
+in `gameOver()` (`js/systems/game.js`), then passes it through to
+`ui.showGameOver()` (`js/ui/ui.js`), which renders it as a small line
+("💀 ตายไปแล้วทั้งหมด N ครั้ง") below the score breakdown, reusing the
+existing `.howto-tip` box style — no new CSS needed. Deliberately excluded
+from the "Reset Best" button's wipe loop in `resetBestStats()` since it's a
+lifetime total, not a record to reset alongside best score/time/wave/graze.
+Added 2 new integration tests covering increment-and-persist across runs and
+non-interference with `resetBestStats()`.
+**Files:** `js/core/config.js`, `js/systems/game.js`, `js/ui/ui.js`,
+`tests/integration/game-over-flow.test.mjs`, `CHANGELOG.md`.
+
+## W3 density spike smoothed + graze recovery boosted for W3 (user-requested, "sim ด่าน 3 ดูหน่อย ผมชอบความยากตอนนี้ แต่มันก็แทบไม่ผ่านจะช่วยผู้เล่นยังไงดี")
+Ran the project's own balance simulation (`npm run test:balance`) and found W3's
+peak on-screen bullet count spiked ~63% above W2 (219 → 356) while W3 → W4 only
+rises ~10% (356 → 390) — breaking the intended smooth W1<W2<W3<W4 ramp. Root
+cause: `waveSystem.js` case 3 originally piled `spiral`+`splitter`+`wall`+`aimed`
++`ring`+`cross` all into one ~11s window (t=12.5–23.75). Fixed two ways, without
+reducing total difficulty:
+- **Retimed W3's pattern schedule** (same counts/speeds/intervals/colors on
+  every call — only start times changed) so no more than two long-running
+  patterns (spiral/splitter/multi-shot aimed) overlap at once; the two spirals
+  now anchor their own separated windows. Peak active bullets dropped
+  356 → 295 (now sits properly between W2's 219 and W4's 390); total spawned
+  stayed within the same ballpark (1136 → 1056). Regenerated
+  `tests/fixtures/balance-baseline.json` from a fresh simulation run per the
+  documented "Updating the baseline" procedure (not hand-edited).
+- **Added a W3-scoped graze recovery boost**: `GRAZE_REWARD.waveRecoveryMult`
+  (`{ 3: 1.2 }` in `js/core/config.js`) multiplies the skill-cooldown recovery
+  a graze grants, applied in `js/systems/game.js`'s graze branch, only during
+  wave 3. W3 is the first "Extreme" density wave right after two calmer ones,
+  so players get their skill back faster specifically here — rewarding close
+  play instead of softening bullets, hit-invulnerability, or anything on any
+  other wave.
+**Files:** `js/systems/waveSystem.js`, `js/core/config.js`, `js/systems/game.js`,
+`tests/fixtures/balance-baseline.json`, `CHANGELOG.md`.
+
 ## Legendary & Mythic skins redesigned to feel more striking (user-requested, "ระดับ legen กับ mytic มันดูเฉยๆ ไม่น่าดึงดูด ออกแบบมาใหม่หน่อย")
 The two top tiers had drifted into visual sameness: 3 of 5 Legendaries were
 `star`-shaped, 3 of 4 Mythics were `void`-shaped, and several palettes

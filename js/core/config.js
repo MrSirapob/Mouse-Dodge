@@ -11,6 +11,15 @@ export const GRAZE_REWARD = Object.freeze({
 
   // Existing graze combo window.
   comboWindow: 1.0,
+
+  // W3 is the first "Extreme" density wave (see waveSystem.js case 3),
+  // stepping up hard right after two comparatively calmer ones — players
+  // haven't had much room yet to build a graze combo before they need the
+  // skill it pays for. A modest, wave-scoped boost to *recovery* (not to
+  // hit-invulnerability, bullet speed/count, or anything else) gets skills
+  // back faster specifically here, rewarding close play instead of just
+  // softening the wave. Keyed by wave number so it stays scoped to W3 only.
+  waveRecoveryMult: { 3: 1.2 },
 });
 
 export const CONFIG = {
@@ -170,6 +179,10 @@ export const CONFIG = {
     bestWave: "waveDodgeBestWave",
     bestScore: "waveDodgeBestScore",
     bestGraze: "waveDodgeBestGraze",
+    // Lifetime counter, not a "best" — every Game Over increments this by 1
+    // and it's never reset by the Reset Best button (see resetBestStats()
+    // in game.js, which deliberately skips this key).
+    totalDeaths: "waveDodgeTotalDeaths",
   },
 
   // Boss name shown in the small label above the boss HP bar (top of

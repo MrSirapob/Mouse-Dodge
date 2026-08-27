@@ -10,6 +10,59 @@ yet.
 **Newest entry at the top.** Read the top 1-2 entries before starting work
 so you know what the last session was mid-way through or flagged for you.
 
+## 2026-08-27 (2nd session) — Claude (Sonnet 5, claude.ai) — Total-deaths lifetime counter on the Game Over screen
+
+User asked to count total deaths and show it on the Game Over screen. Added
+`CONFIG.storage.totalDeaths` (config.js), loaded/incremented/persisted in
+`Game.gameOver()` (game.js — `this.totalDeaths += 1` each run-ending death,
+cumulative, not a `Math.max` "best"), passed through to `ui.showGameOver()`
+which renders it via the existing `.howto-tip` box style. Deliberately
+excluded from `resetBestStats()`'s wipe loop (it's a lifetime total, not a
+resettable record) — verified with a dedicated test.
+**Files:** `js/core/config.js`, `js/systems/game.js`, `js/ui/ui.js`,
+`tests/integration/game-over-flow.test.mjs`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **198 PASS / 0 FAIL / 1 WARN**
+(pre-existing W6+ default-case warning, unrelated).
+**For the next session:** Nothing pending.
+
+---
+
+## 2026-08-27 — Claude (Sonnet 5, claude.ai) — W3 peak-density spike fixed + W3-scoped graze recovery boost
+
+User liked W1-4's overall difficulty but said W3 specifically felt "แทบไม่ผ่าน"
+(near-unpassable) and asked how to help the player. Used the project's own
+`npm run test:balance` simulation to diagnose rather than guessing: W3's
+peak on-screen bullet count was 356 vs W2's 219 (+63%) while W3→W4 only rises
++10% (356→390) — a real spike, not just "W3 is harder."
+
+**What changed (see CHANGELOG.md for the full writeup):**
+1. Retimed W3's pattern schedule in `waveSystem.js` case 3 — same counts/
+   speeds/intervals, only start times moved — so spiral/splitter/wall/aimed/
+   ring/cross no longer all pile into one ~11s window. Peak dropped 356→295.
+2. Added `GRAZE_REWARD.waveRecoveryMult: { 3: 1.2 }` (config.js) + applied it
+   in `game.js`'s graze-cooldown-recovery calc — skills recover ~20% faster
+   from grazes during W3 only. Doesn't touch hit-invulnerability, bullet
+   speed, or any other wave.
+3. Regenerated `tests/fixtures/balance-baseline.json` via the documented
+   procedure in `tests/README.md` (not hand-edited) since the peak/spawned
+   numbers changed intentionally.
+
+**Old value → new value:** W3 peakActive 356 → 295, spawned 1136 → 1056
+(W1/W2/W4 baseline numbers unaffected — only W3's own tolerance window
+regenerated to match the retime).
+**Files:** `js/systems/waveSystem.js`, `js/core/config.js`, `js/systems/game.js`,
+`tests/fixtures/balance-baseline.json`, `CHANGELOG.md`.
+**End-of-day test result:** `npm test` → **196 PASS / 0 FAIL / 1 WARN**
+(pre-existing W6+ default-case warning, unrelated). Ran `npm run bump-version`
+after (new tag `20260827-7ftk`).
+**For the next session:** Nothing pending. If W3 still feels rough after this,
+the next lever to pull is `hitInvulnerability`/`respawnInvulnerability` in
+`config.js` (currently 1.0s flat, not wave-scoped) — untouched this session
+since the graze-recovery route was preferred (rewards play instead of just
+adding forgiveness).
+
+---
+
 ## 2026-08-26 — Claude (Sonnet 5, claude.ai) — Rank reveal switched to a fixed ~2s rapid-fire rattle (follow-up to same-day D/C fix below)
 
 Immediate follow-up to this same day's earlier entry. That fix (padding short

@@ -1,4 +1,4 @@
-import { CONFIG, actForWave } from "../core/config.js?v=20260826-eyx3";
+import { CONFIG, actForWave } from "../core/config.js?v=20260827-zjts";
 
 /**
  * ========================= PATTERN GUIDE FOR AI =========================
@@ -239,24 +239,30 @@ export class WaveSystem {
       case 3:
         // W3 — Extreme Bullet Hell. Re-tuned one notch above the new W2 to
         // preserve W1<W2<W3<W4 (every count/speed higher, interval/gap lower
-        // than W2's equivalents). Splitter/cross/spiral overlap directly.
+        // than W2's equivalents). Same counts/speeds/intervals as before —
+        // only the start times changed. Originally splitter/cross/spiral all
+        // piled into one ~11s window (t=12.5-23.75), which spiked peak
+        // on-screen bullets ~63% above W2 (vs W3->W4's own +10%), breaking
+        // the intended smooth ramp. Retimed so no more than two long-running
+        // patterns (spiral/splitter/multi-shot aimed) overlap at once; the
+        // two spirals now anchor their own separated windows instead of
+        // sharing one with a splitter, wall, ring and cross on top.
         aimed(0.0, 46, 0.11, 2.75, c1);
-        ring(1.0, 640, 360, 42, 2.75, c2);
-        wall(3.0, 2.9, c1, true, 0.062);
-        splitter(5.0, 10, 0.48, 2.3, c2);
-        aimed(7.0, 48, 0.1, 2.8, c2);
-        cross(9.5, 15, 2.85, c1);
-        ring(11.0, 300, 500, 46, 2.8, c1);
-        spiral(12.5, 6.5, 4, 2.3, c2);
-        aimed(15.0, 50, 0.1, 2.85, c2);
-        wall(17.0, 2.95, c2, false, 0.055);
-        splitter(18.5, 11, 0.42, 2.35, c1);
-        ring(20.0, 980, 220, 48, 2.85, c2);
-        cross(21.5, 16, 2.9, c1);
-        spiral(23.0, 7.0, 4, 2.35, c1);
-        aimed(25.0, 52, 0.09, 2.9, c2);
-        ring(27.0, 640, 360, 50, 2.9, c1);
-        wall(28.5, 3.0, c2, true, 0.05);
+        ring(1.5, 640, 360, 42, 2.75, c2);
+        wall(3.2, 2.9, c1, true, 0.062);
+        splitter(4.5, 10, 0.48, 2.3, c2);
+        cross(7.5, 15, 2.85, c1);
+        ring(9.8, 300, 500, 46, 2.8, c1);
+        aimed(10.5, 48, 0.1, 2.8, c2);
+        wall(13.0, 2.95, c2, false, 0.055);
+        spiral(14.5, 6.5, 4, 2.3, c2);
+        ring(17.5, 980, 220, 48, 2.85, c2);
+        cross(19.5, 16, 2.9, c1);
+        splitter(21.0, 11, 0.42, 2.35, c1);
+        aimed(23.5, 52, 0.09, 2.9, c2);
+        ring(25.0, 640, 360, 50, 2.9, c1);
+        spiral(25.8, 7.0, 4, 2.35, c1);
+        wall(27.5, 3.0, c2, true, 0.05);
         break;
       case 4:
         // W4 — Brutal Bullet Hell, the climax before the W5 boss. Re-tuned

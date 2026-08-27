@@ -1,17 +1,17 @@
-import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260826-eyx3';
-import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260826-eyx3';
-import { circleHit, circleNear } from '../core/collision.js?v=20260826-eyx3';
-import { Player } from '../entities/player.js?v=20260826-eyx3';
-import { BulletManager } from '../entities/bullet.js?v=20260826-eyx3';
-import { Boss } from '../entities/boss.js?v=20260826-eyx3';
-import { ParticleSystem } from '../rendering/particles.js?v=20260826-eyx3';
-import { PatternLibrary } from '../patterns/patterns.js?v=20260826-eyx3';
-import { WaveSystem } from './waveSystem.js?v=20260826-eyx3';
-import { SkillSystem } from './skillSystem.js?v=20260826-eyx3';
-import { LifeSystem } from './lifeSystem.js?v=20260826-eyx3';
-import { DevMode } from './devMode.js?v=20260826-eyx3';
-import { ItemSystem } from './itemSystem.js?v=20260826-eyx3';
-import { SkinSystem } from './skinSystem.js?v=20260826-eyx3';
+import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260827-zjts';
+import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260827-zjts';
+import { circleHit, circleNear } from '../core/collision.js?v=20260827-zjts';
+import { Player } from '../entities/player.js?v=20260827-zjts';
+import { BulletManager } from '../entities/bullet.js?v=20260827-zjts';
+import { Boss } from '../entities/boss.js?v=20260827-zjts';
+import { ParticleSystem } from '../rendering/particles.js?v=20260827-zjts';
+import { PatternLibrary } from '../patterns/patterns.js?v=20260827-zjts';
+import { WaveSystem } from './waveSystem.js?v=20260827-zjts';
+import { SkillSystem } from './skillSystem.js?v=20260827-zjts';
+import { LifeSystem } from './lifeSystem.js?v=20260827-zjts';
+import { DevMode } from './devMode.js?v=20260827-zjts';
+import { ItemSystem } from './itemSystem.js?v=20260827-zjts';
+import { SkinSystem } from './skinSystem.js?v=20260827-zjts';
 
 /** Converts a "#rrggbb" hex string to an "r,g,b" string for use in
  * rgba(...) fill styles (see Renderer.flash()). */
@@ -85,6 +85,7 @@ export class Game {
     this.bestWave = Number(localStorage.getItem(CONFIG.storage.bestWave) || 0);
     this.bestScore = Number(localStorage.getItem(CONFIG.storage.bestScore) || 0);
     this.bestGraze = Number(localStorage.getItem(CONFIG.storage.bestGraze) || 0);
+    this.totalDeaths = Number(localStorage.getItem(CONFIG.storage.totalDeaths) || 0);
     this.ui.setBest(this.bestTime, this.bestWave, this.bestScore);
 
     input.onP1Action = () => this.skillSystem.use(this.players[0]);
@@ -583,7 +584,9 @@ export class Game {
     this.bestScore = 0;
     this.bestGraze = 0;
 
-    Object.values(CONFIG.storage).forEach((key) => localStorage.removeItem(key));
+    Object.entries(CONFIG.storage)
+      .filter(([name]) => name !== "totalDeaths")
+      .forEach(([, key]) => localStorage.removeItem(key));
     this.ui.setBest(0, 0, 0);
 
     // Refresh the currently visible Game Over comparison immediately.
@@ -619,11 +622,16 @@ export class Game {
     if (s.wave > this.bestWave) { this.bestWave = s.wave; localStorage.setItem(CONFIG.storage.bestWave, String(s.wave)); }
     if (finalScore > this.bestScore) { this.bestScore = finalScore; localStorage.setItem(CONFIG.storage.bestScore, String(finalScore)); }
     if (s.grazeCount > this.bestGraze) { this.bestGraze = s.grazeCount; localStorage.setItem(CONFIG.storage.bestGraze, String(s.grazeCount)); }
+    // Lifetime counter — every run that ends in Game Over adds exactly 1,
+    // regardless of mode (co-op counts as one death for the run, not one
+    // per player). Never reset by the Reset Best button.
+    this.totalDeaths += 1;
+    localStorage.setItem(CONFIG.storage.totalDeaths, String(this.totalDeaths));
     this.ui.setBest(this.bestTime, this.bestWave, this.bestScore);
 
     clearTimeout(this.state.gameOverTimer);
     this.state.gameOverTimer = setTimeout(
-      () => this.ui.showGameOver(s.elapsed, s.wave, s.grazeCount, this.state.mode, this.players, finalScore, prevBestScore, prevBestTime, prevBestWave, prevBestGraze),
+      () => this.ui.showGameOver(s.elapsed, s.wave, s.grazeCount, this.state.mode, this.players, finalScore, prevBestScore, prevBestTime, prevBestWave, prevBestGraze, this.totalDeaths),
       350
     );
   }
@@ -1062,10 +1070,10 @@ export class Game {
           // the better the player maintains a close-call chain,
           // the faster the current skill comes back.
           const recovery =
-            p.combo >= 20 ? GRAZE_REWARD.combo20 :
+            (p.combo >= 20 ? GRAZE_REWARD.combo20 :
             p.combo >= 10 ? GRAZE_REWARD.combo10 :
             p.combo >= 5 ? GRAZE_REWARD.combo5 :
-            GRAZE_REWARD.base;
+            GRAZE_REWARD.base) * (GRAZE_REWARD.waveRecoveryMult[s.wave] || 1);
 
           if (p.skillCooldown > 0) {
             // Graze can ONLY subtract time from the current cooldown.
