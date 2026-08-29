@@ -1,5 +1,33 @@
 # Changelog
 
+## Performance: pooled bullet objects instead of allocating one per shot
+Third item from the same performance review (see the entry below this
+one) — the one that was deliberately left undone at the time.
+`BulletManager` (`js/entities/bullet.js`) now keeps a `_pool` array of
+retired bullet objects. `spawn()` pops one from the pool (or allocates a
+fresh `{}` only when the pool is empty) and reassigns all ~50 properties
+onto it, instead of building a brand-new object literal every time.
+`remove(i)` pushes the retired object into the pool instead of letting it
+be garbage-collected; `clear()` (used on wave transitions) recycles every
+active bullet into the pool too, so the pool stays "warm" across waves.
+One subtlety this required: `trajAge` was previously never set in
+`spawn()` at all — it only ever got lazily created via `b.trajAge =
+(b.trajAge || 0) + dt` in `Game.updateBullets()`, and a brand-new object
+literal simply didn't have the property yet, so that fallback always
+started it at 0. A *reused* pooled object could still be carrying a stale
+`trajAge` from its previous life, so `spawn()` now explicitly resets it to
+0 — the only place this fix needed a behavior change beyond "reuse the
+object instead of allocating a new one." Everything else spawn() sets was
+already fully reassigned on every call, so no other stale-field leaks are
+possible.
+Verified with the full test suite (198 tests, unchanged) plus a small
+throwaway script exercising the pool directly: spawn → remove → spawn
+again reuses the exact same object reference, with no leftover
+`trajAge`/`trajectory`/`homing` from the bullet's previous life, and
+`clear()` recycles every active bullet into the pool.
+**Files:** `js/entities/bullet.js`, `js/**` (version tag only, via
+`bump-version.mjs`), `CHANGELOG.md`.
+
 ## Performance: removed two hot-loop costs in bullet update/draw (per-bullet activePlayers() allocation, per-bullet shadowBlur)
 Two optimizations targeting bullet-hell waves with hundreds of active
 bullets, found via a code review requested by the user (no bug, just

@@ -25,8 +25,8 @@
  * the smaller inner box, using the same margin that was always there.
  */
 
-import { CONFIG } from '../core/config.js?v=20260829-kt89';
-import { drawSkinVisual, SKIN_DECORATIONS_ENABLED } from './skinRenderer.js?v=20260829-kt89';
+import { CONFIG } from '../core/config.js?v=20260829-rlfe';
+import { drawSkinVisual, SKIN_DECORATIONS_ENABLED } from './skinRenderer.js?v=20260829-rlfe';
 
 const PREVIEW_RADIUS = CONFIG.player.radius;
 
