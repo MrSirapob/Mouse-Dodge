@@ -95,16 +95,47 @@ const WORLD = { width: 1280, height: 720 };
  * To add a visual for a new skill: add a new `type: (c, fx, p, ease, fade) => {...}`
  * entry here and make sure SkillSystem calls `addSkillEffect('type', ...)`.
  */
+function hexToRgb(hex) {
+  const h = hex.replace('#', '');
+  const v = h.length === 3 ? h.split('').map((ch) => ch + ch).join('') : h;
+  const num = parseInt(v, 16);
+  return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+}
+
+/**
+ * Cheap stand-in for canvas `shadowBlur`: a single radial-gradient fill.
+ * `shadowBlur` re-runs a software blur convolution on *every* stroke/fill
+ * call it's active for, and that convolution's cost scales with the actual
+ * rasterized pixel area — which on this game scales with the player's
+ * canvas/window size (see Renderer.resize()), not with GPU power. A skill
+ * effect that draws a dozen+ small strokes per frame while shadowBlur is on
+ * (repulse's arrows, nova's spokes, timestop's rings/glyphs) was asking the
+ * browser to re-blur the scene a dozen+ times a frame, every frame, for the
+ * effect's whole duration. A gradient is one fill regardless of how much
+ * crisp linework is drawn on top of it afterwards.
+ */
+function drawGlow(c, radius, hex, alpha = 0.5) {
+  const { r, g, b } = hexToRgb(hex);
+  const grad = c.createRadialGradient(0, 0, 0, 0, 0, Math.max(1, radius));
+  grad.addColorStop(0, `rgba(${r},${g},${b},${alpha})`);
+  grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+  const prevFill = c.fillStyle;
+  c.fillStyle = grad;
+  c.beginPath();
+  c.arc(0, 0, Math.max(1, radius), 0, Math.PI * 2);
+  c.fill();
+  c.fillStyle = prevFill;
+}
+
 const SKILL_EFFECT_DRAWERS = {
   pulse(c, fx, p, ease, fade) {
     const r = fx.maxRadius * ease;
     c.globalAlpha = fade;
+    drawGlow(c, r * 1.15, fx.color, 0.55);
     c.beginPath();
     c.arc(0, 0, r, 0, Math.PI * 2);
     c.strokeStyle = fx.color;
     c.lineWidth = 8 * (1 - p) + 2;
-    c.shadowColor = fx.color;
-    c.shadowBlur = 24;
     c.stroke();
     c.beginPath();
     c.arc(0, 0, r * 0.72, 0, Math.PI * 2);
@@ -141,26 +172,30 @@ const SKILL_EFFECT_DRAWERS = {
   },
   nova(c, fx, p, ease, fade) {
     const r = fx.maxRadius * ease;
+    c.globalAlpha = fade;
+    drawGlow(c, r * 1.1, fx.color, 0.6);
     c.globalAlpha = 0.85 * fade;
     c.beginPath();
     c.arc(0, 0, r, 0, Math.PI * 2);
     c.strokeStyle = fx.color;
     c.lineWidth = 9 * (1 - p) + 2;
-    c.shadowColor = fx.color;
-    c.shadowBlur = 30;
     c.stroke();
     c.globalAlpha = 0.25 * fade;
     c.beginPath();
     c.arc(0, 0, r * 0.7, 0, Math.PI * 2);
     c.fillStyle = fx.color;
     c.fill();
+    // All 14 spokes share one path/stroke instead of one beginPath+stroke
+    // each — same look, 14x fewer draw calls.
+    c.globalAlpha = fade;
+    c.strokeStyle = fx.color;
+    c.beginPath();
     for (let i = 0; i < 14; i++) {
       const a = (i * Math.PI * 2) / 14 + fx.t * 3;
-      c.beginPath();
       c.moveTo(Math.cos(a) * r * 0.45, Math.sin(a) * r * 0.45);
       c.lineTo(Math.cos(a) * r, Math.sin(a) * r);
-      c.stroke();
     }
+    c.stroke();
   },
   timestop(c, fx, p, ease, fade) {
     // Mystical time-stop magic circle: layered rings, rotating segments,
@@ -187,7 +222,8 @@ const SKILL_EFFECT_DRAWERS = {
     c.arc(0, 0, outer, 0, Math.PI * 2);
     c.fill();
 
-    // Main concentric rings.
+    // Main concentric rings. (No per-ring shadowBlur — the aura gradient
+    // above already reads as "glowing"; each ring is now one crisp stroke.)
     const rings = [0.38, 0.56, 0.72, 0.9, 1];
     rings.forEach((ratio, index) => {
       c.beginPath();
@@ -195,81 +231,85 @@ const SKILL_EFFECT_DRAWERS = {
       c.globalAlpha = fade * (index === rings.length - 1 ? 0.95 : 0.58);
       c.strokeStyle = index % 2 ? '#b98cff' : '#e5c7ff';
       c.lineWidth = index === rings.length - 1 ? 2.5 : 1.4;
-      c.shadowColor = '#9b6cff';
-      c.shadowBlur = index === rings.length - 1 ? 16 : 8;
       c.stroke();
     });
 
-    // Rotating segmented outer ring.
+    // Rotating segmented outer ring. Thick and thin segments are batched
+    // into one path + stroke each (was 24 separate stroke calls).
     c.save();
     c.rotate(spin);
     c.globalAlpha = fade * 0.9;
     c.strokeStyle = '#d8b4ff';
-    c.shadowColor = '#9b6cff';
-    c.shadowBlur = 14;
+    c.lineWidth = 1.2;
+    c.beginPath();
     for (let i = 0; i < 24; i++) {
+      if (i % 3 === 0) continue;
       const a0 = (i * Math.PI * 2) / 24 + 0.035;
       const a1 = a0 + Math.PI / 30;
-      c.beginPath();
+      c.moveTo(Math.cos(a0) * outer * 0.96, Math.sin(a0) * outer * 0.96);
       c.arc(0, 0, outer * 0.96, a0, a1);
-      c.lineWidth = i % 3 === 0 ? 3 : 1.2;
-      c.stroke();
     }
+    c.stroke();
+    c.lineWidth = 3;
+    c.beginPath();
+    for (let i = 0; i < 24; i += 3) {
+      const a0 = (i * Math.PI * 2) / 24 + 0.035;
+      const a1 = a0 + Math.PI / 30;
+      c.moveTo(Math.cos(a0) * outer * 0.96, Math.sin(a0) * outer * 0.96);
+      c.arc(0, 0, outer * 0.96, a0, a1);
+    }
+    c.stroke();
     c.restore();
 
-    // Radial glyph spokes / runic geometry.
+    // Radial glyph spokes / runic geometry — diamonds and rune marks each
+    // batched into a single path + stroke (was 24 separate stroke calls).
     c.save();
     c.rotate(-spin * 0.65);
     const glyphCount = 12;
+    c.globalAlpha = fade * 0.82;
+    c.strokeStyle = '#f0dcff';
+    c.lineWidth = 1.5;
+    c.beginPath();
     for (let i = 0; i < glyphCount; i++) {
       const a = (i * Math.PI * 2) / glyphCount;
       const inner = outer * 0.58;
       const mid = outer * 0.69;
       const tip = outer * 0.84;
       const side = 0.045;
-      const cx = Math.cos(a) * mid;
-      const cy = Math.sin(a) * mid;
-
-      c.globalAlpha = fade * 0.82;
-      c.strokeStyle = '#f0dcff';
-      c.lineWidth = 1.5;
-      c.shadowColor = '#b26cff';
-      c.shadowBlur = 9;
-
-      // Diamond / eye-shaped glyph.
-      c.beginPath();
       c.moveTo(Math.cos(a) * inner, Math.sin(a) * inner);
       c.lineTo(Math.cos(a + side) * mid, Math.sin(a + side) * mid);
       c.lineTo(Math.cos(a) * tip, Math.sin(a) * tip);
       c.lineTo(Math.cos(a - side) * mid, Math.sin(a - side) * mid);
       c.closePath();
-      c.stroke();
-
-      // Small rune marks between the diamonds.
-      c.beginPath();
+    }
+    c.stroke();
+    c.beginPath();
+    for (let i = 0; i < glyphCount; i++) {
+      const a = (i * Math.PI * 2) / glyphCount;
+      const mid = outer * 0.69;
+      const cx = Math.cos(a) * mid;
+      const cy = Math.sin(a) * mid;
       c.moveTo(cx - Math.sin(a) * 7, cy + Math.cos(a) * 7);
       c.lineTo(cx + Math.sin(a) * 7, cy - Math.cos(a) * 7);
-      c.stroke();
     }
+    c.stroke();
     c.restore();
 
     // Four cardinal markers make the circle read clearly at a glance.
     c.globalAlpha = fade * 0.95;
     c.strokeStyle = '#ffffff';
-    c.shadowColor = '#c38aff';
-    c.shadowBlur = 18;
     c.lineWidth = 2;
+    c.beginPath();
     for (let i = 0; i < 4; i++) {
       const a = i * Math.PI / 2 + Math.PI / 4;
       const x1 = Math.cos(a) * outer * 0.72;
       const y1 = Math.sin(a) * outer * 0.72;
       const x2 = Math.cos(a) * outer * 0.86;
       const y2 = Math.sin(a) * outer * 0.86;
-      c.beginPath();
       c.moveTo(x1, y1);
       c.lineTo(x2, y2);
-      c.stroke();
     }
+    c.stroke();
 
     // Central time sigil.
     const coreR = outer * 0.25;
@@ -282,28 +322,24 @@ const SKILL_EFFECT_DRAWERS = {
     c.globalAlpha = fade * 0.95;
     c.strokeStyle = '#ffffff';
     c.lineWidth = 2;
-    c.shadowColor = '#c56cf0';
-    c.shadowBlur = 22;
     c.beginPath();
     c.arc(0, 0, coreR, 0, Math.PI * 2);
     c.stroke();
 
-    // Clock-like inner marks reinforce the time-stop theme.
+    // Clock-like inner marks reinforce the time-stop theme (batched).
+    c.beginPath();
     for (let i = 0; i < 8; i++) {
       const a = i * Math.PI / 4 + spin;
-      c.beginPath();
       c.moveTo(Math.cos(a) * coreR * 0.55, Math.sin(a) * coreR * 0.55);
       c.lineTo(Math.cos(a) * coreR * 0.82, Math.sin(a) * coreR * 0.82);
-      c.stroke();
     }
+    c.stroke();
 
     // Bright center flash during activation.
     const flash = Math.max(0, 1 - p * 5);
     if (flash > 0) {
       c.globalAlpha = flash * 0.85;
       c.fillStyle = '#ffffff';
-      c.shadowColor = '#d7a8ff';
-      c.shadowBlur = 28;
       c.beginPath();
       c.arc(0, 0, 5 + flash * 10, 0, Math.PI * 2);
       c.fill();
@@ -323,9 +359,8 @@ const SKILL_EFFECT_DRAWERS = {
   repulse(c, fx, p, ease, fade) {
     const r = 20 + fx.maxRadius * ease;
     c.globalAlpha = fade;
+    drawGlow(c, r * 1.2, '#ffd166', 0.5);
     c.strokeStyle = '#ffd166';
-    c.shadowColor = '#ffd166';
-    c.shadowBlur = 24;
 
     // Expanding shockwave.
     c.beginPath();
@@ -333,36 +368,35 @@ const SKILL_EFFECT_DRAWERS = {
     c.lineWidth = 8 * (1 - p) + 2;
     c.stroke();
 
-    // Directional arrows make it visually obvious that the effect pushes OUT.
+    // Directional arrows make it visually obvious that the effect pushes
+    // OUT. All 16 arrows (shaft + head) share one path + stroke instead of
+    // 2 stroke calls each — same look, 32x fewer draw calls.
+    c.lineWidth = 2;
+    c.beginPath();
     for (let i = 0; i < 16; i++) {
       const a = (i * Math.PI * 2) / 16;
       const inner = r * 0.72;
       const outer = r + 14;
       const x1 = Math.cos(a) * inner, y1 = Math.sin(a) * inner;
       const x2 = Math.cos(a) * outer, y2 = Math.sin(a) * outer;
-      c.beginPath();
       c.moveTo(x1, y1);
       c.lineTo(x2, y2);
-      c.stroke();
       const side = 5;
-      c.beginPath();
       c.moveTo(x2, y2);
       c.lineTo(x2 - Math.cos(a - 0.45) * side, y2 - Math.sin(a - 0.45) * side);
       c.moveTo(x2, y2);
       c.lineTo(x2 - Math.cos(a + 0.45) * side, y2 - Math.sin(a + 0.45) * side);
-      c.stroke();
     }
-    c.shadowBlur = 0;
+    c.stroke();
   },
   phase(c, fx, p, ease, fade) {
     const r = 18 + fx.maxRadius * ease;
     c.globalAlpha = 0.3 + 0.45 * Math.abs(Math.sin(fx.t * 10));
+    drawGlow(c, r * 1.3, '#c56cf0', 0.4);
     c.beginPath();
     c.arc(0, 0, r, 0, Math.PI * 2);
     c.strokeStyle = '#c56cf0';
     c.lineWidth = 4;
-    c.shadowColor = '#c56cf0';
-    c.shadowBlur = 24;
     c.stroke();
     c.beginPath();
     c.arc(0, 0, r + 8, 0, Math.PI * 2);

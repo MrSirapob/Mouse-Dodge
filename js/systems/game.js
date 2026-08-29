@@ -299,12 +299,25 @@ export class Game {
     return best === -Infinity ? 0 : best;
   }
 
-  /** Destroys all bullets within `radius` of (x, y), spawning small destruction particles. */
+  /**
+   * Destroys all bullets within `radius` of (x, y), spawning small
+   * destruction particles. On busy waves a single pulse/nova can clear
+   * hundreds of bullets at once — spawning 4 particles per bullet with no
+   * cap meant a big clear could dump hundreds of particles into the
+   * simulation in one frame (extra update/draw work + GC pressure right as
+   * the skill effect itself is also drawing). Capped so a big clear still
+   * reads as a satisfying burst without spiking that frame.
+   */
   removeBulletsInRadius(x, y, radius) {
+    let particleBudget = 120;
     for (let i = this.bullets.items.length - 1; i >= 0; i--) {
       const b = this.bullets.items[i];
       if (Math.hypot(b.x - x, b.y - y) <= radius + b.r) {
-        this.particles.spawn(b.x, b.y, b.color, 4);
+        if (particleBudget > 0) {
+          const n = Math.min(4, particleBudget);
+          this.particles.spawn(b.x, b.y, b.color, n);
+          particleBudget -= n;
+        }
         this.bullets.remove(i);
       }
     }
