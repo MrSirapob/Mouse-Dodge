@@ -28,6 +28,21 @@ export const SKIN_DEBUG = {
 };
 
 /**
+ * Single source of truth for whether rarity decorations actually draw
+ * anything. drawSkinVisual() below does not call drawSkinDecorations() —
+ * decorations are disabled — so a skin's rendered look never changes
+ * frame-to-frame. skinPreview.js reads this same flag to decide whether a
+ * preview canvas needs a live rAF loop at all: with decorations off there
+ * is nothing to animate, so looping just repaints an identical image (with
+ * a shadowBlur fill, no less) every frame for every owned tier>=3 card —
+ * pure wasted work that scales with how many high-tier skins are owned.
+ * Flip this back to true *and* re-add the drawSkinDecorations() call in
+ * drawSkinVisual() together if decorations are ever re-enabled — that's
+ * the only way to keep this flag honest.
+ */
+export const SKIN_DECORATIONS_ENABLED = false;
+
+/**
  * Draws only the skin's own body: shape + primary/secondary fill + stroke +
  * the tier>=2 inner secondary-color detail. This part is NEVER gated by
  * `effects` — it's the skin itself, not an external effect — only the glow

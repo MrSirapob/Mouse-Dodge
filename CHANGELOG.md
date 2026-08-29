@@ -1,5 +1,60 @@
 # Changelog
 
+## Skin Collection screen stutter fixed: dead animation loop redrawing tier>=3 cards every frame for nothing (user-requested, "เช็คตรงคลังสกินหน่อย มันกระตุกๆ")
+Root cause was in `js/rendering/skinPreview.js`: every owned tier>=3 skin
+card (Epic/Legendary/Mythic) in the Skin Collection grid got a live
+`requestAnimationFrame` loop so its orbiting rarity decorations (sparkles/
+stars/diamonds/shards/comets) would animate — but `drawSkinVisual()`
+(`js/rendering/skinRenderer.js`) no longer calls `drawSkinDecorations()` at
+all (decorations were disabled in an earlier change). So the loop was
+redrawing an *identical, unchanging* image — including a `shadowBlur` fill
+in `drawSkinBody()` — on every single animation frame, for every tier>=3
+card on screen, indefinitely, for zero visual benefit. The more high-tier
+skins owned, the more of these pointless per-frame redraws stacked up,
+which is exactly what read as stutter on the Skin Collection screen.
+Added `SKIN_DECORATIONS_ENABLED` (`skinRenderer.js`) as the single source
+of truth for whether decorations actually draw anything, and
+`skinPreview.js`'s `mountSkinCanvas()` now only starts the rAF loop when
+that flag is true. With decorations currently off, every skin preview
+(collection grid, case reel, case result, default card) is now painted
+once and left static — correct, since nothing about them changes over
+time right now. Re-enabling decorations later means flipping this one flag
+back on alongside restoring the `drawSkinDecorations()` call.
+**Files:** `js/rendering/skinRenderer.js`, `js/rendering/skinPreview.js`,
+`CHANGELOG.md`.
+
+## Skill-effect FPS drops on pulse/nova/repulse fixed: shadowBlur cost scales with screen size, not GPU power (user-requested, "ทำไมเทสบนโน๊ตบุ้คไม่กระตุก แต่เล่นบนคอมแฟนกระตุกตอนกดสกิล")
+The stutter only ever showed up while a bullet-clearing or bullet-pushing
+skill effect (`pulse`, `nova`, `repulse`, also cleaned up in `timestop` and
+`phase`) was drawing, and only got worse on a *more* powerful desktop
+(RTX 4060 / i5-12400F) than the laptop it was fine on — which ruled out
+"weak hardware" and pointed at canvas `shadowBlur`: most browsers compute
+its blur as a CPU-side software convolution that is **not** meaningfully
+GPU-accelerated, and its cost scales with the actual rasterized pixel area
+being blurred. Since `Renderer.resize()` (`js/rendering/renderer.js`)
+scales the game's fixed 1280x720 world up to fill however big the real
+browser window/monitor is, a bigger screen means a bigger effective canvas
+and much more expensive `shadowBlur`, independent of GPU tier. Each of
+these skill effects was also compounding that by leaving `shadowBlur`
+turned on across a dozen-plus separate `stroke()`/`fill()` calls per frame
+(e.g. `repulse`'s 16 arrows were 33 separate blurred stroke calls; `nova`'s
+14 spokes were 14 more; `timestop` was worse still).
+- Replaced every per-effect `shadowBlur`/`shadowColor` glow with one
+  `drawGlow()` radial-gradient fill (new helper in `renderer.js`) drawn
+  once per frame — visually similar "glow" look, but its cost only scales
+  with the glow's own radius, not with window/monitor size.
+- Batched each effect's many small strokes (arrows, spokes, rings, glyphs)
+  into a single `beginPath()`/`stroke()` call instead of one call per
+  shape — cut `repulse` from 33 stroke calls/frame to 2, `nova` from 15 to
+  2, `timestop` from 50+ to ~10.
+- Capped particle bursts in `removeBulletsInRadius()` (`js/systems/game.js`)
+  at 120 particles per activation so a `pulse`/`nova` clearing hundreds of
+  bullets on a busy wave can't dump hundreds of particles into the
+  simulation in a single frame on top of the effect draw itself.
+Verified with the full test suite (198/198 passing) that none of this
+touched gameplay logic — only how the existing effects are drawn.
+**Files:** `js/rendering/renderer.js`, `js/systems/game.js`, `CHANGELOG.md`.
+
 ## Total-deaths lifetime counter added to the Game Over screen (user-requested, "เพิ่มนับจำนวนการตายทั้งหมด ใส่ไว้ที่หน้า Gameover หน่อย")
 Added a persistent, lifetime "total deaths" counter (not a per-run "best")
 that increments by 1 every time a run ends in Game Over and is shown on the

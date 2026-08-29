@@ -26,16 +26,16 @@
  */
 
 import { CONFIG } from '../core/config.js?v=20260827-zjts';
-import { drawSkinVisual } from './skinRenderer.js?v=20260827-zjts';
+import { drawSkinVisual, SKIN_DECORATIONS_ENABLED } from './skinRenderer.js?v=20260827-zjts';
 
 const PREVIEW_RADIUS = CONFIG.player.radius;
 
-// Canvases whose skin is tier>=3 (has orbiting decorations) get a live
-// rAF loop so they animate the same way Gameplay does. Everything else
-// (Common/Uncommon/Default, and every Case Reel slot — there can be
-// dozens on screen while it spins) is drawn once and left static; a
-// static reel slot still shows the correct base skin geometry, which is
-// what Stage 1 of this fix is actually about.
+// Canvases whose skin is tier>=3 (has orbiting decorations, when
+// SKIN_DECORATIONS_ENABLED) get a live rAF loop so they animate the same
+// way Gameplay does. Everything else (Common/Uncommon/Default, every Case
+// Reel slot, and — while SKIN_DECORATIONS_ENABLED is false — every tier>=3
+// canvas too, since there's nothing time-varying left to redraw) is drawn
+// once and left static.
 const animatedCanvases = new Set();
 let rafHandle = null;
 
@@ -85,7 +85,7 @@ export function mountSkinCanvas(canvas, skinVisual, { animate = false } = {}) {
   canvas._skinVisual = skinVisual;
   paint(canvas, performance.now());
   const tier = skinVisual?.tier || 0;
-  const wantsAnimation = animate && skinVisual && skinVisual.id !== 'default' && tier >= 3;
+  const wantsAnimation = animate && SKIN_DECORATIONS_ENABLED && skinVisual && skinVisual.id !== 'default' && tier >= 3;
   if (wantsAnimation) {
     animatedCanvases.add(canvas);
     ensureLoop();
