@@ -94,8 +94,27 @@ export class BulletManager{
 
     this.items.push(b);
   }
+  /**
+   * Removes the bullet at index i in O(1) instead of O(n): swap the last
+   * element into slot i, then pop the (now-duplicate) last element off,
+   * rather than Array.splice(i,1) which has to shift every element after i
+   * down by one. Bullet draw/update order is never meaningful (there's no
+   * z-ordering or turn-order dependency between bullets), so reordering is
+   * safe — the ONLY requirement this places on callers is: when removing
+   * several indices in one pass over the same array, they must be removed
+   * in descending index order (so that an index you haven't gotten to yet
+   * is never the one silently relocated by an earlier swap). Every current
+   * caller already satisfies this — the reverse `for (i = len-1; i >= 0;
+   * i--)` loops in Game.updateBullets()/removeBulletsInRadius(), and
+   * Game.cleanupBulletsForCapacity()'s explicit `selected.sort((a,b) =>
+   * b.index - a.index)` before its removal loop.
+   */
   remove(i){
-    const [b] = this.items.splice(i,1);
-    if (b) this._pool.push(b);
+    const b = this.items[i];
+    if (!b) return;
+    const last = this.items.length - 1;
+    if (i !== last) this.items[i] = this.items[last];
+    this.items.pop();
+    this._pool.push(b);
   }
 }

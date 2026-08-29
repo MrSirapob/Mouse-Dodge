@@ -10,6 +10,13 @@ yet.
 **Newest entry at the top.** Read the top 1-2 entries before starting work
 so you know what the last session was mid-way through or flagged for you.
 
+## 2026-08-29 (3rd session) — Claude (Sonnet 5, claude.ai) — Perf review item #4: swap-and-pop removal (review complete)
+
+Last item from the same-day perf review. Did #4 (splice → swap-and-pop in
+`BulletManager.remove()`, see CHANGELOG.md for details/safety argument).
+All 4 issues from the original review are now fixed — nothing open from
+this review anymore.
+
 ## 2026-08-29 (2nd session) — Claude (Sonnet 5, claude.ai) — Perf review item #3: bullet object pooling
 
 Continuation of the same-day perf review below. Did #3 (bullet pooling,

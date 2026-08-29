@@ -15,9 +15,9 @@
 // browser environment for the rest of the UI class.
 
 import { TestSuite, assert, assertEqual } from '../helpers/assertions.mjs';
-import { UI } from '../../js/ui/ui.js?v=20260829-rlfe';
-import { SkinSystem } from '../../js/systems/skinSystem.js?v=20260829-rlfe';
-import { SKINS } from '../../js/data/skins.js?v=20260829-rlfe';
+import { UI } from '../../js/ui/ui.js?v=20260829-zjvm';
+import { SkinSystem } from '../../js/systems/skinSystem.js?v=20260829-zjvm';
+import { SKINS } from '../../js/data/skins.js?v=20260829-zjvm';
 
 /** Minimal localStorage shim so a real SkinSystem can load()/save() in Node. */
 function makeMemoryStorage() {

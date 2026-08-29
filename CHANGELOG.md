@@ -1,5 +1,31 @@
 # Changelog
 
+## Performance: swap-and-pop instead of splice() for bullet removal
+Fourth and final item from the same performance review (see the two
+entries below). `BulletManager.remove(i)` (`js/entities/bullet.js`) used
+`Array.splice(i,1)`, which is O(n) per call because it shifts every
+element after i down by one — on a wave with hundreds of bullets, a
+nova/pulse clearing dozens at once turned into O(n²) work in a single
+frame. Changed to swap-and-pop: move the array's last element into slot
+i, then pop the array's new last slot off — O(1) per removal, no shifting.
+Bullet order was never meaningful (no z-ordering or turn-order dependency
+between bullets), so reordering is safe. The one real constraint this
+places on callers: if you remove several indices in one pass over the
+*same* array, you must do it in descending index order, or an
+already-swapped element could get silently skipped. Checked every current
+caller and all three already satisfy this: the reverse `for (i = len-1; i
+>= 0; i--)` loops in `Game.updateBullets()` and
+`Game.removeBulletsInRadius()`, and `Game.cleanupBulletsForCapacity()`'s
+explicit `selected.sort((a,b) => b.index - a.index)` right before its
+removal loop — none needed to change.
+Verified with the full test suite (198 tests, unchanged) plus a
+throwaway script exercising `remove()` against the two removal patterns
+actually used in the codebase (reverse full-array sweep, and a batch of
+arbitrary indices sorted descending first) plus drain-to-empty and
+last-index edge cases — all correct.
+**Files:** `js/entities/bullet.js`, `js/**` (version tag only, via
+`bump-version.mjs`), `CHANGELOG.md`.
+
 ## Performance: pooled bullet objects instead of allocating one per shot
 Third item from the same performance review (see the entry below this
 one) — the one that was deliberately left undone at the time.
