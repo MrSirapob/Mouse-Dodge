@@ -1,6 +1,6 @@
-import { ITEM_COLORS } from '../systems/itemSystem.js?v=20260829-zc1d';
-import { CONFIG, actForWave } from '../core/config.js?v=20260829-zc1d';
-import { drawSkinVisual, drawSparkle, drawStarPoint, drawDiamondPoint } from './skinRenderer.js?v=20260829-zc1d';
+import { ITEM_COLORS } from '../systems/itemSystem.js?v=20260829-kt89';
+import { CONFIG, actForWave } from '../core/config.js?v=20260829-kt89';
+import { drawSkinVisual, drawSparkle, drawStarPoint, drawDiamondPoint } from './skinRenderer.js?v=20260829-kt89';
 
 /**
  * One draw function per item type, keyed by `item.type` (mirrors the
@@ -417,7 +417,54 @@ export class Renderer {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.viewport = { width: 1, height: 1, scale: 1, offsetX: 0, offsetY: 0 };
+    // Cache of pre-rendered bullet glow sprites, keyed by "color|radius".
+    // Bullets only ever use a small fixed set of colors (per-act palettes,
+    // see CONFIG.actThemes) and radii, so this stays small — a handful of
+    // entries for the whole game — while letting drawBullet() avoid paying
+    // for shadowBlur on every bullet every frame (see _getBulletGlowSprite).
+    this._bulletGlowCache = new Map();
     this.resize();
+  }
+
+  /**
+   * Returns an offscreen canvas containing a single pre-blurred bullet
+   * sprite (built once per unique color+radius, then reused forever), plus
+   * the offset to draw it at so it's centered on the bullet's (x, y).
+   *
+   * Why: the old drawBullet() set shadowColor/shadowBlur and filled an arc
+   * for every bullet every frame. shadowBlur is one of the most expensive
+   * canvas 2D operations (it re-blurs the shape on the fly), and bullet-hell
+   * waves can have hundreds of bullets on screen — that's hundreds of blur
+   * passes per frame for a visual that never changes bullet-to-bullet or
+   * frame-to-frame. Baking the blurred look into a sprite once and just
+   * drawImage-ing it afterwards produces the identical pixels for a
+   * fraction of the cost.
+   */
+  _getBulletGlowSprite(color, r) {
+    const key = `${color}|${r}`;
+    let sprite = this._bulletGlowCache.get(key);
+    if (sprite) return sprite;
+
+    const blur = 8;
+    const pad = blur * 2; // headroom so the blur doesn't clip at the canvas edge
+    const size = Math.ceil((r + pad) * 2);
+    const off = document.createElement('canvas');
+    off.width = size;
+    off.height = size;
+    const octx = off.getContext('2d');
+    const cx = size / 2;
+    const cy = size / 2;
+
+    octx.beginPath();
+    octx.arc(cx, cy, r, 0, Math.PI * 2);
+    octx.fillStyle = color;
+    octx.shadowColor = color;
+    octx.shadowBlur = blur;
+    octx.fill();
+
+    sprite = { canvas: off, cx, cy };
+    this._bulletGlowCache.set(key, sprite);
+    return sprite;
   }
 
   /** Recomputes canvas pixel size and the world->screen scale/offset ("cover" scaling, no letterbox bars). */
@@ -1095,14 +1142,8 @@ export class Renderer {
   }
 
   drawBullet(b) {
-    const c = this.ctx;
-    c.beginPath();
-    c.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-    c.fillStyle = b.color;
-    c.shadowColor = b.color;
-    c.shadowBlur = 8;
-    c.fill();
-    c.shadowBlur = 0;
+    const sprite = this._getBulletGlowSprite(b.color, b.r);
+    this.ctx.drawImage(sprite.canvas, b.x - sprite.cx, b.y - sprite.cy);
   }
 
   drawParticle(p) {

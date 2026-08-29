@@ -1,5 +1,40 @@
 # Changelog
 
+## Performance: removed two hot-loop costs in bullet update/draw (per-bullet activePlayers() allocation, per-bullet shadowBlur)
+Two optimizations targeting bullet-hell waves with hundreds of active
+bullets, found via a code review requested by the user (no bug, just
+"optimize ตรงไหนได้บ้าง"):
+
+1. **`Game.updateBullets()` no longer calls `this.activePlayers()` (which
+   internally does `.filter()`, allocating a new array) once per bullet
+   per frame.** It's computed once at the top of `updateBullets(dt)` and
+   reused for the player-collision/graze loop and passed into
+   `targetPlayerForBullet()` (now takes a `players` param instead of
+   recomputing it, and also swapped its `Math.hypot()` nearest-player scan
+   for squared-distance comparisons — same result, no per-candidate
+   `sqrt`). With ~300 bullets on screen this was ~300 unnecessary array
+   allocations/frame; now it's 1.
+2. **`Renderer.drawBullet()` no longer sets `shadowColor`/`shadowBlur` and
+   fills an arc for every bullet every frame** — `shadowBlur` is one of
+   the most expensive canvas 2D operations, and it was being paid on every
+   single bullet, every frame, for a glow effect that's visually identical
+   bullet-to-bullet for a given color+radius. Added
+   `Renderer._getBulletGlowSprite(color, r)`: builds the same blurred
+   circle once per unique color+radius onto a small offscreen canvas,
+   caches it (`this._bulletGlowCache`, a `Map`), and `drawBullet()` now
+   just `drawImage()`s the cached sprite. Bullet colors/radii come from a
+   small fixed set (per-act palettes in `CONFIG.actThemes`, radii mostly
+   4-10), so the cache stays tiny for the life of the game. Pixel output
+   is the same as before — only *when* the blur is computed changed (once,
+   not every frame).
+Full test suite (198 tests) still passes unchanged after both fixes.
+Two further optimizations were identified but not yet done at the user's
+request to do them first (see review notes in this session): pooling
+`BulletManager.spawn()`'s ~50-property object instead of allocating one
+per shot, and swap-and-pop instead of `splice()` in `BulletManager.remove()`.
+**Files:** `js/systems/game.js`, `js/rendering/renderer.js`, `js/**`
+(version tag only, via `bump-version.mjs`), `CHANGELOG.md`.
+
 ## Coop: "Space bar เพื่อหยุดเกม" hint no longer covers Player 2's hearts (user-requested, "แก้ตอนเล่น 2 คนหน่อย text ที่บอกว่ากด space bar เพื่อหยุดเกมขวาบน มันบังหัวใจของผู้เล่น 2")
 The `.space-hint` pill (`index.html`) is `position: fixed` pinned to the
 top-right corner of the viewport (`css/main.css`) — but in coop, Player 2's

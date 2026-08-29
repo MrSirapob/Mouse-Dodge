@@ -6,7 +6,7 @@
 // AI edits are expected to touch stays intact and internally consistent.
 
 import { TestSuite, assert, assertNoNaN, assertInRange } from '../helpers/assertions.mjs';
-import { CONFIG, GRAZE_REWARD } from '../../js/core/config.js?v=20260829-zc1d';
+import { CONFIG, GRAZE_REWARD } from '../../js/core/config.js?v=20260829-kt89';
 
 export function run() {
   const s = new TestSuite('STRUCTURE: Config');

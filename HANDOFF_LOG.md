@@ -10,6 +10,21 @@ yet.
 **Newest entry at the top.** Read the top 1-2 entries before starting work
 so you know what the last session was mid-way through or flagged for you.
 
+## 2026-08-29 — Claude (Sonnet 5, claude.ai) — Perf review; fixed 2 of 4 found issues
+
+User asked for a general optimization review (no specific bug). Found 4
+issues, ranked by impact; user asked to fix only #1 and #2 this session —
+see CHANGELOG.md for the two that were done. **Still open, not done:**
+- **#3: `BulletManager.spawn()` allocates a fresh ~50-property object per
+  shot**, no pooling. Would need spawn/remove/iteration all reworked to
+  use a fixed-size reusable array with an `active` flag — bigger refactor,
+  deliberately deferred.
+- **#4: `BulletManager.remove(i)` uses `Array.splice(i,1)`** (O(n) per
+  removal, O(n²) when a nova/pulse clears many bullets in one frame).
+  Fix is swap-last-into-place + pop instead — bullet order doesn't affect
+  gameplay or visuals. Small, safe, not yet done.
+Both pick up cleanly from here if asked to continue.
+
 ## 2026-08-27 (2nd session) — Claude (Sonnet 5, claude.ai) — Total-deaths lifetime counter on the Game Over screen
 
 User asked to count total deaths and show it on the Game Over screen. Added

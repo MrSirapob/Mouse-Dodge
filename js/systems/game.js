@@ -1,17 +1,17 @@
-import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260829-zc1d';
-import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260829-zc1d';
-import { circleHit, circleNear } from '../core/collision.js?v=20260829-zc1d';
-import { Player } from '../entities/player.js?v=20260829-zc1d';
-import { BulletManager } from '../entities/bullet.js?v=20260829-zc1d';
-import { Boss } from '../entities/boss.js?v=20260829-zc1d';
-import { ParticleSystem } from '../rendering/particles.js?v=20260829-zc1d';
-import { PatternLibrary } from '../patterns/patterns.js?v=20260829-zc1d';
-import { WaveSystem } from './waveSystem.js?v=20260829-zc1d';
-import { SkillSystem } from './skillSystem.js?v=20260829-zc1d';
-import { LifeSystem } from './lifeSystem.js?v=20260829-zc1d';
-import { DevMode } from './devMode.js?v=20260829-zc1d';
-import { ItemSystem } from './itemSystem.js?v=20260829-zc1d';
-import { SkinSystem } from './skinSystem.js?v=20260829-zc1d';
+import { CONFIG, GRAZE_REWARD, actForWave } from '../core/config.js?v=20260829-kt89';
+import { GAME_STATES, GAME_MODES, GameState } from '../core/gameState.js?v=20260829-kt89';
+import { circleHit, circleNear } from '../core/collision.js?v=20260829-kt89';
+import { Player } from '../entities/player.js?v=20260829-kt89';
+import { BulletManager } from '../entities/bullet.js?v=20260829-kt89';
+import { Boss } from '../entities/boss.js?v=20260829-kt89';
+import { ParticleSystem } from '../rendering/particles.js?v=20260829-kt89';
+import { PatternLibrary } from '../patterns/patterns.js?v=20260829-kt89';
+import { WaveSystem } from './waveSystem.js?v=20260829-kt89';
+import { SkillSystem } from './skillSystem.js?v=20260829-kt89';
+import { LifeSystem } from './lifeSystem.js?v=20260829-kt89';
+import { DevMode } from './devMode.js?v=20260829-kt89';
+import { ItemSystem } from './itemSystem.js?v=20260829-kt89';
+import { SkinSystem } from './skinSystem.js?v=20260829-kt89';
 
 /** Converts a "#rrggbb" hex string to an "r,g,b" string for use in
  * rgba(...) fill styles (see Renderer.flash()). */
@@ -882,17 +882,31 @@ export class Game {
     }
   }
 
-  targetPlayerForBullet(x, y) {
-    const alive = this.activePlayers().filter(p => p.isAlive());
-    if (!alive.length) return null;
-    return alive.reduce((best, p) => (
-      Math.hypot(p.x - x, p.y - y) < Math.hypot(best.x - x, best.y - y) ? p : best
-    ), alive[0]);
+  /**
+   * Finds the nearest alive player to (x, y) from a precomputed player list.
+   * `players` must already be filtered to alive/active players — callers in
+   * the hot per-bullet loop pass the same array in for every bullet so this
+   * never allocates on its own (see updateBullets()).
+   */
+  targetPlayerForBullet(x, y, players) {
+    if (!players.length) return null;
+    let best = players[0];
+    let bestDist = (best.x - x) * (best.x - x) + (best.y - y) * (best.y - y);
+    for (let i = 1; i < players.length; i++) {
+      const p = players[i];
+      const dist = (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y);
+      if (dist < bestDist) { best = p; bestDist = dist; }
+    }
+    return best;
   }
 
   /** Moves every bullet, handles wall-bouncing, splitter bullets, off-screen cleanup, and player collision/graze. */
   updateBullets(dt) {
     const s = this.state;
+    // Computed once per frame — the alive/active player set can't change
+    // mid-loop, so every bullet below reuses this instead of each calling
+    // activePlayers() (a fresh array allocation) on its own.
+    const players = this.activePlayers();
     for (let i = this.bullets.items.length - 1; i >= 0; i--) {
       const b = this.bullets.items[i];
       b.age += dt;
@@ -934,7 +948,7 @@ export class Game {
           b.vy = 0;
           continue;
         } else {
-          const target = this.targetPlayerForBullet(b.x, b.y);
+          const target = this.targetPlayerForBullet(b.x, b.y, players);
           if (target) {
             const angle = Math.atan2(target.y - b.y, target.x - b.x);
             b.vx = Math.cos(angle) * b.perimeterSpeed;
@@ -959,7 +973,7 @@ export class Game {
       }
 
       if (b.homing && b.homingStrength > 0 && b.age > 0.25) {
-        const target = this.targetPlayerForBullet(b.x, b.y);
+        const target = this.targetPlayerForBullet(b.x, b.y, players);
         if (target) {
           const speed = Math.hypot(b.vx, b.vy) || 1;
           const desired = Math.atan2(target.y - b.y, target.x - b.x);
@@ -1060,7 +1074,7 @@ export class Game {
         continue;
       }
 
-      for (const p of this.activePlayers()) {
+      for (const p of players) {
         if (!p.isAlive() || !p.canBeHit()) continue;
         if (circleHit(b, p)) {
           // A bullet is consumed only when it actually deals damage.
