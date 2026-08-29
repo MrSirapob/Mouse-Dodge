@@ -102,6 +102,14 @@ canvas {cursor: none;position: absolute;inset: 0;width: 100%;height: 100%;displa
 .space-hint kbd {font-family: inherit;font-size: 11px;font-weight: 800;letter-spacing: .5px;color: #06201d;background: linear-gradient(135deg,#4ecdc4,#6ee7df);border-radius: 5px;padding: 3px 7px;box-shadow: 0 2px 0 #2f8f88}
 .space-hint span {color: #a9adbb}
 @media (max-width: 700px) {.space-hint {display: none}}
+/* Coop's Player 2 HUD block (score/lives/skill) sits pinned to the same
+   top-right corner (#hud .hud-p2, justify-self: end) that this hint
+   floats over — in coop the hint's fixed position lands directly on top
+   of P2's lives card, covering the hearts. Solo has no P2 HUD there so
+   the hint is unaffected; the shortcut itself is still shown elsewhere
+   (mode-select's controlHint line and the pause screen), so hiding this
+   copy of it in coop loses no information. */
+#hud.coop-mode .space-hint {display: none}
 .skill-status span:first-child {color: #ff9f43}
 .skill-status span:last-child {color: #d8dbe5;font-variant-numeric: tabular-nums}
 

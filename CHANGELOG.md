@@ -1,5 +1,20 @@
 # Changelog
 
+## Coop: "Space bar เพื่อหยุดเกม" hint no longer covers Player 2's hearts (user-requested, "แก้ตอนเล่น 2 คนหน่อย text ที่บอกว่ากด space bar เพื่อหยุดเกมขวาบน มันบังหัวใจของผู้เล่น 2")
+The `.space-hint` pill (`index.html`) is `position: fixed` pinned to the
+top-right corner of the viewport (`css/main.css`) — but in coop, Player 2's
+whole HUD block (score/lives/skill, `#hud .hud-p2`) is *also* pinned to
+that same top-right corner (`justify-self: end` on its grid area), so the
+hint rendered directly on top of P2's lives card, hiding the hearts. Solo
+never has anything in that corner, so the overlap only showed up in coop.
+Fixed by hiding `.space-hint` specifically when `#hud` has the `coop-mode`
+class — which `UI.update()` (`js/ui/ui.js`) already toggles every frame
+based on the current mode, so no new state was needed. The shortcut isn't
+lost: it's still shown in the mode-select screen's control hint line and
+on the pause screen itself, so hiding this one copy in coop costs no
+information, just the redundant/overlapping copy.
+**Files:** `css/main.css`, `CHANGELOG.md`.
+
 ## Skin Collection screen stutter fixed: dead animation loop redrawing tier>=3 cards every frame for nothing (user-requested, "เช็คตรงคลังสกินหน่อย มันกระตุกๆ")
 Root cause was in `js/rendering/skinPreview.js`: every owned tier>=3 skin
 card (Epic/Legendary/Mythic) in the Skin Collection grid got a live
