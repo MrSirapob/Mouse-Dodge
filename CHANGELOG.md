@@ -7,13 +7,26 @@ whole HUD block (score/lives/skill, `#hud .hud-p2`) is *also* pinned to
 that same top-right corner (`justify-self: end` on its grid area), so the
 hint rendered directly on top of P2's lives card, hiding the hearts. Solo
 never has anything in that corner, so the overlap only showed up in coop.
-Fixed by hiding `.space-hint` specifically when `#hud` has the `coop-mode`
-class — which `UI.update()` (`js/ui/ui.js`) already toggles every frame
-based on the current mode, so no new state was needed. The shortcut isn't
+Fixed by hiding `.space-hint` specifically via a new `#hud.coop-mode
+.space-hint {display:none}` rule (`css/main.css`). The shortcut isn't
 lost: it's still shown in the mode-select screen's control hint line and
 on the pause screen itself, so hiding this one copy in coop costs no
 information, just the redundant/overlapping copy.
-**Files:** `css/main.css`, `CHANGELOG.md`.
+Two false starts before this actually worked, both worth recording:
+1. First assumed it was the project's `?v=...` cache-busting tag not
+   being bumped after editing `main.css`, so ran `npm run bump-version`.
+   Necessary hygiene, but not the actual bug.
+2. The real bug: the `#hud.coop-mode` class this fix depends on was never
+   reaching the element. `UI.update()` (`js/ui/ui.js`) toggled it via
+   `this.el.hud?.classList.toggle(...)` — but `#hud` is cached as
+   `this.hud` in `cacheElements()`, never as `this.el.hud` (`this.el` has
+   no `hud` key at all). The optional-chaining `?.` silently swallowed
+   this every single frame instead of throwing, so `coop-mode` never got
+   added to `#hud` in the first place — a pre-existing bug, not something
+   introduced by this change, just one this fix happened to depend on and
+   expose. Fixed the two toggle calls to use `this.hud` directly.
+**Files:** `css/main.css`, `js/ui/ui.js`, `index.html`/`js/**` (version
+tag only, via `bump-version.mjs`), `CHANGELOG.md`.
 
 ## Skin Collection screen stutter fixed: dead animation loop redrawing tier>=3 cards every frame for nothing (user-requested, "เช็คตรงคลังสกินหน่อย มันกระตุกๆ")
 Root cause was in `js/rendering/skinPreview.js`: every owned tier>=3 skin

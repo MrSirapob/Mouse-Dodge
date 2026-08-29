@@ -1,7 +1,7 @@
-import { CONFIG } from "../core/config.js?v=20260827-zjts";
-import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260827-zjts";
-import { tick as playReelTick } from "../audio/reelTick.js?v=20260827-zjts";
-import { mountSkinCanvas, mountSkinCanvases } from "../rendering/skinPreview.js?v=20260827-zjts";
+import { CONFIG } from "../core/config.js?v=20260829-zc1d";
+import { RARITY_CONFIG, RARITY_ORDER, SKINS, SKINS_BY_RARITY } from "../data/skins.js?v=20260829-zc1d";
+import { tick as playReelTick } from "../audio/reelTick.js?v=20260829-zc1d";
+import { mountSkinCanvas, mountSkinCanvases } from "../rendering/skinPreview.js?v=20260829-zc1d";
 
 const SKILL_NAMES = {
   pulse: "PULSE",
@@ -1535,8 +1535,8 @@ export class UI {
   // --- Per-frame HUD update -------------------------------------------------
 
   update(s, players, mode) {
-    this.el.hud?.classList.toggle("solo-mode", mode === "solo");
-    this.el.hud?.classList.toggle("coop-mode", mode === "coop");
+    this.hud?.classList.toggle("solo-mode", mode === "solo");
+    this.hud?.classList.toggle("coop-mode", mode === "coop");
     this.updateTimer(s.elapsed);
     this.updateScores(s, players, mode);
     this.updateSkillChips(s, players);

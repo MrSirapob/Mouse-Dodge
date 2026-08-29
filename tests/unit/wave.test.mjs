@@ -9,8 +9,8 @@
 import { TestSuite, assert, assertNoNaN, assertEqual, warn } from '../helpers/assertions.mjs';
 import { createGame } from '../helpers/gameFactory.mjs';
 import { capturePatternPlan } from '../helpers/simulation.mjs';
-import { CONFIG } from '../../js/core/config.js?v=20260827-zjts';
-import { PatternLibrary } from '../../js/patterns/patterns.js?v=20260827-zjts';
+import { CONFIG } from '../../js/core/config.js?v=20260829-zc1d';
+import { PatternLibrary } from '../../js/patterns/patterns.js?v=20260829-zc1d';
 
 // Every pattern method in js/systems/waveSystem.js's PATTERN GUIDE header
 // comment (the canonical list this project documents for AI editors),
